@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:weightSum="1">
+
+<LinearLayout android:id="@+id/LinearLayout01" android:layout_width="match_parent" android:weightSum="1" android:layout_height="45px">
+<EditText android:id="@+id/Dir" android:layout_width="wrap_content" android:layout_gravity="left|center_vertical" android:layout_weight="1" android:layout_marginLeft="5px" android:textSize="20px" android:editable="true" android:singleLine="true" android:inputType="textUri" android:text="@string/defpath" android:layout_height="50px" android:gravity="left|center_vertical"></EditText>
+
+<ImageButton android:id="@+id/ChangeDir" android:background="@drawable/godir" android:layout_gravity="center_vertical" android:layout_height="45px" android:layout_width="49px" android:layout_marginRight="5px"></ImageButton>
+</LinearLayout>
+<ListView android:layout_height="wrap_content" android:layout_width="match_parent" android:focusable="true" android:focusableInTouchMode="true" android:id="@+id/APKList" android:layout_weight="1"></ListView>
+<Button android:layout_width="match_parent" android:id="@+id/Exit" android:layout_height="50px" android:text="@string/exit"></Button>
+
+
+
+</LinearLayout>
