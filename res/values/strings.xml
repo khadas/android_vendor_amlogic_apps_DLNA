@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">app installer</string>
+    <string name="app_name">AmInstaller</string>
 	<string name="exit">EXIT</string>
 <string name="defpath">/sdcard</string>
 </resources>

@@ -9,12 +9,17 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 class APKInfo extends Object
@@ -129,10 +134,12 @@ public class PackageAdapter extends BaseAdapter {
 	protected int m_TextView_FileName;
 	protected int m_ImgView_APPIcon;
 	protected int m_CheckBox_InstallState;
+	protected int m_CheckBox_SelState;
     private   LayoutInflater mInflater;
     protected ArrayList<APKInfo>  m_apklist = null;
+    protected ListView m_list = null;
 
-	PackageAdapter(Context context,int Layout_Id,int text_app_id,int text_filename_id,int checkbox_id,int img_appicon_id,ArrayList<APKInfo> apklist)
+	PackageAdapter(Context context,int Layout_Id,int text_app_id,int text_filename_id,int checkbox_id,int img_appicon_id,int checkbox_sel_id,ArrayList<APKInfo> apklist,ListView list)
 	{
         mInflater = LayoutInflater.from(context);
         m_Layout_APKListItem = Layout_Id;
@@ -140,7 +147,9 @@ public class PackageAdapter extends BaseAdapter {
         m_TextView_AppName = text_app_id;
         m_CheckBox_InstallState = checkbox_id;
         m_ImgView_APPIcon = img_appicon_id;
+        m_CheckBox_SelState = checkbox_sel_id;
         m_apklist = apklist;
+        m_list = list;
 	}
 	
 	public int getCount() {
@@ -160,6 +169,22 @@ public class PackageAdapter extends BaseAdapter {
 	public long getItemId(int position) {
 		return position;
 	}
+	
+	
+	class SelStateListener implements CompoundButton.OnCheckedChangeListener
+	{
+		int PosInList = 0;
+		SelStateListener(int pos)
+		{
+			PosInList = pos;
+		}
+
+		public void onCheckedChanged (CompoundButton buttonView, boolean isChecked)
+		{
+			if(m_list.isItemChecked(PosInList) != isChecked)
+				m_list.setItemChecked(PosInList, isChecked);
+		}
+	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View layoutview = null;
@@ -175,12 +200,15 @@ public class PackageAdapter extends BaseAdapter {
 		TextView AppName = (TextView)layoutview.findViewById(m_TextView_AppName);
 		CheckBox InstallState = (CheckBox)layoutview.findViewById(m_CheckBox_InstallState);
 		ImageView Appicon = (ImageView)layoutview.findViewById(m_ImgView_APPIcon);
+		//CheckBox SelState = (CheckBox)layoutview.findViewById(m_CheckBox_SelState);
+		//SelState.setOnCheckedChangeListener(new SelStateListener(position));
 		
 		APKInfo pinfo = (APKInfo)getItem(position);
 		FileName.setText(pinfo.filepath);
 		AppName.setText(pinfo.getApplicationName());
 		InstallState.setChecked(pinfo.isInstalled());
 		Appicon.setImageDrawable(pinfo.getApkIcon());
+		//SelState.setChecked(m_list.isItemChecked(position));
 
 		return layoutview;
 	}

@@ -5,13 +5,13 @@
     android:layout_height="fill_parent"
     android:weightSum="1">
 
-<LinearLayout android:id="@+id/LinearLayout01" android:layout_width="match_parent" android:weightSum="1" android:layout_height="45px">
-<EditText android:id="@+id/Dir" android:layout_width="wrap_content" android:layout_gravity="left|center_vertical" android:layout_weight="1" android:layout_marginLeft="5px" android:textSize="20px" android:editable="true" android:singleLine="true" android:inputType="textUri" android:text="@string/defpath" android:layout_height="50px" android:gravity="left|center_vertical"></EditText>
+<LinearLayout android:id="@+id/LinearLayout01" android:layout_width="match_parent" android:weightSum="1" android:layout_height="60px">
+<EditText android:id="@+id/Dir" android:layout_width="wrap_content" android:layout_weight="1" android:editable="true" android:singleLine="true" android:inputType="textUri" android:text="@string/defpath" android:gravity="left|center_vertical" android:layout_height="match_parent" android:layout_gravity="left" android:textSize="24px"></EditText>
 
-<ImageButton android:id="@+id/ChangeDir" android:background="@drawable/godir" android:layout_gravity="center_vertical" android:layout_height="45px" android:layout_width="49px" android:layout_marginRight="5px"></ImageButton>
+<ImageButton android:id="@+id/ChangeDir" android:layout_marginRight="5px" android:layout_gravity="right|center_vertical" android:layout_marginLeft="5px" android:layout_width="50px" android:layout_height="50px" android:background="@drawable/state"></ImageButton>
 </LinearLayout>
-<ListView android:layout_height="wrap_content" android:layout_width="match_parent" android:focusable="true" android:focusableInTouchMode="true" android:id="@+id/APKList" android:layout_weight="1"></ListView>
-<Button android:layout_width="match_parent" android:id="@+id/Exit" android:layout_height="50px" android:text="@string/exit"></Button>
+<ListView  android:layout_height="wrap_content" android:layout_width="match_parent" android:focusable="true" android:focusableInTouchMode="true" android:id="@+id/APKList" android:layout_weight="1"></ListView>
+<Button android:text="@string/exit" android:layout_height="60px" android:layout_margin="5px" android:textStyle="bold" android:layout_width="match_parent" android:textSize="24px" android:id="@+id/exit"></Button>
 
 
 
