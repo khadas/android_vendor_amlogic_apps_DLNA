@@ -86,6 +86,7 @@ public class main extends Activity {
         {
         	pkgadapter = hdata.pkgadapter;
         	mScanRoot = hdata.pCurPath;
+        	m_list.setAdapter(pkgadapter);
         }
 
         m_list.setOnItemClickListener(new AdapterView.OnItemClickListener()
