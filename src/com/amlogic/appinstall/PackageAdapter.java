@@ -63,10 +63,6 @@ class APKInfo extends Object
 	public CharSequence  pAppName = null;
 	public Drawable pAppIcon = null;
 
-	public String getPkgName()
-	{
-		return pCurPkgName;
-	}
 	
 	public boolean isInstalled()
 	{
@@ -126,6 +122,7 @@ class APKInfo extends Object
 	}
 	
 }
+
 
 public class PackageAdapter extends BaseAdapter {
 	
@@ -200,17 +197,21 @@ public class PackageAdapter extends BaseAdapter {
 		TextView AppName = (TextView)layoutview.findViewById(m_TextView_AppName);
 		CheckBox InstallState = (CheckBox)layoutview.findViewById(m_CheckBox_InstallState);
 		ImageView Appicon = (ImageView)layoutview.findViewById(m_ImgView_APPIcon);
-		//CheckBox SelState = (CheckBox)layoutview.findViewById(m_CheckBox_SelState);
-		//SelState.setOnCheckedChangeListener(new SelStateListener(position));
+		CheckBox SelState = (CheckBox)layoutview.findViewById(m_CheckBox_SelState);
+		SelState.setOnCheckedChangeListener(new SelStateListener(position));
 		
 		APKInfo pinfo = (APKInfo)getItem(position);
 		FileName.setText(pinfo.filepath);
 		AppName.setText(pinfo.getApplicationName());
 		InstallState.setChecked(pinfo.isInstalled());
 		Appicon.setImageDrawable(pinfo.getApkIcon());
-		//SelState.setChecked(m_list.isItemChecked(position));
+		SelState.setChecked(m_list.isItemChecked(position));
 
 		return layoutview;
 	}
+	
+    public boolean hasStableIds() {
+        return true;
+    }
 
 }

@@ -13,5 +13,5 @@
 
 
 
-
+<CheckBox android:layout_width="wrap_content" android:id="@+id/Select" android:layout_height="match_parent" android:layout_gravity="center" android:focusable="false" android:focusableInTouchMode="false" android:checked="false" android:clickable="true"></CheckBox>
 </LinearLayout>
