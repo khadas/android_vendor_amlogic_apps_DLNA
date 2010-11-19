@@ -86,6 +86,7 @@ public class main extends Activity {
         {
         	pkgadapter = hdata.pkgadapter;
         	mScanRoot = hdata.pCurPath;
+        	m_ApkList = hdata.pApkList;
         	m_list.setAdapter(pkgadapter);
         }
 
@@ -157,6 +158,7 @@ public class main extends Activity {
     {
     	PackageAdapter pkgadapter;
     	String		   pCurPath;
+    	ArrayList<APKInfo> pApkList;
     }
     
     public Object onRetainNonConfigurationInstance()
@@ -164,6 +166,7 @@ public class main extends Activity {
     	RetainData hdata = new RetainData();
     	hdata.pkgadapter = pkgadapter;
     	hdata.pCurPath = mScanRoot;
+    	hdata.pApkList = m_ApkList;
     	return hdata;
     }
     
