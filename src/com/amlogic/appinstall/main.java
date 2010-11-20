@@ -49,6 +49,7 @@ public class main extends Activity {
 	protected String mScanRoot = null;
     protected ArrayList<APKInfo> m_ApkList = new ArrayList<APKInfo>();
     protected CheckAbleList m_list = null;
+    protected TextView m_info = null;
     protected PackageAdapter pkgadapter = null;
     protected EditText editdir = null;
     protected ProgressDialog mScanDiag = null;
@@ -71,6 +72,8 @@ public class main extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        m_info = (TextView)findViewById(R.id.ScanInfo);
+        m_info.setText("No APK Found!");
         //init the listview
     	m_list = (CheckAbleList)findViewById(R.id.APKList);
     	m_list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -181,7 +184,18 @@ public class main extends Activity {
 					bstopscan = true;
 					if(mScanDiag != null)
 						mScanDiag.hide();
+
+					if(m_ApkList.size() > 0)
+					{
 			        m_list.setAdapter(pkgadapter);
+						m_list.setVisibility(android.view.View.VISIBLE);
+						m_info.setVisibility(android.view.View.INVISIBLE);
+					}
+					else
+					{
+						m_list.setVisibility(android.view.View.INVISIBLE);
+						m_info.setVisibility(android.view.View.VISIBLE);
+					}
 					//pkgadapter.notifyDataSetChanged();
 					break;
 				case NEW_DIR:
@@ -318,7 +332,6 @@ public class main extends Activity {
     //functions for installing and uninstalling in slient mode
     class PkgHandleThread extends Thread
     {
-
     	int m_action;
     	String m_actionpara;
     	public PkgHandleThread setAction(int actionid,String para)

@@ -11,8 +11,10 @@
 <ImageButton android:id="@+id/ChangeDir" android:layout_marginRight="5px" android:layout_gravity="right|center_vertical" android:layout_marginLeft="5px" android:layout_width="50px" android:layout_height="50px" android:background="@drawable/godir_state"></ImageButton>
 
 <ImageButton android:background="@drawable/exit_state" android:id="@+id/Exit" android:layout_height="50px" android:layout_marginRight="5px" android:layout_width="50px" android:layout_gravity="right|center_vertical"></ImageButton>
-</LinearLayout>
-<com.amlogic.appinstall.CheckAbleList  android:layout_height="wrap_content" android:layout_width="match_parent" android:focusable="true" android:focusableInTouchMode="true" android:id="@+id/APKList" android:layout_weight="1"></com.amlogic.appinstall.CheckAbleList>
+
+</LinearLayout><FrameLayout android:id="@+id/FrameLayout01" android:layout_width="match_parent" android:layout_height="match_parent">
+<com.amlogic.appinstall.CheckAbleList android:layout_width="match_parent" android:focusable="true" android:focusableInTouchMode="true" android:id="@+id/APKList" android:layout_weight="1" android:layout_height="match_parent"></com.amlogic.appinstall.CheckAbleList><TextView android:layout_height="match_parent" android:layout_width="match_parent" android:gravity="center" android:id="@+id/ScanInfo" android:visibility="invisible"></TextView></FrameLayout>
+
 
 
 
