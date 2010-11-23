@@ -74,6 +74,7 @@ public class main extends Activity {
         
         m_info = (TextView)findViewById(R.id.ScanInfo);
         m_info.setText("No APK Found!");
+        m_info.setVisibility(android.view.View.INVISIBLE);
         //init the listview
     	m_list = (CheckAbleList)findViewById(R.id.APKList);
     	m_list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -181,7 +182,6 @@ public class main extends Activity {
 			switch(msg.what)
 			{
 				case END_SCAN:
-					bstopscan = true;
 					if(mScanDiag != null)
 						mScanDiag.hide();
 
@@ -447,26 +447,22 @@ public class main extends Activity {
 	    	{
 	    		public boolean onTouchEvent (MotionEvent event)
 	    		{
-	        		Message endmsg = new Message();
-	        		endmsg.what = END_SCAN;
-	        		mainhandler.sendMessage(endmsg);
+					bstopscan = true;
+					mScanDiag.setMessage("stop scanning\n");
 	    			return true;
 	    		}
 	    	};
 	    	mScanDiag.setCancelable(false);
-	    	/*
-	    	String msg = "Scanning ...\n";
-	    	msg += "dir : "+String.valueOf(dirs)+"\n";
-	    	msg += "apk  : "+String.valueOf(apks)+"\n";
-	    	mProcDiag.setMessage(msg);*/
     	}
-    	//else
+    	if(bstopscan == false)
     	{
 	    	String msg = "Scanning ...\n";
 	    	msg += "dir : "+String.valueOf(dirs)+"\n";
 	    	msg += "apk  : "+String.valueOf(apks)+"\n";
 	    	mScanDiag.setMessage(msg);
     	}
+    	else
+    		mScanDiag.setMessage("stop scanning\n");
     	mScanDiag.show();	
     }
 
