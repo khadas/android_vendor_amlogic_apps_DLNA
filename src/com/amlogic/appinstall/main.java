@@ -490,6 +490,7 @@ public class main extends Activity {
         	
         	//to scan dirs
         	ArrayList<String> pdirlist = new ArrayList<String>();
+        	
         	pdirlist.add(directory);
         	
         	while(pdirlist.isEmpty() == false && (bstopscan==false) )
@@ -503,32 +504,35 @@ public class main extends Activity {
         		
         		String headpath = pdirlist.remove(0);
         		File pfile = new File(headpath);
-            	//list files and dirs in this directory
-        		File[] files = pfile.listFiles(new APKFileter());
-        		if(files != null && (files.length > 0) )
+        		if(pfile.exists() == true)
         		{
-    	    		int i = 0;
-    	    		for(;(i<files.length)&&((bstopscan==false));i++)
-    	    		{
-    	    			File pcurfile = files[i];
-    	    			if(pcurfile.isDirectory())
-    	    				pdirlist.add(pcurfile.getAbsolutePath());
-    	    			else
-    	    			{
-    	    				APKInfo apkinfo = new APKInfo(main.this,pcurfile.getAbsolutePath());
-    	    				if(apkinfo.beValid() == true)
-    	    				{
-    	    					m_ApkList.add(apkinfo);
-    	    					apks++;
-    	    		    		Message apkmsg = new Message();
-    	    					apkmsg.what = NEW_APK;
-    	    					apkmsg.arg1 = dirs;
-    	    					apkmsg.arg2 = apks;
-    	    	        		mainhandler.sendMessage(apkmsg);
-    	    				}
-    	    			}
-    	    		}
-        		}
+	            	//list files and dirs in this directory
+	        		File[] files = pfile.listFiles(new APKFileter());
+	        		if(files != null && (files.length > 0) )
+	        		{
+	    	    		int i = 0;
+	    	    		for(;(i<files.length)&&((bstopscan==false));i++)
+	    	    		{
+	    	    			File pcurfile = files[i];
+	    	    			if(pcurfile.isDirectory())
+	    	    				pdirlist.add(pcurfile.getAbsolutePath());
+	    	    			else
+	    	    			{
+	    	    				APKInfo apkinfo = new APKInfo(main.this,pcurfile.getAbsolutePath());
+	    	    				if(apkinfo.beValid() == true)
+	    	    				{
+	    	    					m_ApkList.add(apkinfo);
+	    	    					apks++;
+	    	    		    	    Message apkmsg = new Message();
+	    	    					apkmsg.what = NEW_APK;
+	    	    					apkmsg.arg1 = dirs;
+	    	    					apkmsg.arg2 = apks;
+                                    mainhandler.sendMessage(apkmsg);
+	    	    				}
+	    	    			}
+	    	    		}
+	        		}
+	        	}
         	}
         }
     }
