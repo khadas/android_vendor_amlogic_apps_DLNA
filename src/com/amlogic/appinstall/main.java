@@ -54,8 +54,8 @@ public class main extends Activity {
     protected EditText editdir = null;
     protected ProgressDialog mScanDiag = null;
     protected ProgressDialog mHandleDiag = null;
-    private String m_version = "V1.0.0";
-    private String m_releasedate = "2010.11.15";
+    private String m_version = "V1.0.1";
+    private String m_releasedate = "2010.12.16";
     
     public final static int END_SCAN = 0;
     public final static int NEW_DIR = 1;
@@ -92,6 +92,7 @@ public class main extends Activity {
         	mScanRoot = hdata.pCurPath;
         	m_ApkList = hdata.pApkList;
         	m_list.setAdapter(pkgadapter);
+        	m_info.setVisibility(android.view.View.VISIBLE);
         }
 
         m_list.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -158,6 +159,28 @@ public class main extends Activity {
 		pkgadapter.notifyDataSetChanged();
     }
     
+    public void onPause()
+    {
+    	//stop scan
+		bstopscan = true;
+		if(mScanDiag!=null)
+		{
+			mScanDiag.dismiss();
+			mScanDiag = null;
+		}
+
+		//stop install
+		m_bStopHandle = true;
+    	if(mHandleDiag!=null)
+    	{
+    		mHandleDiag.dismiss();
+    		mHandleDiag = null;
+    	}
+		
+    	super.onPause();
+    }
+    
+    
     class RetainData extends Object
     {
     	PackageAdapter pkgadapter;
@@ -183,11 +206,14 @@ public class main extends Activity {
 			{
 				case END_SCAN:
 					if(mScanDiag != null)
-						mScanDiag.hide();
+					{
+						mScanDiag.dismiss();
+						mScanDiag = null;
+					}
 
 					if(m_ApkList.size() > 0)
 					{
-			        m_list.setAdapter(pkgadapter);
+						m_list.setAdapter(pkgadapter);
 						m_list.setVisibility(android.view.View.VISIBLE);
 						m_info.setVisibility(android.view.View.INVISIBLE);
 					}
@@ -212,7 +238,8 @@ public class main extends Activity {
 					if(m_bStopHandle == true)
 					{
 						if(mHandleDiag != null)
-							mHandleDiag.hide();
+							mHandleDiag.dismiss();
+						mHandleDiag = null;
 						pkgadapter.notifyDataSetChanged();
 					}
 					else
@@ -251,7 +278,8 @@ public class main extends Activity {
 						{
 							m_bStopHandle = true;
 							if(mHandleDiag != null)
-								mHandleDiag.hide();	
+								mHandleDiag.dismiss();
+							mHandleDiag = null;
 							pkgadapter.notifyDataSetChanged();
 						}
 					}
@@ -411,6 +439,8 @@ public class main extends Activity {
     {
     	if(mHandleDiag == null)
     	{
+    		if(m_bStopHandle == true)
+    			return ;
     		mHandleDiag = new ProgressDialog(this)
 	    	{
 	    		public boolean onTouchEvent (MotionEvent event)
@@ -427,7 +457,7 @@ public class main extends Activity {
     	msg += String.valueOf(totalpkg)+"\n";
     	msg += handlemsg;
     	mHandleDiag.setMessage(msg);
-    	mHandleDiag.show();	
+    	mHandleDiag.show();
     }
     
     
@@ -443,17 +473,21 @@ public class main extends Activity {
     {
     	if(mScanDiag == null)
     	{
-    		mScanDiag = new ProgressDialog(this)
-	    	{
-	    		public boolean onTouchEvent (MotionEvent event)
-	    		{
-					bstopscan = true;
-					mScanDiag.setMessage("stop scanning\n");
-	    			return true;
-	    		}
-	    	};
-	    	mScanDiag.setCancelable(false);
+    		if(bstopscan == true)
+    			return ;
+
+        	mScanDiag = new ProgressDialog(this)
+        	{
+        		public boolean onTouchEvent (MotionEvent event)
+        		{
+        			bstopscan = true;
+    				mScanDiag.setMessage("stop scanning\n");
+        			return true;
+        		}
+        	};
+        	mScanDiag.setCancelable(false);
     	}
+
     	if(bstopscan == false)
     	{
 	    	String msg = "Scanning ...\n";
@@ -463,8 +497,9 @@ public class main extends Activity {
     	}
     	else
     		mScanDiag.setMessage("stop scanning\n");
-    	mScanDiag.show();	
+    	mScanDiag.show();
     }
+    
 
     protected void scan()
     {
