@@ -166,7 +166,6 @@ public class main extends Activity {
 		if(mScanDiag!=null)
 		{
 			mScanDiag.dismiss();
-			mScanDiag = null;
 		}
 
 		//stop install
@@ -174,7 +173,6 @@ public class main extends Activity {
     	if(mHandleDiag!=null)
     	{
     		mHandleDiag.dismiss();
-    		mHandleDiag = null;
     	}
 		
     	super.onPause();
@@ -208,7 +206,6 @@ public class main extends Activity {
 					if(mScanDiag != null)
 					{
 						mScanDiag.dismiss();
-						mScanDiag = null;
 					}
 
 					if(m_ApkList.size() > 0)
@@ -239,7 +236,6 @@ public class main extends Activity {
 					{
 						if(mHandleDiag != null)
 							mHandleDiag.dismiss();
-						mHandleDiag = null;
 						pkgadapter.notifyDataSetChanged();
 					}
 					else
@@ -279,7 +275,6 @@ public class main extends Activity {
 							m_bStopHandle = true;
 							if(mHandleDiag != null)
 								mHandleDiag.dismiss();
-							mHandleDiag = null;
 							pkgadapter.notifyDataSetChanged();
 						}
 					}
