@@ -149,8 +149,8 @@ public class main extends Activity {
         );
         
         //set default focus to the list not the edit text
-        ViewGroup m_root = (ViewGroup)findViewById(R.id.LinearLayout01);
-    	m_root.requestChildFocus(m_list,null);
+        //ViewGroup m_root = (ViewGroup)findViewById(R.id.LinearLayout01);
+    	  //m_root.requestChildFocus(hexit,null);
     }
 
     public void onResume()
