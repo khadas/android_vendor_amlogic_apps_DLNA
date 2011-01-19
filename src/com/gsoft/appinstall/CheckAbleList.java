@@ -1,4 +1,4 @@
-package com.amlogic.appinstall;
+package com.gsoft.appinstall;
 
 import android.content.Context;
 import android.util.AttributeSet;

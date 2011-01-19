@@ -1,4 +1,4 @@
-package com.amlogic.appinstall;
+package com.gsoft.appinstall;
 
 import java.util.ArrayList;
 import android.content.res.AssetManager;

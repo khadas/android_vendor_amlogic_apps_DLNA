@@ -1,4 +1,4 @@
-package com.amlogic.appinstall;
+package com.gsoft.appinstall;
 
 
 import java.io.File;
@@ -45,7 +45,7 @@ class APKFileter implements FileFilter
 }
 
 public class main extends Activity {
-	private String TAG = "com.amlogic.appinstall";
+	private String TAG = "com.gsoft.appinstall";
 	protected String mScanRoot = null;
     protected ArrayList<APKInfo> m_ApkList = new ArrayList<APKInfo>();
     protected CheckAbleList m_list = null;
@@ -55,7 +55,7 @@ public class main extends Activity {
     protected ProgressDialog mScanDiag = null;
     protected ProgressDialog mHandleDiag = null;
     private String m_version = "V1.0.1";
-    private String m_releasedate = "2010.12.16";
+    private String m_releasedate = "2010.01.19";
     
     public final static int END_SCAN = 0;
     public final static int NEW_DIR = 1;
@@ -92,7 +92,8 @@ public class main extends Activity {
         	mScanRoot = hdata.pCurPath;
         	m_ApkList = hdata.pApkList;
         	m_list.setAdapter(pkgadapter);
-        	m_info.setVisibility(android.view.View.VISIBLE);
+        	if(m_ApkList.isEmpty() == true)
+        		m_info.setVisibility(android.view.View.VISIBLE);
         }
 
         m_list.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -318,7 +319,7 @@ public class main extends Activity {
 	        	scan();
 	        	return true;
 	        case MENU_ABOUT:
-	        	String aboutinfo = " Amlogic AmInstaller";
+	        	String aboutinfo = "AppInstaller";
 	        	aboutinfo += "\n Version: "+m_version+" ";
 	        	aboutinfo += "\n Date: "+m_releasedate+" ";
 	        	AlertDialog.Builder builder = new AlertDialog.Builder(this);
