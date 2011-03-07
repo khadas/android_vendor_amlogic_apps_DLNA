@@ -29,8 +29,7 @@ class APKInfo extends Object
 	APKInfo(Context pcontext, String apkpath)
 	{
 		pkgmgr = pcontext.getPackageManager();
-		filepath = apkpath;
-		pPkgInfo = pkgmgr.getPackageArchiveInfo(filepath, PackageManager.GET_ACTIVITIES);
+		PackageInfo pPkgInfo = pkgmgr.getPackageArchiveInfo(apkpath, PackageManager.GET_ACTIVITIES);
 		if(pPkgInfo!=null)
 		{
 			//get package's name in system
@@ -40,30 +39,33 @@ class APKInfo extends Object
 			else
 				pCurPkgName = pPkgInfo.packageName;	
 			
-			pPkgRes = null;
+			Resources pPkgRes = null;
 			AssetManager assmgr = new AssetManager();
-			if(0 != assmgr.addAssetPath(filepath))
+			if(0 != assmgr.addAssetPath(apkpath))
 				pPkgRes = new Resources(assmgr, pcontext.getResources().getDisplayMetrics(), pcontext.getResources().getConfiguration());
+			if(pPkgRes!=null)
+			{
+				getApplicationName_Internal(pPkgRes,pPkgInfo);
+				getApkIcon_Internal(pPkgRes,pPkgInfo);
+				filepath = apkpath;
+			}
 		}
 	}
 	
 	public boolean beValid()
 	{
-		if(pPkgInfo != null && pPkgRes!=null)
-			return true;
-		else
+		if(filepath == null)
 			return false;
+		else
+			return true;
 	}
 	
 	public String filepath;
-	public PackageInfo pPkgInfo;
-	
 	public String  pCurPkgName = null;
-	public Resources pPkgRes = null;
 	public CharSequence  pAppName = null;
 	public Drawable pAppIcon = null;
 
-	
+
 	public boolean isInstalled()
 	{
 		ApplicationInfo appinfo = null;
@@ -72,22 +74,30 @@ class APKInfo extends Object
         } catch (NameNotFoundException e) {
         	appinfo = null;
         }
-        
+
         if(appinfo == null)
         	return false;
         else
         	return true;
 	}
-	
 	public CharSequence getApplicationName()
+	{
+		return pAppName;
+	}
+	public Drawable getApkIcon()
+	{
+		return pAppIcon;
+	}
+	
+	public CharSequence getApplicationName_Internal(Resources PkgRes,PackageInfo PkgInfo)
 	{
 		if(pAppName == null)
 		{
-			if(pPkgRes!=null)
+			if(PkgRes!=null)
 			{
 				try
 				{
-					pAppName = pPkgRes.getText(pPkgInfo.applicationInfo.labelRes);
+					pAppName = PkgRes.getText(PkgInfo.applicationInfo.labelRes);
 				}
 				catch (Resources.NotFoundException resnotfound)
 				{
@@ -100,23 +110,23 @@ class APKInfo extends Object
 		return pAppName;
 	}
 
-	public Drawable getApkIcon()
+	public Drawable getApkIcon_Internal(Resources PkgRes,PackageInfo PkgInfo)
 	{
 		if(pAppIcon == null)
 		{
-			if(pPkgRes!=null)
+			if(PkgRes!=null)
 			{
 				try
 				{
-					pAppIcon = pPkgRes.getDrawable(pPkgInfo.applicationInfo.icon);
+					pAppIcon = PkgRes.getDrawable(PkgInfo.applicationInfo.icon);
 				}
 				catch (Resources.NotFoundException resnotfound)
 				{
-					pAppIcon = pkgmgr.getApplicationIcon(pPkgInfo.applicationInfo);
+					pAppIcon = pkgmgr.getApplicationIcon(PkgInfo.applicationInfo);
 				}
 			}
 			else
-				pAppIcon = pkgmgr.getApplicationIcon(pPkgInfo.applicationInfo);
+				pAppIcon = pkgmgr.getApplicationIcon(PkgInfo.applicationInfo);
 		}
 		return pAppIcon;
 	}
