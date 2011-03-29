@@ -93,7 +93,16 @@ public class main extends Activity {
         	m_ApkList = hdata.pApkList;
         	m_list.setAdapter(pkgadapter);
         	if(m_ApkList.isEmpty() == true)
+        	{
         		m_info.setVisibility(android.view.View.VISIBLE);
+        		findViewById(R.id.Exit).requestFocus();
+        		findViewById(R.id.Exit).requestFocusFromTouch();
+        	}
+        	else
+        	{
+                m_list.requestFocus();
+                m_list.requestFocusFromTouch();
+        	}
         }
 
         m_list.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -148,10 +157,7 @@ public class main extends Activity {
 				}
 			}
         );
-        
-        //set default focus to the list not the edit text
-        //ViewGroup m_root = (ViewGroup)findViewById(R.id.LinearLayout01);
-    	  //m_root.requestChildFocus(hexit,null);
+
     }
 
     public void onResume()
@@ -214,12 +220,18 @@ public class main extends Activity {
 						m_list.setAdapter(pkgadapter);
 						m_list.setVisibility(android.view.View.VISIBLE);
 						m_info.setVisibility(android.view.View.INVISIBLE);
+				        m_list.requestFocus();
+				        m_list.requestFocusFromTouch();
 					}
 					else
 					{
 						m_list.setVisibility(android.view.View.INVISIBLE);
 						m_info.setVisibility(android.view.View.VISIBLE);
+		        		findViewById(R.id.Exit).requestFocus();
+		        		findViewById(R.id.Exit).requestFocusFromTouch();
 					}
+					
+
 					//pkgadapter.notifyDataSetChanged();
 					break;
 				case NEW_DIR:
