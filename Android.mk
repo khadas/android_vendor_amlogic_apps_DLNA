@@ -1,3 +1,4 @@
+ifeq ($(BOARD_USE_DEFAULT_APPINSTALL),true)
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -9,3 +10,4 @@ LOCAL_PACKAGE_NAME := AppInstaller
 LOCAL_CERTIFICATE := platform
 
 include $(BUILD_PACKAGE)
+endif
