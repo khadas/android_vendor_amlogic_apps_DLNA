@@ -31,6 +31,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageDeleteObserver;
+import android.os.PowerManager;
+import android.content.Context;
 
 class APKFileter implements FileFilter
 {
@@ -54,8 +56,8 @@ public class main extends Activity {
     protected EditText editdir = null;
     protected ProgressDialog mScanDiag = null;
     protected ProgressDialog mHandleDiag = null;
-    private String m_version = "V1.0.1";
-    private String m_releasedate = "2010.01.19";
+    private String m_version = "V1.1.0";
+    private String m_releasedate = "2010.04.14";
     
     public final static int END_SCAN = 0;
     public final static int NEW_DIR = 1;
@@ -64,6 +66,7 @@ public class main extends Activity {
     public final static int HANDLE_PKG_NEXT = 4;
     public final static int END_HANDLE_PKG = 5;
     private boolean bstopscan = false;
+    PowerManager.WakeLock mScreenLock = null;
 	
     /** Called when the activity is first created. */
     @Override
@@ -71,7 +74,9 @@ public class main extends Activity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
+        //keep system awake
+        mScreenLock = ((PowerManager)this.getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,TAG);
+
         m_info = (TextView)findViewById(R.id.ScanInfo);
         m_info.setText("No APK Found!");
         m_info.setVisibility(android.view.View.INVISIBLE);
@@ -157,7 +162,6 @@ public class main extends Activity {
 				}
 			}
         );
-
     }
 
     public void onResume()
@@ -183,6 +187,20 @@ public class main extends Activity {
     	}
 		
     	super.onPause();
+    }
+
+    protected void KeepSystemAwake(boolean bkeep)
+    {
+        if(bkeep == true)
+        {
+            if(mScreenLock.isHeld() == false)    		
+                mScreenLock.acquire();
+        }
+        else
+        {
+            if(mScreenLock.isHeld() == true)    		
+                mScreenLock.release();
+        }
     }
     
     
@@ -210,6 +228,7 @@ public class main extends Activity {
 			switch(msg.what)
 			{
 				case END_SCAN:
+                    KeepSystemAwake(false);
 					if(mScanDiag != null)
 					{
 						mScanDiag.dismiss();
@@ -231,7 +250,6 @@ public class main extends Activity {
 		        		findViewById(R.id.Exit).requestFocusFromTouch();
 					}
 					
-
 					//pkgadapter.notifyDataSetChanged();
 					break;
 				case NEW_DIR:
@@ -247,6 +265,7 @@ public class main extends Activity {
 				case HANDLE_PKG_NEXT:
 					if(m_bStopHandle == true)
 					{
+                        KeepSystemAwake(false);
 						if(mHandleDiag != null)
 							mHandleDiag.dismiss();
 						pkgadapter.notifyDataSetChanged();
@@ -289,6 +308,7 @@ public class main extends Activity {
 							if(mHandleDiag != null)
 								mHandleDiag.dismiss();
 							pkgadapter.notifyDataSetChanged();
+                            KeepSystemAwake(false);
 						}
 					}
 					break;
@@ -434,6 +454,7 @@ public class main extends Activity {
     		showmsg("you havn't select apks to install/uninstall");
     	else
     	{
+            KeepSystemAwake(true);
 	    	m_handleitem = -1;
 	    	Message endmsg = new Message();
 			endmsg.what = HANDLE_PKG_NEXT;
@@ -511,6 +532,7 @@ public class main extends Activity {
 
     protected void scan()
     {
+        KeepSystemAwake(true);
     	showProcessDiag(0,0);
     	bstopscan = false;
     	new scanthread().start();
