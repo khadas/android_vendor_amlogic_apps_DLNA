@@ -32,51 +32,49 @@ import android.widget.Toast;
 import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageDeleteObserver;
 import android.os.PowerManager;
+import android.os.HandlerThread;
 import android.content.Context;
-
-class APKFileter implements FileFilter
-{
-	public boolean accept(File arg0) {
-		if(arg0.isDirectory() == true)
-			return true;
-			
-		String filename = arg0.getName();
-		String filenamelowercase = filename.toLowerCase();
-		return filenamelowercase.endsWith(".apk");	
-	}
-}
+import android.view.KeyEvent;
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
+    private String mVersion = "V1.1.0";
+    private String mReleaseDate = "2010.04.21";
+
+    //UI INFO
 	protected String mScanRoot = null;
-    protected ArrayList<APKInfo> m_ApkList = new ArrayList<APKInfo>();
     protected CheckAbleList m_list = null;
     protected TextView m_info = null;
     protected PackageAdapter pkgadapter = null;
-    protected EditText editdir = null;
-    protected ProgressDialog mScanDiag = null;
-    protected ProgressDialog mHandleDiag = null;
-    private String m_version = "V1.1.0";
-    private String m_releasedate = "2010.04.14";
-    
-    public final static int END_SCAN = 0;
-    public final static int NEW_DIR = 1;
-    public final static int NEW_APK = 2;
-    public final static int SEL_APK = 3;
-    public final static int HANDLE_PKG_NEXT = 4;
-    public final static int END_HANDLE_PKG = 5;
-    private boolean bstopscan = false;
-    PowerManager.WakeLock mScreenLock = null;
-	
+    protected EditText m_DirEdit = null;
+    protected OperationDialog mScanDiag = null;
+    protected OperationDialog mHandleDiag = null;
+
+    //DATA
+    protected ArrayList<APKInfo> mApkList = new ArrayList<APKInfo>();
+    protected boolean m_configchanged = false;
+    public final static int END_OPERATION = 0;
+    public final static int NEW_APK = 1;
+    public final static int HANDLE_PKG_NEXT = 2;
+    private PowerManager.WakeLock mScreenLock = null;
+	protected ScanOperation m_scanop = new ScanOperation();
+    protected InstallOperation m_installop = new InstallOperation();
+    //the status of app
+    private static int SCAN_APKS = 0;
+    private static int VIEW_APKS = 1;
+    private static int INSTALL_APKS = 2;
+    protected int mStatus = -1;
+
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
         //keep system awake
         mScreenLock = ((PowerManager)this.getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,TAG);
-
         m_info = (TextView)findViewById(R.id.ScanInfo);
         m_info.setText("No APK Found!");
         m_info.setVisibility(android.view.View.INVISIBLE);
@@ -87,66 +85,103 @@ public class main extends Activity {
         RetainData hdata = (RetainData)getLastNonConfigurationInstance();
         if(hdata == null)
         {
+            //create dialog process dialog
+            mScanDiag = new OperationDialog(this,m_scanop,"Scanning ...\n\n");
+            mHandleDiag = new OperationDialog(this,m_installop,"Handling selected package:  \n");
+
         	mScanRoot = "/mnt/sdcard";
-        	pkgadapter = new PackageAdapter(this,R.layout.listitem,R.id.appname,R.id.apk_filepath,R.id.InstallState,R.id.APKIcon,R.id.Select,m_ApkList,m_list);
-            scan();
+        	pkgadapter = new PackageAdapter(this,R.layout.listitem,R.id.appname,R.id.apk_filepath,R.id.InstallState,R.id.APKIcon,R.id.Select,mApkList,m_list);
+            startScanOp();
         }
         else
         {
-        	pkgadapter = hdata.pkgadapter;
         	mScanRoot = hdata.pCurPath;
-        	m_ApkList = hdata.pApkList;
-        	m_list.setAdapter(pkgadapter);
-        	if(m_ApkList.isEmpty() == true)
-        	{
-        		m_info.setVisibility(android.view.View.VISIBLE);
-        		findViewById(R.id.Exit).requestFocus();
-        		findViewById(R.id.Exit).requestFocusFromTouch();
-        	}
-        	else
-        	{
-                m_list.requestFocus();
-                m_list.requestFocusFromTouch();
-        	}
+        	mApkList = hdata.pApkList;
+            m_scanop = hdata.scanop;
+            m_installop = hdata.installop;
+            mStatus = hdata.iStatus;
+            mScreenLock = hdata.screenwakelock;
+            pkgadapter = new PackageAdapter(this,R.layout.listitem,R.id.appname,R.id.apk_filepath,R.id.InstallState,R.id.APKIcon,R.id.Select,mApkList,m_list);
+
+            //create dialog process dialog
+            mScanDiag = new OperationDialog(this,m_scanop,"Scanning ...\n\n");
+            mHandleDiag = new OperationDialog(this,m_installop,"Handling selected package:  \n");
+
+            if(mStatus == VIEW_APKS || mStatus == INSTALL_APKS)
+            {
+            	m_list.setAdapter(pkgadapter);
+                if(hdata.checkeditem != null)
+                {
+                    int i = 0;
+                    for(;i<hdata.checkeditem.length;i++)
+                    {
+                        m_list.setItemChecked((int)hdata.checkeditem[i], true);
+                    }
+                }
+            	if(mApkList.isEmpty() == true)
+            	{
+            		m_info.setVisibility(android.view.View.VISIBLE);
+            	}
+            }
+
+            if(mStatus == INSTALL_APKS)
+            {
+                if(m_installop.isOpEnd() == true)
+                {
+                    m_installop.setHandler(mainhandler);
+                    m_installop.sendEndMsg();
+                }
+                else
+                    mHandleDiag.start();
+            }
+            else if(mStatus == SCAN_APKS)
+            {
+                if(m_scanop.isOpEnd() == true)
+                {
+                    m_scanop.setHandler(mainhandler);
+                    m_scanop.sendEndMsg();
+                }
+                else
+                   mScanDiag.start();
+            }
         }
 
         m_list.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
-				public void onItemClick(AdapterView<?> parent, View view,int position, long id) 
-				{
-					APKInfo apkinfo = m_ApkList.get(position);
-					if(apkinfo.isInstalled() == true)
-						uninstall_apk(apkinfo.pCurPkgName);
-					else
-						install_apk(apkinfo.filepath);
-				}
+			public void onItemClick(AdapterView<?> parent, View view,int position, long id) 
+			{
+				APKInfo apkinfo = mApkList.get(position);
+				if(apkinfo.isInstalled() == true)
+					uninstall_apk(apkinfo.pCurPkgName);
+				else
+					install_apk(apkinfo.filepath);
+			}
         });
         
-        
         //change dir button
-        editdir = (EditText)findViewById(R.id.Dir);
-	    editdir.setText("/mnt/sdcard",TextView.BufferType.EDITABLE);
+        m_DirEdit = (EditText)findViewById(R.id.Dir);
+	    m_DirEdit.setText("/mnt/sdcard",TextView.BufferType.EDITABLE);
         
         ImageButton chgdir = (ImageButton)findViewById(R.id.ChangeDir);
         chgdir.setOnClickListener(new View.OnClickListener() 
         {
 			public void onClick(View v) 
 			{
-				String dirpath = main.this.editdir.getText().toString();
+				String dirpath = main.this.m_DirEdit.getText().toString();
 				File pfile = new File(dirpath);
 				if( pfile!=null && pfile.isDirectory()==true )
 				{
 					if((mScanRoot == null) || (mScanRoot.compareTo(dirpath) != 0))
 					{
 						mScanRoot = dirpath;
-						scan();
+						startScanOp();
 					}
 					else
-						showmsg("same dir path");
+                        Toast.makeText(main.this, "same dir path", Toast.LENGTH_SHORT).show();
 				}
 				else
 				{
-					showmsg("invalid dir path");
+                    Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
 				}
 			}
 		});
@@ -157,36 +192,56 @@ public class main extends Activity {
 	        {
 				public void onClick(View v) 
 				{
-					// TODO Auto-generated method stub
 					main.this.finish();
 				}
 			}
         );
+        findViewById(R.id.Exit).requestFocus();
+        findViewById(R.id.Exit).requestFocusFromTouch();
     }
 
     public void onResume()
     {
-    	super.onResume();
-		pkgadapter.notifyDataSetChanged();
+        Log.d(TAG,"onResume");
+        pkgadapter.notifyDataSetChanged();
+        m_scanop.setHandler(mainhandler);
+        m_installop.setHandler(mainhandler);
+        super.onResume();
     }
     
     public void onPause()
     {
-    	//stop scan
-		bstopscan = true;
+        //disable the operation message
+        m_scanop.setHandler(null);
+        m_installop.setHandler(null);
+
+        mainhandler.removeMessages(END_OPERATION);
+        mainhandler.removeMessages(NEW_APK);
+        mainhandler.removeMessages(HANDLE_PKG_NEXT);
+        //diable dialog
 		if(mScanDiag!=null)
 		{
 			mScanDiag.dismiss();
 		}
-
-		//stop install
-		m_bStopHandle = true;
-    	if(mHandleDiag!=null)
+        if(mHandleDiag!=null)
     	{
     		mHandleDiag.dismiss();
     	}
-		
+
+        //release the wakelock
     	super.onPause();
+    }
+
+    protected void onDestroy()
+    {
+        if(m_configchanged == false)
+        {
+            m_scanop.stop();
+            m_installop.stop();
+        }
+        Log.d(TAG,"onDestroy");
+        KeepSystemAwake(false);
+        super.onDestroy();
     }
 
     protected void KeepSystemAwake(boolean bkeep)
@@ -203,23 +258,35 @@ public class main extends Activity {
         }
     }
     
-    
     class RetainData extends Object
     {
-    	PackageAdapter pkgadapter;
+    	//PackageAdapter pkgadapter;
     	String		   pCurPath;
     	ArrayList<APKInfo> pApkList;
+        int            iStatus;
+        ScanOperation   scanop ;
+        InstallOperation    installop ;
+        protected long [] checkeditem;
+        PowerManager.WakeLock  screenwakelock;
     }
     
     public Object onRetainNonConfigurationInstance()
     {
     	RetainData hdata = new RetainData();
-    	hdata.pkgadapter = pkgadapter;
+    	//hdata.pkgadapter = pkgadapter;
     	hdata.pCurPath = mScanRoot;
-    	hdata.pApkList = m_ApkList;
+    	hdata.pApkList = mApkList;
+        hdata.iStatus = mStatus;
+        hdata.scanop = m_scanop;
+        hdata.installop = m_installop;
+        if(m_list.getCheckedItemIds() != null)
+            hdata.checkeditem = m_list.getCheckedItemIds().clone();
+        hdata.screenwakelock = mScreenLock;
+        m_configchanged = true;
+        Log.d(TAG,"onRetainNonConfigurationInstance "+String.valueOf(mStatus));
+
     	return hdata;
     }
-    
     
     public Handler mainhandler = new Handler()
     {
@@ -227,90 +294,47 @@ public class main extends Activity {
 			// TODO Auto-generated method stub
 			switch(msg.what)
 			{
-				case END_SCAN:
-                    KeepSystemAwake(false);
-					if(mScanDiag != null)
-					{
-						mScanDiag.dismiss();
-					}
+				case END_OPERATION:
+                    if(msg.arg1 != mStatus)
+                    {
+                        Log.e(TAG,"mStatus "+String.valueOf(mStatus)+"!= endoperation "+String.valueOf(msg.arg1));
+                    }
+                    if(mStatus == SCAN_APKS)
+                    {
+    					if(mScanDiag != null)
+    						mScanDiag.dismiss();
 
-					if(m_ApkList.size() > 0)
-					{
-						m_list.setAdapter(pkgadapter);
-						m_list.setVisibility(android.view.View.VISIBLE);
-						m_info.setVisibility(android.view.View.INVISIBLE);
-				        m_list.requestFocus();
-				        m_list.requestFocusFromTouch();
-					}
-					else
-					{
-						m_list.setVisibility(android.view.View.INVISIBLE);
-						m_info.setVisibility(android.view.View.VISIBLE);
-		        		findViewById(R.id.Exit).requestFocus();
-		        		findViewById(R.id.Exit).requestFocusFromTouch();
-					}
-					
-					//pkgadapter.notifyDataSetChanged();
+    					if(mApkList.size() > 0)
+    					{
+    						m_list.setAdapter(pkgadapter);
+    						m_list.setVisibility(android.view.View.VISIBLE);
+    						m_info.setVisibility(android.view.View.INVISIBLE);
+    					}
+    					else
+    					{
+    						m_list.setVisibility(android.view.View.INVISIBLE);
+    						m_info.setVisibility(android.view.View.VISIBLE);
+    					}
+                    }
+                    else
+                    {
+                        Log.d(TAG,"END_HANDLE_PKG");
+    					if(mHandleDiag != null)
+    						mHandleDiag.dismiss();
+    					pkgadapter.notifyDataSetChanged();    
+                    }
+                    findViewById(R.id.Exit).requestFocus();
+                    findViewById(R.id.Exit).requestFocusFromTouch();
+					mStatus = VIEW_APKS;
+                    KeepSystemAwake(false);
 					break;
-				case NEW_DIR:
 				case NEW_APK:
-					showProcessDiag(msg.arg1,msg.arg2);
-					break;
-				case SEL_APK:
-					boolean bsel = false;
-					if(msg.arg2 == 1)
-						bsel = true;
-					m_list.setItemChecked(msg.arg1, bsel);
+					showScanDiag(msg.arg1,msg.arg2);
 					break;
 				case HANDLE_PKG_NEXT:
-					if(m_bStopHandle == true)
-					{
-                        KeepSystemAwake(false);
-						if(mHandleDiag != null)
-							mHandleDiag.dismiss();
-						pkgadapter.notifyDataSetChanged();
-					}
-					else
-					{
-						m_handleitem++;
-						if(m_handleitem < m_checkeditems.length)
-						{
-							String hanlemsg = null;
-							int actionid;
-							String actionpara = null;
-							APKInfo pinfo = m_ApkList.get((int)m_checkeditems[(int) m_handleitem]);
-							if(pinfo != null)
-							{
-								if(pinfo.isInstalled()==false)
-								{
-									actionid = 0;
-									actionpara = pinfo.filepath;
-									hanlemsg = "Installing  \"";
-								}
-								else
-								{
-									actionid = 1;
-									actionpara = pinfo.pCurPkgName;
-									hanlemsg = "Uninstalling  \"";
-								}
-								
-								hanlemsg += pinfo.pAppName+"\"\n";
-								showHandleProcessDiag(hanlemsg,(int)m_handleitem+1,m_checkeditems.length);
-								new PkgHandleThread().setAction(actionid, actionpara)
-													.start();
-							}
-							else
-								Log.d(TAG,"got a null apkinfo, this is strange!");
-						}
-						else
-						{
-							m_bStopHandle = true;
-							if(mHandleDiag != null)
-								mHandleDiag.dismiss();
-							pkgadapter.notifyDataSetChanged();
-                            KeepSystemAwake(false);
-						}
-					}
+                    Log.d(TAG,"HANDLE_PKG_NEXT");
+                    String hanlemsg = msg.getData().getString("showstr");
+                    showHandleDiag(hanlemsg,(int)msg.arg1+1,msg.arg2);
 					break;
 				default:
 					break;
@@ -339,7 +363,7 @@ public class main extends Activity {
         switch (item.getItemId()) 
         {
 	        case MENU_INSTALL:
-	        	HandleSelectedApks();
+	        	startHandleOp();
 	            return true;
 	        case MENU_SELECT_ALL:
 	        	m_list.setAllItemChecked(true);
@@ -348,12 +372,12 @@ public class main extends Activity {
 	        	m_list.setAllItemChecked(false);
 	            return true;
 	        case MENU_FRESH:
-	        	scan();
+	        	startScanOp();
 	        	return true;
 	        case MENU_ABOUT:
 	        	String aboutinfo = "AppInstaller";
-	        	aboutinfo += "\n Version: "+m_version+" ";
-	        	aboutinfo += "\n Date: "+m_releasedate+" ";
+	        	aboutinfo += "\n Version: "+mVersion+" ";
+	        	aboutinfo += "\n Date: "+mReleaseDate+" ";
 	        	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	        	builder.setMessage(aboutinfo);
 	        	AlertDialog about = builder.create();
@@ -383,223 +407,402 @@ public class main extends Activity {
     	uninstallintent.setData(Uri.fromParts("package",apk_pkgname,null));
     	startActivity(uninstallintent);
     }
-    
+
+
+    //===================================================================
+    //base class for operations thread
+    class OperationThread
+    {
+        protected Handler      m_handler = null;
+        protected boolean      m_bstop = false;
+        protected boolean      m_bOpEnd = false;
+        protected Object       m_syncobj = new Object();
+        protected int          m_iOp = 0;
+        public void start() //overide it to new and start a thread
+        {
+            m_bstop = false;
+            m_bOpEnd = false;
+        }
+
+        public void stop()
+        {
+            synchronized (m_syncobj)
+            {
+                m_bstop = true;
+            }
+        }
+
+        public boolean isOpEnd()
+        {
+            synchronized (m_syncobj)
+            {
+                 return  m_bOpEnd;
+            }
+        }
+
+        public void setHandler(Handler phandler)
+        {
+            synchronized (m_syncobj)
+            {
+                m_handler = phandler;
+            }
+        }
+        
+        public void sendEndMsg()
+        {
+            if(m_handler != null)
+            {
+        		Message endmsg = new Message();
+        		endmsg.what = END_OPERATION;
+                endmsg.arg1 = m_iOp;
+        		m_handler.sendMessage(endmsg);
+            }
+        }
+    };
+
+    class OperationDialog extends ProgressDialog
+    {
+        public boolean m_bOpStop;
+        public OperationThread m_pOp;
+        public CharSequence m_sInitMsg;
+        public OperationDialog(Context context,OperationThread operation,CharSequence initMessage) 
+        {
+            super(context);
+            m_bOpStop = false;
+            m_pOp = operation;
+            setCancelable(false);
+            m_sInitMsg = initMessage;
+        }
+
+        public void start()
+        {
+            //show with empty message
+            m_bOpStop = false;
+            setMessage(m_sInitMsg);
+            this.show();
+        }
+
+        public void setMessage(CharSequence message) 
+        {
+            if(m_bOpStop == true)
+                return;
+            else
+                super.setMessage(message);
+        }
+
+		public boolean onTouchEvent (MotionEvent event)
+		{
+			m_pOp.stop();
+			setMessage("stopping...\n");
+            m_bOpStop = true;
+			return true;
+		}
+        public boolean onKeyDown(int keyCode, KeyEvent event) 
+        {
+             if(keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_POWER) 
+			 {
+			    m_pOp.stop();
+                setMessage("stopping...\n");
+                m_bOpStop = true;
+             }
+             return super.onKeyDown(keyCode,event);
+        }
+
+    };
+
     //===================================================================
     //functions for installing and uninstalling in slient mode
-    class PkgHandleThread extends Thread
+    class InstallOperation extends OperationThread
     {
-    	int m_action;
-    	String m_actionpara;
-    	public PkgHandleThread setAction(int actionid,String para)
-    	{
-    		m_action = actionid;
-    		m_actionpara = para;
-    		return this;
-    	}
-    	public void run()
-    	{
-    		if(m_action == 0)//install pkg
-    		{
-    			install_apk_slient(m_actionpara);
-    		}
-    		else//uninstall pkg
-    		{
-    			uninstall_apk_slient(m_actionpara);
-    		}
-    	}
-    };
-    
-    
-    class PackageInstallObserver extends IPackageInstallObserver.Stub {
-        public void packageInstalled(String packageName, int returnCode) {
-        	Message endmsg = new Message();
-    		endmsg.what = HANDLE_PKG_NEXT;
-    		endmsg.arg1 = returnCode;
-    		endmsg.arg2 = 0;//means install
-    		mainhandler.sendMessage(endmsg);
+        public long []                  m_checkeditems = null;
+        protected installthread         m_thread;
+        private long                    m_handleitem;
+        private Handler                 m_selfhandler;
+        protected ApkHandleTask         m_apkhandltsk = new ApkHandleTask();
+        InstallOperation()
+        {
+            super();
+            m_iOp = INSTALL_APKS;
         }
-    }
-    public void install_apk_slient(String apk_filepath)
-    {
-    	PackageManager pm = getPackageManager();
-        PackageInstallObserver observer = new PackageInstallObserver();
-        pm.installPackage(Uri.fromFile(new File(apk_filepath)), observer, 0, null);
+        public void start() //overide it to new and start a thread
+        {
+            super.start();
+            m_handleitem = 0;
+            m_thread = new installthread("multi-apk-handler");
+            m_thread.start();
+        }
+
+        class installthread extends HandlerThread
+        {
+            installthread(String name)
+            {
+                super(name);
+            }
+            protected void onLooperPrepared()
+            {
+                synchronized(m_syncobj)
+                {
+                    m_selfhandler = new Handler();
+                    m_selfhandler.post(m_apkhandltsk);
+                    m_handleitem = 0;
+                }
+            }
+        }
+
+        class ApkHandleTask implements Runnable
+        {
+            class PackageInstallObserver extends IPackageInstallObserver.Stub {
+                public void packageInstalled(String packageName, int returnCode) {
+                    synchronized(m_syncobj)
+                    {
+                        m_handleitem++;
+                        m_selfhandler.post(m_apkhandltsk);
+                    }
+                }
+            }
+
+            class PackageDeleteObserver extends IPackageDeleteObserver.Stub {
+                public void packageDeleted(boolean succeeded) {
+                    synchronized(m_syncobj)
+                    {
+                        m_handleitem++;
+                        m_selfhandler.post(m_apkhandltsk);
+                    }
+                    Log.d(TAG,"packageDeleted");
+                }
+            }
+            public void install_apk_slient(String apk_filepath)
+            {
+            	PackageManager pm = getPackageManager();
+                PackageInstallObserver observer = new PackageInstallObserver();
+                pm.installPackage(Uri.fromFile(new File(apk_filepath)), observer, 0, null);
+            }
+            public void uninstall_apk_slient(String apk_pkgname)
+            {
+                PackageDeleteObserver observer = new PackageDeleteObserver();
+            	PackageManager pm = getPackageManager();
+                pm.deletePackage(apk_pkgname, observer, 0);
+            }
+            public void run()
+            {
+                synchronized(m_syncobj)
+                {
+                    if((m_bstop == true) || m_handleitem == m_checkeditems.length)
+                    {
+                        sendEndMsg();
+                        m_bOpEnd = true;
+                        m_thread.quit();
+                        return ;
+                    }
+                }
+                String hanlemsg = null;
+				int actionid;
+				String actionpara = null;
+				APKInfo pinfo = mApkList.get((int)m_checkeditems[(int) m_handleitem]);
+				if(pinfo != null)
+				{
+                    if(pinfo.isInstalled()==false)
+					{
+						actionid = 0;
+						actionpara = pinfo.filepath;
+                        hanlemsg = "Installing  \"";
+					}
+					else
+					{
+						actionid = 1;
+						actionpara = pinfo.pCurPkgName;
+                        hanlemsg = "Uninstalling  \"";
+					}
+                    hanlemsg += pinfo.pAppName+"\"\n";
+
+                    synchronized(m_syncobj)
+                    {
+                        if(m_handler!=null)
+                        {
+                            Message endmsg = new Message();
+                    		endmsg.what = HANDLE_PKG_NEXT;
+                            endmsg.arg1 = (int)m_handleitem;
+                            endmsg.arg2 = m_checkeditems.length;
+                            Bundle data = new Bundle();
+                            data.putString("showstr",hanlemsg);
+                            endmsg.setData(data);
+                    		m_handler.sendMessage(endmsg);
+                        }
+                    }
+
+                    if(actionid == 0)
+                        install_apk_slient(actionpara);
+                    else
+                        uninstall_apk_slient(actionpara);
+                    Log.d(TAG,"install a singel apk end");
+				}
+				else
+					Log.e(TAG,"got a null apkinfo, this is strange!");
+            }
+        }
     }
 
-    class PackageDeleteObserver extends IPackageDeleteObserver.Stub {
-        public void packageDeleted(boolean succeeded) {
-        	Message endmsg = new Message();
-    		endmsg.what = HANDLE_PKG_NEXT;
-    		endmsg.arg1 = 0;
-    		if(succeeded == true)
-    			endmsg.arg1 = 1;
-    		endmsg.arg2 = 1;//means uninstall
-    		mainhandler.sendMessage(endmsg);
-        }
-    }
-    public void uninstall_apk_slient(String apk_pkgname)
+    public void startHandleOp()
     {
-        PackageDeleteObserver observer = new PackageDeleteObserver();
-    	PackageManager pm = getPackageManager();
-        pm.deletePackage(apk_pkgname, observer, 0);
-    }
-    
-    private long [] m_checkeditems = null;
-    private long m_handleitem;
-    public void HandleSelectedApks()
-    {
-    	m_bStopHandle = false;
-    	m_checkeditems = m_list.getCheckedItemIds();
-    	if(m_checkeditems.length == 0)
-    		showmsg("you havn't select apks to install/uninstall");
+    	long [] checkeditems = m_list.getCheckedItemIds();
+    	if(checkeditems.length == 0)
+            Toast.makeText(main.this, "you havn't select apks to install/uninstall" , Toast.LENGTH_SHORT).show();
     	else
     	{
             KeepSystemAwake(true);
-	    	m_handleitem = -1;
-	    	Message endmsg = new Message();
-			endmsg.what = HANDLE_PKG_NEXT;
-			endmsg.arg1 = 0;
-			mainhandler.sendMessage(endmsg);
+            mStatus = INSTALL_APKS;
+            m_installop.m_checkeditems = checkeditems.clone();
+            mHandleDiag.start();
+            m_installop.setHandler(mainhandler);
+			m_installop.start();
     	}
     }
-    
-    private boolean m_bStopHandle = false;
-    protected void showHandleProcessDiag(String handlemsg,int curpkg,int totalpkg)
-    {
-    	if(mHandleDiag == null)
-    	{
-    		if(m_bStopHandle == true)
-    			return ;
-    		mHandleDiag = new ProgressDialog(this)
-	    	{
-	    		public boolean onTouchEvent (MotionEvent event)
-	    		{
-	    			m_bStopHandle = true;	
-	    			return true;
-	    		}
-	    	};
-	    	mHandleDiag.setCancelable(false);
-    	}
 
+    protected void showHandleDiag(String handlemsg,int curpkg,int totalpkg)
+    {
     	String msg = "Handling selected package:  ";
-    	msg += String.valueOf(curpkg)+"/";
-    	msg += String.valueOf(totalpkg)+"\n";
+    	msg += String.valueOf(curpkg)+"/"+String.valueOf(totalpkg)+"\n";
     	msg += handlemsg;
     	mHandleDiag.setMessage(msg);
     	mHandleDiag.show();
     }
-    
-    
+
     //===================================================================
     //functions for scanning apks
-    protected void showmsg(String msgcontent)
-    {
-		int duration = Toast.LENGTH_SHORT;
-		Toast toast = Toast.makeText(this, msgcontent, duration);
-		toast.show();	
-    }
-    protected void showProcessDiag(int dirs,int apks)
-    {
-    	if(mScanDiag == null)
-    	{
-    		if(bstopscan == true)
-    			return ;
-
-        	mScanDiag = new ProgressDialog(this)
-        	{
-        		public boolean onTouchEvent (MotionEvent event)
-        		{
-        			bstopscan = true;
-    				mScanDiag.setMessage("stop scanning\n");
-        			return true;
-        		}
-        	};
-        	mScanDiag.setCancelable(false);
-    	}
-
-    	if(bstopscan == false)
-    	{
-	    	String msg = "Scanning ...\n";
-	    	msg += "dir : "+String.valueOf(dirs)+"\n";
-	    	msg += "apk  : "+String.valueOf(apks)+"\n";
-	    	mScanDiag.setMessage(msg);
-    	}
-    	else
-    		mScanDiag.setMessage("stop scanning\n");
-    	mScanDiag.show();
-    }
-    
-
-    protected void scan()
+    protected void startScanOp()
     {
         KeepSystemAwake(true);
-    	showProcessDiag(0,0);
-    	bstopscan = false;
-    	new scanthread().start();
+        mStatus = SCAN_APKS;
+        mScanDiag.start();
+        showScanDiag(0,0);
+        m_scanop.start();
+        m_scanop.setHandler(mainhandler);
     }
 
-    class scanthread extends Thread
+    class ScanOperation extends OperationThread
     {
-    	public void run()
-    	{
-    		scandir(mScanRoot);
-    		Message endmsg = new Message();
-    		endmsg.what = END_SCAN;
-    		mainhandler.sendMessage(endmsg);
-    	}
-        protected void scandir(String directory)
+        protected scanthread       m_thread;
+        ScanOperation()
         {
-        	int dirs = 0,apks = 0;
-        	//clear the apklist
-        	m_ApkList.clear();
-        	
-        	//to scan dirs
-        	ArrayList<String> pdirlist = new ArrayList<String>();
-        	
-        	pdirlist.add(directory);
-        	
-        	while(pdirlist.isEmpty() == false && (bstopscan==false) )
-        	{
-        		dirs++;
-        		Message dirmsg = new Message();
-        		dirmsg.what = NEW_DIR;
-        		dirmsg.arg1 = dirs;
-        		dirmsg.arg2 = apks;
-        		mainhandler.sendMessage(dirmsg);
-        		
-        		String headpath = pdirlist.remove(0);
-        		File pfile = new File(headpath);
-        		if(pfile.exists() == true)
-        		{
-	            	//list files and dirs in this directory
-	        		File[] files = pfile.listFiles(new APKFileter());
-	        		if(files != null && (files.length > 0) )
-	        		{
-	    	    		int i = 0;
-	    	    		for(;(i<files.length)&&((bstopscan==false));i++)
-	    	    		{
-	    	    			File pcurfile = files[i];
-	    	    			if(pcurfile.isDirectory())
-	    	    				pdirlist.add(pcurfile.getAbsolutePath());
-	    	    			else
-	    	    			{
-	    	    				APKInfo apkinfo = new APKInfo(main.this,pcurfile.getAbsolutePath());
-	    	    				if(apkinfo.beValid() == true)
-	    	    				{
-	    	    					m_ApkList.add(apkinfo);
-	    	    					apks++;
-	    	    		    	    Message apkmsg = new Message();
-	    	    					apkmsg.what = NEW_APK;
-	    	    					apkmsg.arg1 = dirs;
-	    	    					apkmsg.arg2 = apks;
-                                    mainhandler.sendMessage(apkmsg);
-	    	    				}
-	    	    			}
-	    	    		}
-	        		}
-	        	}
-        	}
+            super();
+            m_iOp = SCAN_APKS;
         }
+        public void start() //overide it to new and start a thread
+        {
+            super.start();
+            m_thread = new scanthread();
+            m_thread.start();
+        }
+
+        class scanthread extends Thread
+        {
+        	public void run()
+            {
+        		scandir(mScanRoot);
+                synchronized(m_syncobj)
+                {
+                    sendEndMsg();
+                    m_bOpEnd = true;
+                }
+            }
+
+            class APKFileter implements FileFilter
+            {
+            	public boolean accept(File arg0){
+            		if(arg0.isDirectory() == true)
+            			return true;
+
+            		String filename = arg0.getName();
+            		String filenamelowercase = filename.toLowerCase();
+            		return filenamelowercase.endsWith(".apk");	
+                }
+            }
+            protected void scandir(String directory)
+            {
+            	int dirs = 0,apks = 0;
+            	//clear the apklist
+            	mApkList.clear();
+           
+ 	            //to scan dirs
+            	ArrayList<String> pdirlist = new ArrayList<String>();
+            	pdirlist.add(directory);
+           
+            	while(pdirlist.isEmpty() == false)
+                {
+                    synchronized(m_syncobj)
+                    {
+                        if(m_bstop == true)
+                            break;
+                        dirs++;
+                        if(m_handler!=null)
+                        {
+                    		Message dirmsg = new Message();
+                    		dirmsg.what = NEW_APK;
+                    		dirmsg.arg1 = dirs;
+                    		dirmsg.arg2 = apks;
+                    		m_handler.sendMessage(dirmsg);
+                        }
+                    }
+            		
+            		String headpath = pdirlist.remove(0);
+            		File pfile = new File(headpath);
+            		if(pfile.exists() == true)
+            	    {
+    	            	//list files and dirs in this directory
+    	        		File[] files = pfile.listFiles(new APKFileter());
+    	        		if(files != null && (files.length > 0))
+    	        	    {
+    	    	    		int i = 0;
+    	    	    		for(;i<files.length;i++)
+    	    	    	    {
+                                synchronized(m_syncobj)
+                                {
+                                    if(m_bstop == true)
+                                        break;
+                                }
+
+    	    	    			File pcurfile = files[i];
+    	    	    			if(pcurfile.isDirectory())
+    	    	    				pdirlist.add(pcurfile.getAbsolutePath());
+    	    	    			else
+    	    	    		    {
+    	    	    				APKInfo apkinfo = new APKInfo(main.this,pcurfile.getAbsolutePath());
+    	    	    				if(apkinfo.beValid() == true)
+    	    	    			    {
+    	    	    					mApkList.add(apkinfo);
+    	    	    					apks++;
+                                        synchronized(m_syncobj)
+                                        {
+                                            if( m_handler!=null )
+                                            {
+            	    	    		    	    Message apkmsg = new Message();
+            	    	    					apkmsg.what = NEW_APK;
+            	    	    					apkmsg.arg1 = dirs;
+            	    	    					apkmsg.arg2 = apks;
+                                                m_handler.sendMessage(apkmsg);
+                                            }
+                                       }
+    	    	    			    }
+    	    	    		    }
+    	    	    	    }
+    	        	    }
+    	            }
+                }
+           }
+       }
+    };
+
+    protected void showScanDiag(int dirs,int apks)
+    {
+        String msg = "Scanning ...\n";
+        msg += "dir : "+String.valueOf(dirs)+"\n";
+        msg += "apk : "+String.valueOf(apks)+"\n";
+        mScanDiag.setMessage(msg);
+        mScanDiag.show();
     }
     
 }
+
+  
+ 
+ 
