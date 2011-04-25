@@ -64,21 +64,26 @@ class APKInfo extends Object
 	public String  pCurPkgName = null;
 	public CharSequence  pAppName = null;
 	public Drawable pAppIcon = null;
+    public boolean bIsinstalled = false;
 
-
-	public boolean isInstalled()
-	{
-		ApplicationInfo appinfo = null;
+    public boolean checkInstalled()
+    {
+        ApplicationInfo appinfo = null;
         try {
         	appinfo = pkgmgr.getApplicationInfo(pCurPkgName,PackageManager.GET_UNINSTALLED_PACKAGES);
         } catch (NameNotFoundException e) {
         	appinfo = null;
         }
-
+        
         if(appinfo == null)
-        	return false;
+        	bIsinstalled = false;
         else
-        	return true;
+        	bIsinstalled = true;
+        return bIsinstalled;
+    }
+	public boolean isInstalled()
+	{
+	    return bIsinstalled;
 	}
 	public CharSequence getApplicationName()
 	{
@@ -213,7 +218,7 @@ public class PackageAdapter extends BaseAdapter {
 		APKInfo pinfo = (APKInfo)getItem(position);
 		FileName.setText(pinfo.filepath);
 		AppName.setText(pinfo.getApplicationName());
-		InstallState.setChecked(pinfo.isInstalled());
+		InstallState.setChecked(pinfo.checkInstalled());
 		Appicon.setImageDrawable(pinfo.getApkIcon());
 		SelState.setChecked(m_list.isItemChecked(position));
 
