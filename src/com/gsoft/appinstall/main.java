@@ -35,6 +35,7 @@ import android.os.PowerManager;
 import android.os.HandlerThread;
 import android.content.Context;
 import android.view.KeyEvent;
+import android.content.res.Configuration;
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
@@ -65,7 +66,6 @@ public class main extends Activity {
     private static int INSTALL_APKS = 2;
     protected int mStatus = -1;
 
-
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -82,69 +82,12 @@ public class main extends Activity {
     	m_list = (CheckAbleList)findViewById(R.id.APKList);
     	m_list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
-        RetainData hdata = (RetainData)getLastNonConfigurationInstance();
-        if(hdata == null)
-        {
-            //create dialog process dialog
-            mScanDiag = new OperationDialog(this,m_scanop,"Scanning ...\n\n");
-            mHandleDiag = new OperationDialog(this,m_installop,"Handling selected package:  \n");
-
-        	mScanRoot = "/mnt/sdcard";
-        	pkgadapter = new PackageAdapter(this,R.layout.listitem,R.id.appname,R.id.apk_filepath,R.id.InstallState,R.id.APKIcon,R.id.Select,mApkList,m_list);
-            startScanOp();
-        }
-        else
-        {
-        	mScanRoot = hdata.pCurPath;
-        	mApkList = hdata.pApkList;
-            m_scanop = hdata.scanop;
-            m_installop = hdata.installop;
-            mStatus = hdata.iStatus;
-            mScreenLock = hdata.screenwakelock;
-            pkgadapter = new PackageAdapter(this,R.layout.listitem,R.id.appname,R.id.apk_filepath,R.id.InstallState,R.id.APKIcon,R.id.Select,mApkList,m_list);
-
-            //create dialog process dialog
-            mScanDiag = new OperationDialog(this,m_scanop,"Scanning ...\n\n");
-            mHandleDiag = new OperationDialog(this,m_installop,"Handling selected package:  \n");
-
-            if(mStatus == VIEW_APKS || mStatus == INSTALL_APKS)
-            {
-            	m_list.setAdapter(pkgadapter);
-                if(hdata.checkeditem != null)
-                {
-                    int i = 0;
-                    for(;i<hdata.checkeditem.length;i++)
-                    {
-                        m_list.setItemChecked((int)hdata.checkeditem[i], true);
-                    }
-                }
-            	if(mApkList.isEmpty() == true)
-            	{
-            		m_info.setVisibility(android.view.View.VISIBLE);
-            	}
-            }
-
-            if(mStatus == INSTALL_APKS)
-            {
-                if(m_installop.isOpEnd() == true)
-                {
-                    m_installop.setHandler(mainhandler);
-                    m_installop.sendEndMsg();
-                }
-                else
-                    mHandleDiag.start();
-            }
-            else if(mStatus == SCAN_APKS)
-            {
-                if(m_scanop.isOpEnd() == true)
-                {
-                    m_scanop.setHandler(mainhandler);
-                    m_scanop.sendEndMsg();
-                }
-                else
-                   mScanDiag.start();
-            }
-        }
+        //create dialog process dialog
+        mScanDiag = new OperationDialog(this,m_scanop,"Scanning ...\n\n");
+        mHandleDiag = new OperationDialog(this,m_installop,"Handling selected package:  \n");
+    	mScanRoot = "/mnt/sdcard";
+    	pkgadapter = new PackageAdapter(this,R.layout.listitem,R.id.appname,R.id.apk_filepath,R.id.InstallState,R.id.APKIcon,R.id.Select,mApkList,m_list);
+        startScanOp();
 
         m_list.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -257,37 +200,7 @@ public class main extends Activity {
                 mScreenLock.release();
         }
     }
-    
-    class RetainData extends Object
-    {
-    	//PackageAdapter pkgadapter;
-    	String		   pCurPath;
-    	ArrayList<APKInfo> pApkList;
-        int            iStatus;
-        ScanOperation   scanop ;
-        InstallOperation    installop ;
-        protected long [] checkeditem;
-        PowerManager.WakeLock  screenwakelock;
-    }
-    
-    public Object onRetainNonConfigurationInstance()
-    {
-    	RetainData hdata = new RetainData();
-    	//hdata.pkgadapter = pkgadapter;
-    	hdata.pCurPath = mScanRoot;
-    	hdata.pApkList = mApkList;
-        hdata.iStatus = mStatus;
-        hdata.scanop = m_scanop;
-        hdata.installop = m_installop;
-        if(m_list.getCheckedItemIds() != null)
-            hdata.checkeditem = m_list.getCheckedItemIds().clone();
-        hdata.screenwakelock = mScreenLock;
-        m_configchanged = true;
-        Log.d(TAG,"onRetainNonConfigurationInstance "+String.valueOf(mStatus));
-
-    	return hdata;
-    }
-    
+        
     public Handler mainhandler = new Handler()
     {
 		public void handleMessage(Message msg) {
@@ -372,6 +285,7 @@ public class main extends Activity {
 	        	m_list.setAllItemChecked(false);
 	            return true;
 	        case MENU_FRESH:
+                m_list.setAdapter(null);
 	        	startScanOp();
 	        	return true;
 	        case MENU_ABOUT:
@@ -385,6 +299,11 @@ public class main extends Activity {
 	        	return true;
         }
         return false;
+    }
+
+    public void onConfigurationChanged (Configuration newConfig)
+    {
+        super.onConfigurationChanged(newConfig);
     }
     
     
