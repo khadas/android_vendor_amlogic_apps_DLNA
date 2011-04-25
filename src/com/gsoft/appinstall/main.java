@@ -36,6 +36,8 @@ import android.os.HandlerThread;
 import android.content.Context;
 import android.view.KeyEvent;
 import android.content.res.Configuration;
+import android.content.DialogInterface;
+import java.lang.String;
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
@@ -47,7 +49,7 @@ public class main extends Activity {
     protected CheckAbleList m_list = null;
     protected TextView m_info = null;
     protected PackageAdapter pkgadapter = null;
-    protected EditText m_DirEdit = null;
+    protected TextView m_DirEdit = null;
     protected OperationDialog mScanDiag = null;
     protected OperationDialog mHandleDiag = null;
 
@@ -60,6 +62,8 @@ public class main extends Activity {
     private PowerManager.WakeLock mScreenLock = null;
 	protected ScanOperation m_scanop = new ScanOperation();
     protected InstallOperation m_installop = new InstallOperation();
+    protected String mDevs[] = null;
+
     //the status of app
     private static int SCAN_APKS = 0;
     private static int VIEW_APKS = 1;
@@ -85,9 +89,7 @@ public class main extends Activity {
         //create dialog process dialog
         mScanDiag = new OperationDialog(this,m_scanop,"Scanning ...\n\n");
         mHandleDiag = new OperationDialog(this,m_installop,"Handling selected package:  \n");
-    	mScanRoot = "/mnt/sdcard";
     	pkgadapter = new PackageAdapter(this,R.layout.listitem,R.id.appname,R.id.apk_filepath,R.id.InstallState,R.id.APKIcon,R.id.Select,mApkList,m_list);
-        startScanOp();
 
         m_list.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -102,32 +104,15 @@ public class main extends Activity {
         });
         
         //change dir button
-        m_DirEdit = (EditText)findViewById(R.id.Dir);
-	    m_DirEdit.setText("/mnt/sdcard",TextView.BufferType.EDITABLE);
-        
-        ImageButton chgdir = (ImageButton)findViewById(R.id.ChangeDir);
-        chgdir.setOnClickListener(new View.OnClickListener() 
+        m_DirEdit = (TextView)findViewById(R.id.Dir);
+        m_DirEdit.setText("/mnt/sdcard",TextView.BufferType.NORMAL);
+        m_DirEdit.setOnClickListener(new View.OnClickListener()
         {
-			public void onClick(View v) 
-			{
-				String dirpath = main.this.m_DirEdit.getText().toString();
-				File pfile = new File(dirpath);
-				if( pfile!=null && pfile.isDirectory()==true )
-				{
-					if((mScanRoot == null) || (mScanRoot.compareTo(dirpath) != 0))
-					{
-						mScanRoot = dirpath;
-						startScanOp();
-					}
-					else
-                        Toast.makeText(main.this, "same dir path", Toast.LENGTH_SHORT).show();
-				}
-				else
-				{
-                    Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
-				}
-			}
-		});
+            public void onClick(View v)
+            {
+                showChooseDev();
+            }
+        });
 
         //exit button
         ImageButton hexit = (ImageButton)findViewById(R.id.Exit);
@@ -139,8 +124,8 @@ public class main extends Activity {
 				}
 			}
         );
-        findViewById(R.id.Exit).requestFocus();
-        findViewById(R.id.Exit).requestFocusFromTouch();
+
+        showChooseDev();
     }
 
     public void onResume()
@@ -306,8 +291,71 @@ public class main extends Activity {
         super.onConfigurationChanged(newConfig);
     }
     
-    
     //user functions
+    public void showChooseDev()
+    {
+    //to list all devices
+        class DevFilter implements FileFilter
+        {
+        	public boolean accept(File arg0){
+        		if(arg0.isDirectory() == true)
+                {      
+            		String filename = arg0.getName();
+            		String filenamelowercase = filename.toLowerCase();
+            		if( (filenamelowercase.compareTo("asec")!=0) && (filenamelowercase.compareTo("secure")!=0) )
+                        return true;
+                }
+                return false;
+            }
+        }
+        File pfile = new File("/mnt");
+        File[] files = pfile.listFiles(new DevFilter());
+        mDevs = new String[files.length];
+        int i = 0,sdid=-1,selid=-1;
+        for(i=0;i<files.length;i++)
+        {
+            mDevs[i]=files[i].toString();
+            if(mDevs[i].compareTo("/mnt/sdcard") == 0)
+                sdid = i;
+            else if( (mScanRoot!=null) && (mDevs[i].compareTo(mScanRoot)==0))
+                selid = i;
+        }
+
+        int checked_id = sdid;
+        if(selid != -1)
+            checked_id = selid;
+        
+    //show dialog to choose dialog
+        new AlertDialog.Builder(main.this)
+            .setTitle("Choose device to scan apks")
+            .setSingleChoiceItems(mDevs, checked_id, new DialogInterface.OnClickListener()
+            {
+                public void onClick(DialogInterface dialog, int which)
+                {
+                    dialog.dismiss();
+                    m_DirEdit.setText(mDevs[which]);
+                    String devpath = mDevs[which].toString();
+                    File pfile = new File(devpath);
+                    if( pfile!=null && pfile.isDirectory()==true )
+                    {
+                        if((mScanRoot == null) || (mScanRoot.compareTo(devpath) != 0))
+                        {
+                            mScanRoot = devpath;
+                            startScanOp();
+                        }
+                        else
+                            Toast.makeText(main.this, "same dir path", Toast.LENGTH_SHORT).show();
+                    }
+                    else
+                    {
+                        Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            })
+            .show();
+
+    }
+    
     //===================================================================
     //functions for installing and uninstalling
     public void install_apk(String apk_filepath)
@@ -318,6 +366,7 @@ public class main extends Activity {
     	installintent.setData(Uri.fromFile(new File(apk_filepath)));
     	startActivity(installintent);
     }
+
     public void uninstall_apk(String apk_pkgname)
     {
     	Intent uninstallintent = new Intent();
@@ -326,7 +375,6 @@ public class main extends Activity {
     	uninstallintent.setData(Uri.fromParts("package",apk_pkgname,null));
     	startActivity(uninstallintent);
     }
-
 
     //===================================================================
     //base class for operations thread
