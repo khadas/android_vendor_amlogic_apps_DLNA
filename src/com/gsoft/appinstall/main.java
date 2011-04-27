@@ -221,8 +221,6 @@ public class main extends Activity {
     						mHandleDiag.dismiss();
     					pkgadapter.notifyDataSetChanged();    
                     }
-                    findViewById(R.id.Exit).requestFocus();
-                    findViewById(R.id.Exit).requestFocusFromTouch();
 					mStatus = VIEW_APKS;
                     KeepSystemAwake(false);
 					break;
@@ -525,6 +523,7 @@ public class main extends Activity {
                         m_handleitem++;
                         m_selfhandler.post(m_apkhandltsk);
                     }
+                    Log.d(TAG,"packageInstalled "+String.valueOf(returnCode));
                 }
             }
 
@@ -535,7 +534,7 @@ public class main extends Activity {
                         m_handleitem++;
                         m_selfhandler.post(m_apkhandltsk);
                     }
-                    Log.d(TAG,"packageDeleted");
+                    Log.d(TAG,"packageDeleted "+String.valueOf(succeeded));
                 }
             }
             public void install_apk_slient(String apk_filepath)
@@ -631,7 +630,7 @@ public class main extends Activity {
     	msg += String.valueOf(curpkg)+"/"+String.valueOf(totalpkg)+"\n";
     	msg += handlemsg;
     	mHandleDiag.setMessage(msg);
-    	mHandleDiag.show();
+    //	mHandleDiag.show();
     }
 
     //===================================================================
@@ -765,7 +764,7 @@ public class main extends Activity {
         msg += "dir : "+String.valueOf(dirs)+"\n";
         msg += "apk : "+String.valueOf(apks)+"\n";
         mScanDiag.setMessage(msg);
-        mScanDiag.show();
+      //  mScanDiag.show();
     }
     
 }
