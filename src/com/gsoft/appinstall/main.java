@@ -454,7 +454,7 @@ public class main extends Activity {
             else
                 super.setMessage(message);
         }
-
+/*
 		public boolean onTouchEvent (MotionEvent event)
 		{
 			m_pOp.stop();
@@ -462,6 +462,7 @@ public class main extends Activity {
             m_bOpStop = true;
 			return true;
 		}
+*/
         public boolean onKeyDown(int keyCode, KeyEvent event) 
         {
              if(keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_POWER) 
