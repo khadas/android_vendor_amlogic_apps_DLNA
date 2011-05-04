@@ -41,8 +41,8 @@ import java.lang.String;
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
-    private String mVersion = "V1.1.0";
-    private String mReleaseDate = "2010.04.21";
+    private String mVersion = "V1.1.1";
+    private String mReleaseDate = "2010.05.04";
 
     //UI INFO
 	protected String mScanRoot = null;
@@ -59,6 +59,7 @@ public class main extends Activity {
     public final static int END_OPERATION = 0;
     public final static int NEW_APK = 1;
     public final static int HANDLE_PKG_NEXT = 2;
+    public final static int HANDLE_PKG_FAIL = 3;
     private PowerManager.WakeLock mScreenLock = null;
 	protected ScanOperation m_scanop = new ScanOperation();
     protected InstallOperation m_installop = new InstallOperation();
@@ -232,6 +233,11 @@ public class main extends Activity {
                     String hanlemsg = msg.getData().getString("showstr");
                     showHandleDiag(hanlemsg,(int)msg.arg1+1,msg.arg2);
 					break;
+                case HANDLE_PKG_FAIL:
+                    Log.d(TAG,"HANDLE_PKG_FAIL");
+                    String failemsg = msg.getData().getString("showstr");
+                    Toast.makeText(main.this, failemsg, Toast.LENGTH_SHORT).show();
+                    break;
 				default:
 					break;
 			}
@@ -444,7 +450,8 @@ public class main extends Activity {
             //show with empty message
             m_bOpStop = false;
             setMessage(m_sInitMsg);
-            this.show();
+            this.show();//first show() is invert-action to dismiss()
+            this.show();//second show() is invert-action to hide()
         }
 
         public void setMessage(CharSequence message) 
@@ -454,6 +461,13 @@ public class main extends Activity {
             else
                 super.setMessage(message);
         }
+
+        public void dismiss()
+        {
+            hide();//first to hide() it and in start to show() it , this is let the animation  in dialog to restart
+            super.dismiss();
+        }
+        
 /*
 		public boolean onTouchEvent (MotionEvent event)
 		{
@@ -518,35 +532,57 @@ public class main extends Activity {
         class ApkHandleTask implements Runnable
         {
             class PackageInstallObserver extends IPackageInstallObserver.Stub {
+                String apkpath = null;
                 public void packageInstalled(String packageName, int returnCode) {
+                    Log.d(TAG,"packageInstalled "+String.valueOf(returnCode));
                     synchronized(m_syncobj)
                     {
+                        if(returnCode!=1)//fail
+                        {
+                            Message endmsg = new Message();
+                    		endmsg.what = HANDLE_PKG_FAIL;
+                            Bundle data = new Bundle();
+                            data.putString("showstr","Install "+apkpath+" fail!");
+                            endmsg.setData(data);
+                    		m_handler.sendMessage(endmsg);
+                        }
                         m_handleitem++;
                         m_selfhandler.post(m_apkhandltsk);
                     }
-                    Log.d(TAG,"packageInstalled "+String.valueOf(returnCode));
                 }
             }
 
             class PackageDeleteObserver extends IPackageDeleteObserver.Stub {
+                String pkgpath = null;
                 public void packageDeleted(boolean succeeded) {
+                    Log.d(TAG,"packageDeleted "+String.valueOf(succeeded));
                     synchronized(m_syncobj)
                     {
+                        if(succeeded == false)
+                        {
+                            Message endmsg = new Message();
+                    		endmsg.what = HANDLE_PKG_FAIL;
+                            Bundle data = new Bundle();
+                            data.putString("showstr","Uninstall "+pkgpath+" fail!");
+                            endmsg.setData(data);
+                    		m_handler.sendMessage(endmsg);
+                        }
                         m_handleitem++;
                         m_selfhandler.post(m_apkhandltsk);
                     }
-                    Log.d(TAG,"packageDeleted "+String.valueOf(succeeded));
                 }
             }
             public void install_apk_slient(String apk_filepath)
             {
             	PackageManager pm = getPackageManager();
                 PackageInstallObserver observer = new PackageInstallObserver();
+                observer.apkpath = apk_filepath;
                 pm.installPackage(Uri.fromFile(new File(apk_filepath)), observer, 0, null);
             }
             public void uninstall_apk_slient(String apk_pkgname)
             {
                 PackageDeleteObserver observer = new PackageDeleteObserver();
+                observer.pkgpath = apk_pkgname;
             	PackageManager pm = getPackageManager();
                 pm.deletePackage(apk_pkgname, observer, 0);
             }
