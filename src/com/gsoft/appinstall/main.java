@@ -423,7 +423,7 @@ public class main extends Activity {
         {
             if(m_handler != null)
             {
-        		Message endmsg = new Message();
+        		Message endmsg = Message.obtain();
         		endmsg.what = END_OPERATION;
                 endmsg.arg1 = m_iOp;
         		m_handler.sendMessage(endmsg);
@@ -539,7 +539,7 @@ public class main extends Activity {
                     {
                         if(returnCode!=1)//fail
                         {
-                            Message endmsg = new Message();
+                            Message endmsg = Message.obtain();
                     		endmsg.what = HANDLE_PKG_FAIL;
                             Bundle data = new Bundle();
                             data.putString("showstr","Install "+apkpath+" fail!");
@@ -560,7 +560,7 @@ public class main extends Activity {
                     {
                         if(succeeded == false)
                         {
-                            Message endmsg = new Message();
+                            Message endmsg = Message.obtain();
                     		endmsg.what = HANDLE_PKG_FAIL;
                             Bundle data = new Bundle();
                             data.putString("showstr","Uninstall "+pkgpath+" fail!");
@@ -622,7 +622,7 @@ public class main extends Activity {
                     {
                         if(m_handler!=null)
                         {
-                            Message endmsg = new Message();
+                            Message endmsg = Message.obtain();
                     		endmsg.what = HANDLE_PKG_NEXT;
                             endmsg.arg1 = (int)m_handleitem;
                             endmsg.arg2 = m_checkeditems.length;
@@ -739,7 +739,7 @@ public class main extends Activity {
                         dirs++;
                         if(m_handler!=null)
                         {
-                    		Message dirmsg = new Message();
+                    		Message dirmsg = Message.obtain();
                     		dirmsg.what = NEW_APK;
                     		dirmsg.arg1 = dirs;
                     		dirmsg.arg2 = apks;
@@ -778,7 +778,7 @@ public class main extends Activity {
                                         {
                                             if( m_handler!=null )
                                             {
-            	    	    		    	    Message apkmsg = new Message();
+            	    	    		    	    Message apkmsg = Message.obtain();
             	    	    					apkmsg.what = NEW_APK;
             	    	    					apkmsg.arg1 = dirs;
             	    	    					apkmsg.arg2 = apks;
