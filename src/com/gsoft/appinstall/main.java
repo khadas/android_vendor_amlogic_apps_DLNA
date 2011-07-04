@@ -41,8 +41,8 @@ import java.lang.String;
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
-    private String mVersion = "V1.1.1";
-    private String mReleaseDate = "2010.05.04";
+    private String mVersion = "V1.1.2";
+    private String mReleaseDate = "2010.07.04";
 
     //UI INFO
 	protected String mScanRoot = null;
@@ -106,7 +106,7 @@ public class main extends Activity {
         
         //change dir button
         m_DirEdit = (TextView)findViewById(R.id.Dir);
-        m_DirEdit.setText("/mnt/sdcard",TextView.BufferType.NORMAL);
+        m_DirEdit.setText(" ",TextView.BufferType.NORMAL);
         m_DirEdit.setOnClickListener(new View.OnClickListener()
         {
             public void onClick(View v)
@@ -354,6 +354,14 @@ public class main extends Activity {
                     {
                         Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
                     }
+                }
+            })
+            .setOnCancelListener(new DialogInterface.OnCancelListener()
+            {
+                public void onCancel(DialogInterface dialog)
+                {
+                    if(mScanRoot == null)
+                        main.this.finish();
                 }
             })
             .show();
