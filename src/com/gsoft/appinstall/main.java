@@ -255,7 +255,7 @@ public class main extends Activity {
         menu.add(0, MENU_INSTALL, 0, "Install/Uninstall");
         menu.add(0, MENU_SELECT_ALL, 0, "Select all");
         menu.add(0, MENU_UNSELECT_ALL, 0, "Unselect all");
-        menu.add(0, MENU_FRESH, 0, "Fresh");
+        menu.add(0, MENU_FRESH, 0, "Refresh");
         menu.add(0, MENU_ABOUT, 0, "About");
         return true;
     }
