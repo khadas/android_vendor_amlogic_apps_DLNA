@@ -304,10 +304,13 @@ public class main extends Activity {
         	public boolean accept(File arg0){
         		if(arg0.isDirectory() == true)
                 {      
-            		String filename = arg0.getName();
-            		String filenamelowercase = filename.toLowerCase();
-            		if( (filenamelowercase.compareTo("asec")!=0) && (filenamelowercase.compareTo("secure")!=0) )
+                    String filename = arg0.getName();
+                    String filenamelowercase = filename.toLowerCase();
+                    if( (filenamelowercase.compareTo("asec")!=0) && (filenamelowercase.compareTo("secure")!=0) &&
+                        (filenamelowercase.compareTo("obb")!=0))
+                    {
                         return true;
+                    }
                 }
                 return false;
             }
