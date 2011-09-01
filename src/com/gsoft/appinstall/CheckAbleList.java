@@ -5,9 +5,11 @@ import android.util.AttributeSet;
 import android.view.SoundEffectConstants;
 import android.view.View;
 import android.widget.*;
+import android.view.KeyEvent;
+import android.util.Log;
 
 public class CheckAbleList extends ListView {
-
+	private static final String TAG = "CheckAbleList";
 	protected OnItemClickListener m_localClickListener = null;
 	public CheckAbleList(Context context) {
 		super(context);
@@ -49,4 +51,17 @@ public class CheckAbleList extends ListView {
 			getAdapter().getView(i,getChildAt(i),this);//for redraw
 		}
 	}
+		
+		public boolean onKeyDown(int keyCode, KeyEvent event){
+    	if(keyCode == KeyEvent.KEYCODE_DPAD_RIGHT){
+    		int PosInList = 0;
+    		PosInList = this.getSelectedItemPosition();
+				if(!isItemChecked(PosInList))
+				setItemChecked(PosInList,true);
+				else
+				setItemChecked(PosInList,false);
+				Log.e(TAG,"--------------------------------------------RC is checked");
+    	}
+    	 			return super.onKeyDown(keyCode,event);
+    }
 }
