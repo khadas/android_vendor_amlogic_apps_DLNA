@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <string name="cancel" >"取消"</string>
+    <string name="unknown_apps_dlg_title" >"安裝遭封鎖。"</string>
+    <string name="unknown_apps_dlg_text" >"為保障安全，已將您的設備設定為不會安裝非 Android Market 所提供的應用程式。"</string>
+    <string name="settings" >"設定"</string>
+</resources>
