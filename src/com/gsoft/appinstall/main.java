@@ -6,6 +6,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -33,6 +34,7 @@ import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageDeleteObserver;
 import android.os.PowerManager;
 import android.os.HandlerThread;
+import android.provider.Settings;
 import android.content.Context;
 import android.view.KeyEvent;
 import android.content.res.Configuration;
@@ -60,6 +62,7 @@ public class main extends Activity {
     public final static int NEW_APK = 1;
     public final static int HANDLE_PKG_NEXT = 2;
     public final static int HANDLE_PKG_FAIL = 3;
+	private static final int DLG_UNKNOWN_APPS = 1;
     private PowerManager.WakeLock mScreenLock = null;
 	protected ScanOperation m_scanop = new ScanOperation();
     protected InstallOperation m_installop = new InstallOperation();
@@ -265,6 +268,11 @@ public class main extends Activity {
         switch (item.getItemId()) 
         {
 	        case MENU_INSTALL:
+				if(!isInstallingUnknownAppsAllowed()) {
+					//ask user to enable setting first
+					showDialogInner(DLG_UNKNOWN_APPS);
+					return true;
+				}
 	        	startHandleOp();
 	            return true;
 	        case MENU_SELECT_ALL:
@@ -813,6 +821,45 @@ public class main extends Activity {
         msg += "apk : "+String.valueOf(apks)+"\n";
         mScanDiag.setMessage(msg);
       //  mScanDiag.show();
+    }
+	
+	
+
+	private void showDialogInner(int id) {
+        // TODO better fix for this? Remove dialog so that it gets created again
+        removeDialog(id);
+        showDialog(id);
+    }
+	
+	@Override
+    public Dialog onCreateDialog(int id, Bundle bundle) {
+        switch (id) {
+        case DLG_UNKNOWN_APPS:
+            return new AlertDialog.Builder(this)
+                    .setTitle(R.string.unknown_apps_dlg_title)
+                    .setMessage(R.string.unknown_apps_dlg_text)
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }})
+                    .setPositiveButton(R.string.settings, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            launchSettingsAppAndFinish();
+                        }
+                    }) .create(); 
+		}			
+        
+       return null;
+   }
+	
+	private void launchSettingsAppAndFinish() {
+        //Create an intent to launch SettingsTwo activity
+        Intent launchSettingsIntent = new Intent(Settings.ACTION_APPLICATION_SETTINGS);
+        startActivity(launchSettingsIntent);
+    }
+	
+	private boolean isInstallingUnknownAppsAllowed() {
+        return Settings.Secure.getInt(getContentResolver(), 
+            Settings.Secure.INSTALL_NON_MARKET_APPS, 0) > 0;
     }
     
 }

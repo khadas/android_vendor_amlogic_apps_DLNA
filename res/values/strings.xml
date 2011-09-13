@@ -2,5 +2,9 @@
 <resources>
     <string name="app_name">AppInstaller</string>
 	<string name="exit">EXIT</string>
-<string name="defpath">/sdcard</string>
+	<string name="defpath">/sdcard</string>
+	<string name="settings">Settings</string>
+	<string name="cancel">Cancel</string>
+	<string name="unknown_apps_dlg_title">Install blocked</string>
+	<string name="unknown_apps_dlg_text">For security, your device is set to block installation of applications not obtained from Android Market.</string>
 </resources>

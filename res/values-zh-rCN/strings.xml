@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <string name="cancel" >"取消"</string>
+    <string name="unknown_apps_dlg_title" >"禁止安装"</string>
+    <string name="unknown_apps_dlg_text" >"为了安全起见，您的设备已设置为禁止安装不是从 Android 电子市场中获取的应用程序。"</string>
+    <string name="settings" >"设置"</string>
+</resources>
