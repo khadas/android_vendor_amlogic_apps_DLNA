@@ -4,4 +4,21 @@
     <string name="unknown_apps_dlg_title" >"禁止安装"</string>
     <string name="unknown_apps_dlg_text" >"为了安全起见，您的设备已设置为禁止安装不是从 Android 电子市场中获取的应用程序。"</string>
     <string name="settings" >"设置"</string>
+    <string name="app_name">&quot;应用安装&quot;</string>
+    <string name="exit">&quot;退出&quot;</string>
+    <string name="alertdialog_title">&quot;选择设备来浏览安装文件&quot;</string>
+    <string name="no_apk_found">&quot;没有发现安装文件&quot;</string>
+    <string name="scanning_init">&quot;正在浏览 ...\n\n&quot;</string>
+    <string name="handling_selected_package_init">&quot;正在处理所选包:  \n&quot;</string>
+    <string name="install_uninstall">安装/卸载</string>
+	<string name="selectall">选择全部</string>
+	<string name="unselect_all">取消全部</string>
+	<string name="refresh">刷新</string>
+	<string name="about">关于</string>
+	<string name="no_select_apks">&quot;你还没有选择安装包来安装/卸载&quot;</string>
+	<string name="scanning">&quot;正在浏览 ...\n&quot;</string>
+	<string name="handling_selected_package">&quot;正在处理所选包:  &quot;</string>
+	<string name="about_appInstaller">&quot;应用安装&quot;</string>
+	<string name="about_version">&quot;\n 版本: &quot;</string>
+	<string name="about_date">&quot;\n 日期: &quot;</string>
 </resources>

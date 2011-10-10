@@ -7,4 +7,19 @@
 	<string name="cancel">Cancel</string>
 	<string name="unknown_apps_dlg_title">Install blocked</string>
 	<string name="unknown_apps_dlg_text">For security, your device is set to block installation of applications not obtained from Android Market.</string>
+	<string name="alertdialog_title">Choose device to scan apks</string>
+	<string name="no_apk_found">No APK Found!</string>
+	<string name="scanning_init">&quot;Scanning ...\n\n&quot;</string>
+	<string name="handling_selected_package_init">&quot;Handling selected package:  \n&quot;</string>
+	<string name="install_uninstall">Install/Uninstall</string>
+	<string name="selectall">Select all</string>
+	<string name="unselect_all">Unselect all</string>
+	<string name="refresh">Refresh</string>
+	<string name="about">About</string>
+	<string name="no_select_apks">&quot;you havn't select apks to install/uninstall&quot;</string>
+	<string name="scanning">&quot;Scanning ...\n&quot;</string>
+	<string name="handling_selected_package">&quot;Handling selected package:  &quot;</string>
+	<string name="about_appInstaller">&quot;AppInstaller&quot;</string>
+	<string name="about_version">&quot;\n Version: &quot;</string>
+	<string name="about_date">&quot;\n Date: &quot;</string>
 </resources>

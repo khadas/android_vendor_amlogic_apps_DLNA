@@ -4,6 +4,7 @@ package com.gsoft.appinstall;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -84,15 +85,15 @@ public class main extends Activity {
         //keep system awake
         mScreenLock = ((PowerManager)this.getSystemService(Context.POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK,TAG);
         m_info = (TextView)findViewById(R.id.ScanInfo);
-        m_info.setText("No APK Found!");
+        m_info.setText(R.string.no_apk_found);
         m_info.setVisibility(android.view.View.INVISIBLE);
         //init the listview
     	m_list = (CheckAbleList)findViewById(R.id.APKList);
     	m_list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
         //create dialog process dialog
-        mScanDiag = new OperationDialog(this,m_scanop,"Scanning ...\n\n");
-        mHandleDiag = new OperationDialog(this,m_installop,"Handling selected package:  \n");
+        mScanDiag = new OperationDialog(this,m_scanop,getResources().getString(R.string.scanning_init));
+        mHandleDiag = new OperationDialog(this,m_installop,getResources().getString(R.string.handling_selected_package_init));
     	pkgadapter = new PackageAdapter(this,R.layout.listitem,R.id.appname,R.id.apk_filepath,R.id.InstallState,R.id.APKIcon,R.id.Select,mApkList,m_list);
 
         m_list.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -255,11 +256,11 @@ public class main extends Activity {
     protected final int MENU_ABOUT = 4;
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        menu.add(0, MENU_INSTALL, 0, "Install/Uninstall");
-        menu.add(0, MENU_SELECT_ALL, 0, "Select all");
-        menu.add(0, MENU_UNSELECT_ALL, 0, "Unselect all");
-        menu.add(0, MENU_FRESH, 0, "Refresh");
-        menu.add(0, MENU_ABOUT, 0, "About");
+        menu.add(0, MENU_INSTALL, 0, R.string.install_uninstall);
+        menu.add(0, MENU_SELECT_ALL, 0, R.string.selectall);
+        menu.add(0, MENU_UNSELECT_ALL, 0, R.string.unselect_all);
+        menu.add(0, MENU_FRESH, 0, R.string.refresh);
+        menu.add(0, MENU_ABOUT, 0, R.string.about);
         return true;
     }
     
@@ -286,9 +287,9 @@ public class main extends Activity {
 	        	startScanOp();
 	        	return true;
 	        case MENU_ABOUT:
-	        	String aboutinfo = "AppInstaller";
-	        	aboutinfo += "\n Version: "+mVersion+" ";
-	        	aboutinfo += "\n Date: "+mReleaseDate+" ";
+	        	String aboutinfo = getResources().getString(R.string.about_appInstaller);
+	        	aboutinfo += getResources().getString(R.string.about_version)+mVersion+" ";
+	        	aboutinfo += getResources().getString(R.string.about_date)+mReleaseDate+" ";
 	        	AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	        	builder.setMessage(aboutinfo);
 	        	AlertDialog about = builder.create();
@@ -342,7 +343,7 @@ public class main extends Activity {
         
     //show dialog to choose dialog
         new AlertDialog.Builder(main.this)
-            .setTitle("Choose device to scan apks")
+            .setTitle(R.string.alertdialog_title)
             .setSingleChoiceItems(mDevs, checked_id, new DialogInterface.OnClickListener()
             {
                 public void onClick(DialogInterface dialog, int which)
@@ -668,7 +669,7 @@ public class main extends Activity {
     {
     	long [] checkeditems = m_list.getCheckedItemIds();
     	if(checkeditems.length == 0)
-            Toast.makeText(main.this, "you havn't select apks to install/uninstall" , Toast.LENGTH_SHORT).show();
+            Toast.makeText(main.this, R.string.no_select_apks , Toast.LENGTH_SHORT).show();
     	else
     	{
             KeepSystemAwake(true);
@@ -682,7 +683,7 @@ public class main extends Activity {
 
     protected void showHandleDiag(String handlemsg,int curpkg,int totalpkg)
     {
-    	String msg = "Handling selected package:  ";
+    	String msg = getResources().getString(R.string.handling_selected_package);
     	msg += String.valueOf(curpkg)+"/"+String.valueOf(totalpkg)+"\n";
     	msg += handlemsg;
     	mHandleDiag.setMessage(msg);
@@ -816,7 +817,7 @@ public class main extends Activity {
 
     protected void showScanDiag(int dirs,int apks)
     {
-        String msg = "Scanning ...\n";
+        String msg = getResources().getString(R.string.scanning);
         msg += "dir : "+String.valueOf(dirs)+"\n";
         msg += "apk : "+String.valueOf(apks)+"\n";
         mScanDiag.setMessage(msg);

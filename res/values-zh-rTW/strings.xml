@@ -4,4 +4,21 @@
     <string name="unknown_apps_dlg_title" >"安裝遭封鎖。"</string>
     <string name="unknown_apps_dlg_text" >"為保障安全，已將您的設備設定為不會安裝非 Android Market 所提供的應用程式。"</string>
     <string name="settings" >"設定"</string>
+    <string name="app_name">&quot;應用安裝&quot;</string>
+    <string name="exit">&quot;退出&quot;</string>
+    <string name="alertdialog_title">&quot;選擇設備來瀏覽安裝文件&quot;</string>
+    <string name="no_apk_found">&quot;沒有發現安裝文件&quot;</string>
+    <string name="scanning_init">&quot;正在瀏覽 ...\n\n&quot;</string>
+    <string name="handling_selected_package_init">&quot;正在處理所選包:  \n&quot;</string>
+    <string name="install_uninstall">安裝/卸載</string>
+	<string name="selectall">選擇全部</string>
+	<string name="unselect_all">取消全部</string>
+	<string name="refresh">刷新</string>
+	<string name="about">關於</string>
+	<string name="no_select_apks">&quot;你還沒有選擇安裝包來安裝/卸載&quot;</string>
+	<string name="scanning">&quot;正在瀏覽 ...\n&quot;</string>
+	<string name="handling_selected_package">&quot;正在處理所選包:  &quot;</string>
+	<string name="about_appInstaller">&quot;應用安裝&quot;</string>
+	<string name="about_version">&quot;\n 版本: &quot;</string>
+	<string name="about_date">&quot;\n 日期: &quot;</string>
 </resources>
