@@ -574,11 +574,12 @@ public class main extends Activity {
 
             class PackageDeleteObserver extends IPackageDeleteObserver.Stub {
                 String pkgpath = null;
-                public void packageDeleted(boolean succeeded) {
-                    Log.d(TAG,"packageDeleted "+String.valueOf(succeeded));
+                public void packageDeleted(String packageName, int returnCode)
+                {
+                    Log.d(TAG,"packageDeleted "+String.valueOf(returnCode));
                     synchronized(m_syncobj)
                     {
-                        if(succeeded == false)
+                        if (returnCode != PackageManager.DELETE_SUCCEEDED)
                         {
                             Message endmsg = Message.obtain();
                     		endmsg.what = HANDLE_PKG_FAIL;
