@@ -5,7 +5,7 @@
      <original-package android:name="com.gsoft.appinstall" />
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="false">
         <activity android:name=".main"
-        					android:configChanges="orientation|fontScale"
+        					android:configChanges="orientation|fontScale|screenSize|screenLayout"
                   android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
