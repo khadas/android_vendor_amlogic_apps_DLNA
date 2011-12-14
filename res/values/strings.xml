@@ -22,4 +22,5 @@
 	<string name="about_appInstaller">&quot;AppInstaller&quot;</string>
 	<string name="about_version">&quot;\n Version: &quot;</string>
 	<string name="about_date">&quot;\n Date: &quot;</string>
+	<string name="no_space">No enouth space for installation</string>
 </resources>

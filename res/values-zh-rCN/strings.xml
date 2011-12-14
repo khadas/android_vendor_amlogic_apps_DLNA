@@ -21,4 +21,5 @@
 	<string name="about_appInstaller">&quot;应用安装&quot;</string>
 	<string name="about_version">&quot;\n 版本: &quot;</string>
 	<string name="about_date">&quot;\n 日期: &quot;</string>
+	<string name="no_space">空间不足，退出安装</string>
 </resources>

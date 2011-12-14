@@ -41,6 +41,7 @@ import android.view.KeyEvent;
 import android.content.res.Configuration;
 import android.content.DialogInterface;
 import java.lang.String;
+import android.os.StatFs;
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
@@ -510,6 +511,20 @@ public class main extends Activity {
 
     };
 
+    // Check free space for installation
+    private static long checkFreeSpace(String path) {
+    	long nSDFreeSize = 0;
+    	if (path != null) {
+        	StatFs statfs = new StatFs(path);
+
+    		long nBlocSize = statfs.getBlockSize();
+    		long nAvailaBlock = statfs.getAvailableBlocks();
+    		nSDFreeSize = nAvailaBlock * nBlocSize;
+    	}
+		return (nSDFreeSize / (1024 * 1024));
+    	
+    }
+
     //===================================================================
     //functions for installing and uninstalling in slient mode
     class InstallOperation extends OperationThread
@@ -654,8 +669,26 @@ public class main extends Activity {
                         }
                     }
 
-                    if(actionid == 0)
+                    if(actionid == 0) {
+                        boolean hasSpace = checkFreeSpace("/data/app") > 50;		            	
+                        if (!hasSpace) {
+		            		Log.w(TAG,"no enough space for installation, force stop!");	
+		            		
+                            Message endmsg = Message.obtain();
+                    		endmsg.what = HANDLE_PKG_FAIL;
+                            Bundle data = new Bundle();
+                            data.putString("showstr", getResources().getString(R.string.no_space));
+                            endmsg.setData(data);
+                    		m_handler.sendMessage(endmsg);	
+                    			            			            		
+	                        sendEndMsg();
+	                        m_bOpEnd = true;
+	                        m_thread.quit();	                        
+	                        return ;
+                        }   
+		            	                 	
                         install_apk_slient(actionpara);
+                    }
                     else
                         uninstall_apk_slient(actionpara);
                     Log.d(TAG,"install a singel apk end");
