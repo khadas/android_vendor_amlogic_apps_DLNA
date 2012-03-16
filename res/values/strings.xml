@@ -16,11 +16,11 @@
 	<string name="unselect_all">Unselect all</string>
 	<string name="refresh">Refresh</string>
 	<string name="about">About</string>
-	<string name="no_select_apks">&quot;you havn't select apks to install/uninstall&quot;</string>
+	<string name="no_select_apks">&quot;You have not selected any APKs to install/uninstall&quot;</string>
 	<string name="scanning">&quot;Scanning ...\n&quot;</string>
 	<string name="handling_selected_package">&quot;Handling selected package:  &quot;</string>
 	<string name="about_appInstaller">&quot;AppInstaller&quot;</string>
 	<string name="about_version">&quot;\n Version: &quot;</string>
 	<string name="about_date">&quot;\n Date: &quot;</string>
-	<string name="no_space">No enouth space for installation</string>
+	<string name="no_space">No enough space for installation</string>
 </resources>
