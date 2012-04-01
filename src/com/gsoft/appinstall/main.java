@@ -45,8 +45,8 @@ import android.os.StatFs;
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
-    private String mVersion = "V1.1.2";
-    private String mReleaseDate = "2010.07.04";
+    private String mVersion = "V1.1.3";
+    private String mReleaseDate = "2012.04.01";
 
     //UI INFO
 	protected String mScanRoot = null;
@@ -665,7 +665,7 @@ public class main extends Activity {
                             Bundle data = new Bundle();
                             data.putString("showstr",hanlemsg);
                             endmsg.setData(data);
-                    		m_handler.sendMessage(endmsg);
+                    		m_handler.sendMessageDelayed(endmsg,2000);//add a delay, for systeme need time to release cache.
                         }
                     }
 
