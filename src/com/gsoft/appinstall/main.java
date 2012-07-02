@@ -130,7 +130,7 @@ public class main extends Activity {
 				}
 			}
         );
-
+        hexit.requestFocus();
         showChooseDev();
     }
 
