@@ -23,4 +23,9 @@
 	<string name="about_version">&quot;\n Version: &quot;</string>
 	<string name="about_date">&quot;\n Date: &quot;</string>
 	<string name="no_space">No enough space for installation</string>
+	<string name="memory_device_str">Internal Memory </string>
+	<string name="sdcard_device_str">Local Disk</string>
+	<string name="ext_sdcard_device_str">External TF Card</string>
+	<string name="sata_device_str">SATA</string>
+	<string name="usb_device_str">USB</string>
 </resources>

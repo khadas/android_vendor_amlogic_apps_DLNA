@@ -42,6 +42,7 @@ import android.content.res.Configuration;
 import android.content.DialogInterface;
 import java.lang.String;
 import android.os.StatFs;
+import android.os.Environment;
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
@@ -108,6 +109,9 @@ public class main extends Activity {
 					install_apk(apkinfo.filepath);
 			}
         });
+
+		/* check whether use real sdcard*/
+		isRealSD=Environment.isExternalStorageBeSdcard();
         
         //change dir button
         m_DirEdit = (TextView)findViewById(R.id.Dir);
@@ -308,6 +312,12 @@ public class main extends Activity {
     //user functions
     public void showChooseDev()
     {
+     String internal = getString(R.string.memory_device_str);
+	 String sdcard = getString(R.string.sdcard_device_str);
+	 String usb = getString(R.string.usb_device_str);
+	 String sdcardExt = getString(R.string.ext_sdcard_device_str);
+	 String DeviceArray[]={internal,sdcard,usb,sdcardExt};
+	
     //to list all devices
         class DevFilter implements FileFilter
         {
@@ -327,17 +337,77 @@ public class main extends Activity {
         }
         File pfile = new File("/mnt");
         File[] files = pfile.listFiles(new DevFilter());
-        mDevs = new String[files.length];
+		
+		if(false==isRealSD)
+        	mDevs = new String[files.length+1];//+1 indicate /mnt/sdcard/external_sdcard
+        else
+			mDevs = new String[files.length];
+		
         int i = 0,sdid=-1,selid=-1;
         for(i=0;i<files.length;i++)
         {
             mDevs[i]=files[i].toString();
             if(mDevs[i].compareTo("/mnt/sdcard") == 0)
-                sdid = i;
+        	{
+            	sdid = i;
+				if(false==isRealSD)
+				{
+					String str=null;
+					File[] filesTmp = files[i].listFiles(new DevFilter());
+					for(int n=0;n<filesTmp.length;n++)
+					{
+						if(filesTmp[n].exists() && filesTmp[n].isDirectory())
+						{
+							str=filesTmp[n].toString();
+							if(str.compareTo(EXT_SD) == 0)
+							{
+								mDevs[files.length]=EXT_SD;
+							}
+						}
+					}
+				}
+        	}
             else if( (mScanRoot!=null) && (mDevs[i].compareTo(mScanRoot)==0))
                 selid = i;
         }
 
+		if(false==isRealSD)
+		{
+			//add for external_sdcard
+			if( (mScanRoot!=null) && (mDevs[files.length].compareTo(mScanRoot)==0))
+				selid = files.length;
+		}
+		
+		int len=-1;
+		if(false==isRealSD)
+		{
+			len=files.length+1;
+		}
+		else
+		{
+			len=files.length;
+		}
+		mDevStrs=new String[len];
+		for(int idx=0;idx<len;idx++)
+		{
+			if (mDevs[idx].equals("/mnt/flash")) 
+			{
+				mDevStrs[idx]=DeviceArray[0];
+			}
+			else if (mDevs[idx].equals("/mnt/sdcard")) 
+			{
+				mDevStrs[idx]=DeviceArray[1];
+			}
+			else if (mDevs[idx].equals("/mnt/usb")) 
+			{
+				mDevStrs[idx]=DeviceArray[2];
+			}
+			else if (mDevs[idx].equals(EXT_SD)) 
+			{
+				mDevStrs[idx]=DeviceArray[3];
+			}
+		}
+		
         int checked_id = sdid;
         if(selid != -1)
             checked_id = selid;
@@ -345,12 +415,12 @@ public class main extends Activity {
     //show dialog to choose dialog
         new AlertDialog.Builder(main.this)
             .setTitle(R.string.alertdialog_title)
-            .setSingleChoiceItems(mDevs, checked_id, new DialogInterface.OnClickListener()
+            .setSingleChoiceItems(mDevStrs, checked_id, new DialogInterface.OnClickListener()
             {
                 public void onClick(DialogInterface dialog, int which)
                 {
                     dialog.dismiss();
-                    m_DirEdit.setText(mDevs[which]);
+					updatePathName(mDevs[which]);
                     String devpath = mDevs[which].toString();
                     File pfile = new File(devpath);
                     if( pfile!=null && pfile.isDirectory()==true )
@@ -380,6 +450,36 @@ public class main extends Activity {
             .show();
 
     }
+
+	private static final String EXT_SD="/mnt/sdcard/external_sdcard";
+	protected String mDevStrs[] = null;
+	private boolean isRealSD=false;
+	
+	private void updatePathName(String dev)
+	{
+		String internal = getString(R.string.memory_device_str);
+		String sdcard = getString(R.string.sdcard_device_str);
+		String usb = getString(R.string.usb_device_str);
+		String sdcardExt = getString(R.string.ext_sdcard_device_str);
+		String str="";
+		if (dev.equals("/mnt/flash"))
+		{
+			str=internal;
+		}
+		else if(dev.equals("/mnt/sdcard"))
+		{
+			str=sdcard;
+		}
+		else if(dev.equals("/mnt/usb"))
+		{
+			str=usb;
+		}
+		else if(dev.equals(EXT_SD))
+		{
+			str=sdcardExt;
+		}
+		m_DirEdit.setText(str);
+	}
     
     //===================================================================
     //functions for installing and uninstalling
