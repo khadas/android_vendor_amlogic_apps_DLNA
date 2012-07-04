@@ -396,7 +396,10 @@ public class main extends Activity {
 			}
 			else if (mDevs[idx].equals("/mnt/sdcard")) 
 			{
-				mDevStrs[idx]=DeviceArray[1];
+				if(true==isRealSD)
+					mDevStrs[idx]=DeviceArray[3];
+				else
+					mDevStrs[idx]=DeviceArray[1];
 			}
 			else if (mDevs[idx].equals("/mnt/usb")) 
 			{
@@ -405,6 +408,10 @@ public class main extends Activity {
 			else if (mDevs[idx].equals(EXT_SD)) 
 			{
 				mDevStrs[idx]=DeviceArray[3];
+			}
+			else
+			{
+				mDevStrs[idx]=mDevs[idx];
 			}
 		}
 		
@@ -468,7 +475,10 @@ public class main extends Activity {
 		}
 		else if(dev.equals("/mnt/sdcard"))
 		{
-			str=sdcard;
+			if(true==isRealSD)
+				str=sdcardExt;
+			else
+				str=sdcard;
 		}
 		else if(dev.equals("/mnt/usb"))
 		{
@@ -477,6 +487,10 @@ public class main extends Activity {
 		else if(dev.equals(EXT_SD))
 		{
 			str=sdcardExt;
+		}
+		else
+		{
+			str=dev;
 		}
 		m_DirEdit.setText(str);
 	}
