@@ -926,6 +926,17 @@ public class main extends Activity {
     	    	    		int i = 0;
     	    	    		for(;i<files.length;i++)
     	    	    	    {
+    	    	    	    	//shield /sdcard/external_sdcard if select /sdcard to search with virtaul external_sdcard
+    	    	    	    	if(false==isRealSD)
+								{
+									String str=null;
+									str=files[i].toString();
+									if(str.compareTo(EXT_SD) == 0)
+									{
+										continue;
+									}
+								}
+								
                                 synchronized(m_syncobj)
                                 {
                                     if(m_bstop == true)
