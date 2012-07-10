@@ -353,15 +353,18 @@ public class main extends Activity {
 				if(false==isRealSD)
 				{
 					String str=null;
-					File[] filesTmp = files[i].listFiles(new DevFilter());
-					for(int n=0;n<filesTmp.length;n++)
+					if( files[i]!=null)
 					{
-						if(filesTmp[n].exists() && filesTmp[n].isDirectory())
+						File[] filesTmp = files[i].listFiles(new DevFilter());
+						for(int n=0;n<filesTmp.length;n++)
 						{
-							str=filesTmp[n].toString();
-							if(str.compareTo(EXT_SD) == 0)
+							if(filesTmp[n].exists() && filesTmp[n].isDirectory())
 							{
-								mDevs[files.length]=EXT_SD;
+								str=filesTmp[n].toString();
+								if(str.compareTo(EXT_SD) == 0)
+								{
+									mDevs[files.length]=EXT_SD;
+								}
 							}
 						}
 					}
