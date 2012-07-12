@@ -166,6 +166,8 @@ public class main extends Activity {
     		mHandleDiag.dismiss();
     	}
 
+		isSDVisiable = false;
+
         //release the wakelock
     	super.onPause();
     }
@@ -364,6 +366,7 @@ public class main extends Activity {
 								if(str.compareTo(EXT_SD) == 0)
 								{
 									mDevs[files.length]=EXT_SD;
+									isSDVisiable=true;
 								}
 							}
 						}
@@ -374,15 +377,15 @@ public class main extends Activity {
                 selid = i;
         }
 
-		if(false==isRealSD)
+		if(false==isRealSD && true==isSDVisiable)
 		{
 			//add for external_sdcard
 			if( (mScanRoot!=null) && (mDevs[files.length].compareTo(mScanRoot)==0))
 				selid = files.length;
 		}
-		
+
 		int len=-1;
-		if(false==isRealSD)
+		if(false==isRealSD && true==isSDVisiable)
 		{
 			len=files.length+1;
 		}
@@ -390,16 +393,23 @@ public class main extends Activity {
 		{
 			len=files.length;
 		}
+		
 		mDevStrs=new String[len];
 		for(int idx=0;idx<len;idx++)
 		{
+			if(mDevs[idx]==null)
+			{
+				Log.e(TAG,"showChooseDev err, mDevs["+idx+"]==null.");
+				continue;
+			}
+			
 			if (mDevs[idx].equals("/mnt/flash")) 
 			{
 				mDevStrs[idx]=DeviceArray[0];
 			}
 			else if (mDevs[idx].equals("/mnt/sdcard")) 
 			{
-				if(true==isRealSD)
+				if(true==isRealSD && true==isSDVisiable)
 					mDevStrs[idx]=DeviceArray[3];
 				else
 					mDevStrs[idx]=DeviceArray[1];
@@ -431,7 +441,14 @@ public class main extends Activity {
                 {
                     dialog.dismiss();
 					updatePathName(mDevs[which]);
-                    String devpath = mDevs[which].toString();
+                    String devpath = mDevs[which]==null? null : mDevs[which].toString();
+
+					if(devpath==null)
+					{
+						Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
+						return;
+					}
+					
                     File pfile = new File(devpath);
                     if( pfile!=null && pfile.isDirectory()==true )
                     {
@@ -464,6 +481,7 @@ public class main extends Activity {
 	private static final String EXT_SD="/mnt/sdcard/external_sdcard";
 	protected String mDevStrs[] = null;
 	private boolean isRealSD=false;
+	private boolean isSDVisiable=false;
 	
 	private void updatePathName(String dev)
 	{
@@ -472,13 +490,20 @@ public class main extends Activity {
 		String usb = getString(R.string.usb_device_str);
 		String sdcardExt = getString(R.string.ext_sdcard_device_str);
 		String str="";
+
+		if(dev==null)
+		{	
+			Log.e(TAG,"updatePathName error, dev=null");
+			return;
+		}
+		
 		if (dev.equals("/mnt/flash"))
 		{
 			str=internal;
 		}
 		else if(dev.equals("/mnt/sdcard"))
 		{
-			if(true==isRealSD)
+			if(true==isRealSD && true==isSDVisiable)
 				str=sdcardExt;
 			else
 				str=sdcard;
