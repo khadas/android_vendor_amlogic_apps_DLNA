@@ -111,7 +111,7 @@ public class main extends Activity {
         });
 
 		/* check whether use real sdcard*/
-		isRealSD=Environment.isExternalStorageBeSdcard();
+		isRealSD = true; //Environment.isExternalStorageBeSdcard();
         
         //change dir button
         m_DirEdit = (TextView)findViewById(R.id.Dir);
