@@ -24,7 +24,7 @@
 	<string name="no_space">空間不足，退出安裝</string>
 	<string name="memory_device_str">內部存儲器 </string>
 	<string name="sdcard_device_str">本機磁盤</string>
-	<string name="ext_sdcard_device_str">外接TF卡</string>
+	<string name="ext_sdcard_device_str">外部存儲卡</string>
 	<string name="sata_device_str">SATA</string>
 	<string name="usb_device_str">USB設備</string>
 </resources>

@@ -25,7 +25,7 @@
 	<string name="no_space">No enough space for installation</string>
 	<string name="memory_device_str">Internal Memory </string>
 	<string name="sdcard_device_str">Local Disk</string>
-	<string name="ext_sdcard_device_str">External TF Card</string>
+	<string name="ext_sdcard_device_str">External Storage Card</string>
 	<string name="sata_device_str">SATA</string>
 	<string name="usb_device_str">USB</string>
 </resources>
