@@ -1041,7 +1041,7 @@ public class main extends Activity {
 	
 	private void launchSettingsAppAndFinish() {
         //Create an intent to launch SettingsTwo activity
-        Intent launchSettingsIntent = new Intent(Settings.ACTION_APPLICATION_SETTINGS);
+        Intent launchSettingsIntent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
         startActivity(launchSettingsIntent);
     }
 	
