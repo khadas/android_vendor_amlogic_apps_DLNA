@@ -11,7 +11,8 @@
 	<string name="no_apk_found">No APK Found!</string>
 	<string name="scanning_init">&quot;Scanning ...\n\n&quot;</string>
 	<string name="handling_selected_package_init">&quot;Handling selected package:  \n&quot;</string>
-	<string name="install_uninstall">Install/Uninstall</string>
+	<string name="install">Install</string>
+	<string name="uninstall">Uninstall</string>
 	<string name="selectall">Select all</string>
 	<string name="unselect_all">Unselect all</string>
 	<string name="refresh">Refresh</string>

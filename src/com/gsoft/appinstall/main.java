@@ -103,9 +103,9 @@ public class main extends Activity {
 			public void onItemClick(AdapterView<?> parent, View view,int position, long id) 
 			{
 				APKInfo apkinfo = mApkList.get(position);
-				if(apkinfo.isInstalled() == true)
+				/*if(apkinfo.isInstalled() == true)
 					uninstall_apk(apkinfo.pCurPkgName);
-				else
+				else*/
 					install_apk(apkinfo.filepath);
 			}
         });
@@ -257,19 +257,25 @@ public class main extends Activity {
     
     //option menu
     protected final int MENU_INSTALL = 0;
-    protected final int MENU_SELECT_ALL = 1;
-    protected final int MENU_UNSELECT_ALL = 2;
-    protected final int MENU_FRESH = 3;
-    protected final int MENU_ABOUT = 4;
+	protected final int MENU_UNINSTALL = 1;
+    protected final int MENU_SELECT_ALL = 2;
+    protected final int MENU_UNSELECT_ALL = 3;
+    protected final int MENU_FRESH = 4;
+    protected final int MENU_ABOUT = 5;
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        menu.add(0, MENU_INSTALL, 0, R.string.install_uninstall);
+        menu.add(0, MENU_INSTALL, 0, R.string.install);
+		menu.add(0, MENU_UNINSTALL, 0, R.string.uninstall);
         menu.add(0, MENU_SELECT_ALL, 0, R.string.selectall);
         menu.add(0, MENU_UNSELECT_ALL, 0, R.string.unselect_all);
         menu.add(0, MENU_FRESH, 0, R.string.refresh);
         menu.add(0, MENU_ABOUT, 0, R.string.about);
         return true;
     }
+
+	private final int opInstall = 0;
+	private final int opUninstall = 1;
+	private int menuSelect = opInstall;
     
     public boolean onOptionsItemSelected(MenuItem item) 
     {
@@ -281,8 +287,13 @@ public class main extends Activity {
 					showDialogInner(DLG_UNKNOWN_APPS);
 					return true;
 				}
+				menuSelect = opInstall; 
 	        	startHandleOp();
 	            return true;
+			case MENU_UNINSTALL:
+				menuSelect = opUninstall; 
+				startHandleOp();
+				return true;
 	        case MENU_SELECT_ALL:
 	        	m_list.setAllItemChecked(true);
 	        	return true;
@@ -358,15 +369,18 @@ public class main extends Activity {
 					if( files[i]!=null)
 					{
 						File[] filesTmp = files[i].listFiles(new DevFilter());
-						for(int n=0;n<filesTmp.length;n++)
+						if(filesTmp!=null)
 						{
-							if(filesTmp[n].exists() && filesTmp[n].isDirectory())
+							for(int n=0;n<filesTmp.length;n++)
 							{
-								str=filesTmp[n].toString();
-								if(str.compareTo(EXT_SD) == 0)
+								if(filesTmp[n].exists() && filesTmp[n].isDirectory())
 								{
-									mDevs[files.length]=EXT_SD;
-									isSDVisiable=true;
+									str=filesTmp[n].toString();
+									if(str.compareTo(EXT_SD) == 0)
+									{
+										mDevs[files.length]=EXT_SD;
+										isSDVisiable=true;
+									}
 								}
 							}
 						}
@@ -755,7 +769,7 @@ public class main extends Activity {
             	PackageManager pm = getPackageManager();
                 PackageInstallObserver observer = new PackageInstallObserver();
                 observer.apkpath = apk_filepath;
-                pm.installPackage(Uri.fromFile(new File(apk_filepath)), observer, 0, null);
+                pm.installPackage(Uri.fromFile(new File(apk_filepath)), observer, pm.INSTALL_REPLACE_EXISTING, null);
             }
             public void uninstall_apk_slient(String apk_pkgname)
             {
@@ -782,7 +796,8 @@ public class main extends Activity {
 				APKInfo pinfo = mApkList.get((int)m_checkeditems[(int) m_handleitem]);
 				if(pinfo != null)
 				{
-                    if(pinfo.isInstalled()==false)
+                    //if(pinfo.isInstalled()==false)
+                    if(menuSelect == opInstall)
 					{
 						actionid = 0;
 						actionpara = pinfo.filepath;

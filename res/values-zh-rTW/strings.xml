@@ -10,7 +10,8 @@
     <string name="no_apk_found">&quot;沒有發現安裝文件&quot;</string>
     <string name="scanning_init">&quot;正在瀏覽 ...\n\n&quot;</string>
     <string name="handling_selected_package_init">&quot;正在處理所選包:  \n&quot;</string>
-    <string name="install_uninstall">安裝/卸載</string>
+    <string name="install">安裝</string>
+    <string name="uninstall">卸載</string>
 	<string name="selectall">選擇全部</string>
 	<string name="unselect_all">取消全部</string>
 	<string name="refresh">刷新</string>
