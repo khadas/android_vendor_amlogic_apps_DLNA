@@ -111,7 +111,19 @@ public class main extends Activity {
         });
 
 		/* check whether use real sdcard*/
-		isRealSD = Environment.isExternalStorageBeSdcard();
+		//isRealSD = Environment.isExternalStorageBeSdcard();
+		String path = System.getenv("INTERNAL_STORAGE");
+		if(path!=null) {
+			if(path.equals("/storage/sdcard0")) {
+				isRealSD = false;
+			}
+			else {
+				isRealSD = true;
+			}
+		}
+		else {
+			isRealSD = false;
+		}
         
         //change dir button
         m_DirEdit = (TextView)findViewById(R.id.Dir);
