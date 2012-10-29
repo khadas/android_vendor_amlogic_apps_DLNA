@@ -43,6 +43,10 @@ import android.content.DialogInterface;
 import java.lang.String;
 import android.os.StatFs;
 import android.os.Environment;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+
+
 
 public class main extends Activity {
 	private String TAG = "com.gsoft.appinstall";
@@ -150,12 +154,32 @@ public class main extends Activity {
         showChooseDev();
     }
 
+    private BroadcastReceiver mMountReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();                      
+            if (action == null)
+            	return;
+            if (action.equals(Intent.ACTION_MEDIA_EJECT)) {
+                 startScanOp();
+            } else if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {          	
+        		 //startScanOp();
+            } 
+        }
+    };
+
     public void onResume()
     {
         Log.d(TAG,"onResume");
         pkgadapter.notifyDataSetChanged();
         m_scanop.setHandler(mainhandler);
         m_installop.setHandler(mainhandler);
+		
+        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_MEDIA_MOUNTED);
+        intentFilter.addAction(Intent.ACTION_MEDIA_EJECT);
+        intentFilter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        intentFilter.addDataScheme("file");
+        registerReceiver(mMountReceiver, intentFilter);
         super.onResume();
     }
     
@@ -179,6 +203,7 @@ public class main extends Activity {
     	}
 
 		isSDVisiable = false;
+        unregisterReceiver(mMountReceiver);
 
         //release the wakelock
     	super.onPause();
