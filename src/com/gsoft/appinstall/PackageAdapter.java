@@ -49,6 +49,7 @@ class APKInfo extends Object
 				getApkIcon_Internal(pPkgRes,pPkgInfo);
 				filepath = apkpath;
 			}
+			assmgr.close();
 		}
 	}
 	

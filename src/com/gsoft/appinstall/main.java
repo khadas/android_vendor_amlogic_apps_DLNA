@@ -157,13 +157,32 @@ public class main extends Activity {
     private BroadcastReceiver mMountReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();                      
+            String action = intent.getAction(); 
             if (action == null)
             	return;
+
+			if(mScanRoot == null) 
+				return;
+
             if (action.equals(Intent.ACTION_MEDIA_EJECT)) {
-                 startScanOp();
-            } else if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {          	
-        		 //startScanOp();
+				if(mScanRoot.equals("/mnt/sdcard")) {
+					if(true==isRealSD && true==isSDVisiable) {
+						m_list.setAdapter(null);
+					}
+				}
+				else {
+					m_list.setAdapter(null);
+				}	
+                 //startScanOp();
+            } else if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {
+            	if(mScanRoot.equals("/mnt/sdcard")) {
+					if(true==isRealSD && true==isSDVisiable) {
+						startScanOp();
+					}
+				}
+				else {
+					startScanOp();
+				}
             } 
         }
     };
@@ -503,13 +522,13 @@ public class main extends Activity {
                     File pfile = new File(devpath);
                     if( pfile!=null && pfile.isDirectory()==true )
                     {
-                        if((mScanRoot == null) || (mScanRoot.compareTo(devpath) != 0))
+                        //if((mScanRoot == null) || (mScanRoot.compareTo(devpath) != 0))
                         {
                             mScanRoot = devpath;
                             startScanOp();
                         }
-                        else
-                            Toast.makeText(main.this, "same dir path", Toast.LENGTH_SHORT).show();
+                        //else
+                            //Toast.makeText(main.this, "same dir path", Toast.LENGTH_SHORT).show();
                     }
                     else
                     {
@@ -1024,7 +1043,7 @@ public class main extends Activity {
                                 }
 
     	    	    			File pcurfile = files[i];
-    	    	    			if(pcurfile.isDirectory())
+    	    	    			if(pcurfile.isDirectory()) 
     	    	    				pdirlist.add(pcurfile.getAbsolutePath());
     	    	    			else
     	    	    		    {
