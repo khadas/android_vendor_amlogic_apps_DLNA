@@ -397,7 +397,8 @@ public class main extends Activity {
                     String filename = arg0.getName();
                     String filenamelowercase = filename.toLowerCase();
                     if( (filenamelowercase.compareTo("asec")!=0) && (filenamelowercase.compareTo("secure")!=0) &&
-                        (filenamelowercase.compareTo("obb")!=0)&&(filenamelowercase.compareTo("usbdrive")!=0))
+                        (filenamelowercase.compareTo("obb")!=0)&&(filenamelowercase.compareTo("usbdrive")!=0)&&
+                        (filenamelowercase.compareTo("shell")!=0))
                     {
                         return true;
                     }
