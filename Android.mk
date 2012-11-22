@@ -1,4 +1,4 @@
-ifeq ($(BOARD_USE_DEFAULT_APPINSTALL),true)
+ifneq ($(BOARD_USE_DEFAULT_APPINSTALL),false)
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
