@@ -174,7 +174,7 @@ public class main extends Activity {
 					m_list.setAdapter(null);
 					mApkList.clear();     //user may plug out sdcard when scan dir! clear mApkList to rm the apks which has been added in
 				}	
-                 //startScanOp();
+                 startScanOp();
             } else if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {
             	if(mScanRoot.equals("/mnt/sdcard")) {
 					if(true==isRealSD && true==isSDVisiable) {
