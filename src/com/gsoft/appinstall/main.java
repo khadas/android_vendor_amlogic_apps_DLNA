@@ -53,6 +53,12 @@ public class main extends Activity {
     private String mVersion = "V1.1.3";
     private String mReleaseDate = "2012.04.01";
 
+	private static final String ROOT_PATH = "/storage";
+	private static final String SHEILD_EXT_STOR = "/storage/sdcard0/external_storage";
+	private static final String NAND_PATH = "/storage/sdcard0";
+	private static final String SD_PATH = "/storage/external_storage/sdcard1";
+	private static final String USB_PATH ="/storage/external_storage";
+
     //UI INFO
 	protected String mScanRoot = null;
     protected CheckAbleList m_list = null;
@@ -113,21 +119,6 @@ public class main extends Activity {
 					install_apk(apkinfo.filepath);
 			}
         });
-
-		/* check whether use real sdcard*/
-		//isRealSD = Environment.isExternalStorageBeSdcard();
-		String path = System.getenv("INTERNAL_STORAGE");
-		if(path!=null) {
-			if(path.equals("/storage/sdcard0")) {
-				isRealSD = false;
-			}
-			else {
-				isRealSD = true;
-			}
-		}
-		else {
-			isRealSD = false;
-		}
         
         //change dir button
         m_DirEdit = (TextView)findViewById(R.id.Dir);
@@ -158,33 +149,38 @@ public class main extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction(); 
+			String data = intent.getDataString(); 
             if (action == null)
             	return;
 
 			if(mScanRoot == null) 
 				return;
-
-            if (action.equals(Intent.ACTION_MEDIA_EJECT)) {
-				if(mScanRoot.equals("/mnt/sdcard")) {
-					if(true==isRealSD && true==isSDVisiable) {
+			
+			 if (action.equals(Intent.ACTION_MEDIA_EJECT)) {
+				int index=data.indexOf(ROOT_PATH);
+				if(index>=0)
+				{
+					String path=data.substring(index);
+					if(path.equals(mScanRoot)) {
 						m_list.setAdapter(null);
+						mApkList.clear();
 					}
 				}
-				else {
-					m_list.setAdapter(null);
-					mApkList.clear();     //user may plug out sdcard when scan dir! clear mApkList to rm the apks which has been added in
-				}	
-                 startScanOp();
-            } else if (action.equals(Intent.ACTION_MEDIA_MOUNTED)) {
-            	if(mScanRoot.equals("/mnt/sdcard")) {
-					if(true==isRealSD && true==isSDVisiable) {
+				else //exception handle
+                	startScanOp();
+            } 
+			else if(action.equals(Intent.ACTION_MEDIA_MOUNTED)) {
+				int index=data.indexOf(ROOT_PATH);
+				if(index>=0)
+				{
+					String path=data.substring(index);
+					if(path.equals(mScanRoot)) {
 						startScanOp();
 					}
 				}
-				else {
-					startScanOp();
-				}
-            } 
+				else //exception handle
+                	startScanOp();
+			}
         }
     };
 
@@ -222,7 +218,6 @@ public class main extends Activity {
     		mHandleDiag.dismiss();
     	}
 
-		isSDVisiable = false;
         unregisterReceiver(mMountReceiver);
 
         //release the wakelock
@@ -380,92 +375,49 @@ public class main extends Activity {
     }
     
     //user functions
-    public void showChooseDev()
+	public void showChooseDev()
     {
-     String internal = getString(R.string.memory_device_str);
-	 String sdcard = getString(R.string.sdcard_device_str);
-	 String usb = getString(R.string.usb_device_str);
-	 String sdcardExt = getString(R.string.ext_sdcard_device_str);
-	 String DeviceArray[]={internal,sdcard,usb,sdcardExt};
-	
-    //to list all devices
-        class DevFilter implements FileFilter
-        {
-        	public boolean accept(File arg0){
-        		if(arg0.isDirectory() == true)
-                {      
-                    String filename = arg0.getName();
-                    String filenamelowercase = filename.toLowerCase();
-                    if( (filenamelowercase.compareTo("asec")!=0) && (filenamelowercase.compareTo("secure")!=0) &&
-                        (filenamelowercase.compareTo("obb")!=0)&&(filenamelowercase.compareTo("usbdrive")!=0)&&
-                        (filenamelowercase.compareTo("shell")!=0))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }
-        File pfile = new File("/mnt");
-        File[] files = pfile.listFiles(new DevFilter());
-		
-		if(false==isRealSD)
-        	mDevs = new String[files.length+1];//+1 indicate /mnt/sdcard/external_sdcard
-        else
-			mDevs = new String[files.length];
-		
-        int i = 0,sdid=-1,selid=-1;
-        for(i=0;i<files.length;i++)
-        {
-            mDevs[i]=files[i].toString();
-            if(mDevs[i].compareTo("/mnt/sdcard") == 0)
-        	{
-            	sdid = i;
-				if(false==isRealSD)
-				{
-					String str=null;
-					if( files[i]!=null)
-					{
-						File[] filesTmp = files[i].listFiles(new DevFilter());
-						if(filesTmp!=null)
-						{
-							for(int n=0;n<filesTmp.length;n++)
-							{
-								if(filesTmp[n].exists() && filesTmp[n].isDirectory())
-								{
-									str=filesTmp[n].toString();
-									if(str.compareTo(EXT_SD) == 0)
-									{
-										mDevs[files.length]=EXT_SD;
-										isSDVisiable=true;
-									}
-								}
-							}
+    	int devCnt = 0;
+		int selid = 0;
+		String internal = getString(R.string.memory_device_str);
+		String sdcard = getString(R.string.sdcard_device_str);
+		String usb = getString(R.string.usb_device_str);
+		String sdcardExt = getString(R.string.ext_sdcard_device_str);
+		String DeviceArray[]={internal,sdcard,usb,sdcardExt};
+
+		//init dev count 
+		File pfile = new File(USB_PATH);
+        File[] files = pfile.listFiles();
+		mDevs = new String[files.length+1];//+1 indicate NAND_PATH
+
+		File dir = new File(NAND_PATH);
+		if (dir.exists() && dir.isDirectory()) {
+			mDevs[devCnt]=dir.toString();
+		}
+
+		dir = new File(SD_PATH);
+		if (dir.exists() && dir.isDirectory()) {
+			devCnt++;
+			mDevs[devCnt]=dir.toString();
+		}
+
+		dir = new File(USB_PATH);
+		if (dir.exists() && dir.isDirectory()) { 
+			if (dir.listFiles() != null) {
+				for (File file : dir.listFiles()) {
+					if (file.isDirectory()) {
+						String devname = null;
+						String path = file.getAbsolutePath();
+						if (path.startsWith(USB_PATH+"/sd")&&!path.equals(SD_PATH)) {
+							devCnt++;
+							mDevs[devCnt]=file.toString();
 						}
 					}
 				}
-        	}
-            else if( (mScanRoot!=null) && (mDevs[i].compareTo(mScanRoot)==0))
-                selid = i;
-        }
-
-		if(false==isRealSD && true==isSDVisiable)
-		{
-			//add for external_sdcard
-			if( (mScanRoot!=null) && (mDevs[files.length].compareTo(mScanRoot)==0))
-				selid = files.length;
-		}
-
-		int len=-1;
-		if(false==isRealSD && true==isSDVisiable)
-		{
-			len=files.length+1;
-		}
-		else
-		{
-			len=files.length;
+			}
 		}
 		
+		int len = devCnt+1;
 		mDevStrs=new String[len];
 		for(int idx=0;idx<len;idx++)
 		{
@@ -475,22 +427,15 @@ public class main extends Activity {
 				continue;
 			}
 			
-			if (mDevs[idx].equals("/mnt/flash")) 
+			if (mDevs[idx].equals(NAND_PATH)) 
 			{
-				mDevStrs[idx]=DeviceArray[0];
+				mDevStrs[idx]=DeviceArray[1];
 			}
-			else if (mDevs[idx].equals("/mnt/sdcard")) 
-			{
-				if(true==isRealSD && true==isSDVisiable)
-					mDevStrs[idx]=DeviceArray[3];
-				else
-					mDevStrs[idx]=DeviceArray[1];
-			}
-			else if (mDevs[idx].equals("/mnt/usb")) 
+			else if (mDevs[idx].startsWith(USB_PATH+"/sd")&&!mDevs[idx].equals(SD_PATH))
 			{
 				mDevStrs[idx]=DeviceArray[2];
 			}
-			else if (mDevs[idx].equals(EXT_SD)) 
+			else if (mDevs[idx].equals(SD_PATH)) 
 			{
 				mDevStrs[idx]=DeviceArray[3];
 			}
@@ -498,16 +443,15 @@ public class main extends Activity {
 			{
 				mDevStrs[idx]=mDevs[idx];
 			}
+
+			if(mDevs[idx].equals(mScanRoot))
+				selid = idx;
 		}
 		
-        int checked_id = sdid;
-        if(selid != -1)
-            checked_id = selid;
-        
     //show dialog to choose dialog
         new AlertDialog.Builder(main.this)
             .setTitle(R.string.alertdialog_title)
-            .setSingleChoiceItems(mDevStrs, checked_id, new DialogInterface.OnClickListener()
+            .setSingleChoiceItems(mDevStrs, selid, new DialogInterface.OnClickListener()
             {
                 public void onClick(DialogInterface dialog, int which)
                 {
@@ -550,11 +494,7 @@ public class main extends Activity {
 
     }
 
-	private static final String EXT_SD="/mnt/sdcard/external_sdcard";
 	protected String mDevStrs[] = null;
-	private boolean isRealSD=false;
-	private boolean isSDVisiable=false;
-	
 	private void updatePathName(String dev)
 	{
 		String internal = getString(R.string.memory_device_str);
@@ -568,23 +508,16 @@ public class main extends Activity {
 			Log.e(TAG,"updatePathName error, dev=null");
 			return;
 		}
-		
-		if (dev.equals("/mnt/flash"))
+
+		if(dev.equals(NAND_PATH))
 		{
-			str=internal;
+			str=sdcard;
 		}
-		else if(dev.equals("/mnt/sdcard"))
-		{
-			if(true==isRealSD && true==isSDVisiable)
-				str=sdcardExt;
-			else
-				str=sdcard;
-		}
-		else if(dev.equals("/mnt/usb"))
+		else if (dev.startsWith(USB_PATH+"/sd")&&!dev.equals(SD_PATH))
 		{
 			str=usb;
 		}
-		else if(dev.equals(EXT_SD))
+		else if(dev.equals(SD_PATH))
 		{
 			str=sdcardExt;
 		}
@@ -1028,14 +961,11 @@ public class main extends Activity {
     	    	    		for(;i<files.length;i++)
     	    	    	    {
     	    	    	    	//shield /sdcard/external_sdcard if select /sdcard to search with virtaul external_sdcard
-    	    	    	    	if(false==isRealSD)
+								String str=null;
+								str=files[i].toString();
+								if(str.compareTo(SHEILD_EXT_STOR) == 0)
 								{
-									String str=null;
-									str=files[i].toString();
-									if(str.compareTo(EXT_SD) == 0)
-									{
-										continue;
-									}
+									continue;
 								}
 								
                                 synchronized(m_syncobj)
