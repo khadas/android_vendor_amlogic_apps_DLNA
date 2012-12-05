@@ -21,6 +21,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.os.UserHandle;
 
 class APKInfo extends Object
 {
@@ -71,7 +72,7 @@ class APKInfo extends Object
     {
         ApplicationInfo appinfo = null;
         try {
-        	appinfo = pkgmgr.getApplicationInfo(pCurPkgName,PackageManager.GET_UNINSTALLED_PACKAGES);
+        	appinfo = pkgmgr.getApplicationInfo(pCurPkgName,PackageManager.GET_META_DATA);
         } catch (NameNotFoundException e) {
         	appinfo = null;
         }
