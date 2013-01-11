@@ -218,12 +218,16 @@ public class main extends Activity {
     		mHandleDiag.dismiss();
     	}
 
-        unregisterReceiver(mMountReceiver);
+        //unregisterReceiver(mMountReceiver);
 
         //release the wakelock
     	super.onPause();
     }
-
+    public void onStop()
+    {
+        unregisterReceiver(mMountReceiver);
+        super.onStop();
+    }
     protected void onDestroy()
     {
         if(m_configchanged == false)
