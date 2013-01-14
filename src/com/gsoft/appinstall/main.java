@@ -156,7 +156,7 @@ public class main extends Activity {
 			if(mScanRoot == null) 
 				return;
 			
-			 if (action.equals(Intent.ACTION_MEDIA_EJECT)) {
+			 if (action.equals(Intent.ACTION_MEDIA_UNMOUNTED)) {
 				int index=data.indexOf(ROOT_PATH);
 				if(index>=0)
 				{
