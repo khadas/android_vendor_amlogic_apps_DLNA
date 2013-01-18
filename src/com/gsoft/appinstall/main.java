@@ -381,6 +381,7 @@ public class main extends Activity {
     //user functions
 	public void showChooseDev()
     {
+        int dev_count=0;
     	int devCnt = 0;
 		int selid = 0;
 		String internal = getString(R.string.memory_device_str);
@@ -437,7 +438,9 @@ public class main extends Activity {
 			}
 			else if (mDevs[idx].startsWith(USB_PATH+"/sd")&&!mDevs[idx].equals(SD_PATH))
 			{
-				mDevStrs[idx]=DeviceArray[2];
+                dev_count++;
+                char data = (char) ('A' +dev_count-1);
+                mDevStrs[idx] =  DeviceArray[2] +"(" +data + ":)" ;
 			}
 			else if (mDevs[idx].equals(SD_PATH)) 
 			{
@@ -460,7 +463,8 @@ public class main extends Activity {
                 public void onClick(DialogInterface dialog, int which)
                 {
                     dialog.dismiss();
-					updatePathName(mDevs[which]);
+                    //updatePathName(mDevs[which]);
+                    m_DirEdit.setText(mDevStrs[which]);
                     String devpath = mDevs[which]==null? null : mDevs[which].toString();
 
 					if(devpath==null)
