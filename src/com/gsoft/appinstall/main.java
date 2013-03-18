@@ -381,124 +381,132 @@ public class main extends Activity {
     //user functions
 	public void showChooseDev()
     {
-        int dev_count=0;
-    	int devCnt = 0;
-		int selid = 0;
-		String internal = getString(R.string.memory_device_str);
-		String sdcard = getString(R.string.sdcard_device_str);
-		String usb = getString(R.string.usb_device_str);
-		String sdcardExt = getString(R.string.ext_sdcard_device_str);
-		String DeviceArray[]={internal,sdcard,usb,sdcardExt};
+        int dev_usb_count=0;
+        int dev_cd_count=0;
+        int devCnt = 0;
+        int selid = 0;
+        String internal = getString(R.string.memory_device_str);
+        String sdcard = getString(R.string.sdcard_device_str);
+        String usb = getString(R.string.usb_device_str);
+        String cdrom = getString(R.string.cdrom_device_str);
+        String sdcardExt = getString(R.string.ext_sdcard_device_str);
+        String DeviceArray[]={internal,sdcard,usb,cdrom,sdcardExt};
 
-		//init dev count 
-		File pfile = new File(USB_PATH);
+        //init dev count 
+        File pfile = new File(USB_PATH);
         File[] files = pfile.listFiles();
-		mDevs = new String[files.length+1];//+1 indicate NAND_PATH
+        mDevs = new String[files.length+1];//+1 indicate NAND_PATH
 
-		File dir = new File(NAND_PATH);
-		if (dir.exists() && dir.isDirectory()) {
-			mDevs[devCnt]=dir.toString();
-		}
+        File dir = new File(NAND_PATH);
+        if (dir.exists() && dir.isDirectory()) {
+            mDevs[devCnt]=dir.toString();
+        }
 
-		dir = new File(SD_PATH);
-		if (dir.exists() && dir.isDirectory()) {
-			devCnt++;
-			mDevs[devCnt]=dir.toString();
-		}
+        dir = new File(SD_PATH);
+        if (dir.exists() && dir.isDirectory()) {
+            devCnt++;
+            mDevs[devCnt]=dir.toString();
+        }
 
-		dir = new File(USB_PATH);
-		if (dir.exists() && dir.isDirectory()) { 
-			if (dir.listFiles() != null) {
-				for (File file : dir.listFiles()) {
-					if (file.isDirectory()) {
-						String devname = null;
-						String path = file.getAbsolutePath();
-						if (path.startsWith(USB_PATH+"/sd")&&!path.equals(SD_PATH)) {
-							devCnt++;
-							mDevs[devCnt]=file.toString();
-						}
-					}
-				}
-			}
-		}
-		
-		int len = devCnt+1;
-		mDevStrs=new String[len];
-		for(int idx=0;idx<len;idx++)
-		{
-			if(mDevs[idx]==null)
-			{
-				Log.e(TAG,"showChooseDev err, mDevs["+idx+"]==null.");
-				continue;
-			}
-			
-			if (mDevs[idx].equals(NAND_PATH)) 
-			{
-				mDevStrs[idx]=DeviceArray[1];
-			}
-			else if (mDevs[idx].startsWith(USB_PATH+"/sd")&&!mDevs[idx].equals(SD_PATH))
-			{
-                dev_count++;
-                char data = (char) ('A' +dev_count-1);
-                mDevStrs[idx] =  DeviceArray[2] +"(" +data + ":)" ;
-			}
-			else if (mDevs[idx].equals(SD_PATH)) 
-			{
-				mDevStrs[idx]=DeviceArray[3];
-			}
-			else
-			{
-				mDevStrs[idx]=mDevs[idx];
-			}
-
-			if(mDevs[idx].equals(mScanRoot))
-				selid = idx;
-		}
-		
-    //show dialog to choose dialog
-        new AlertDialog.Builder(main.this)
-            .setTitle(R.string.alertdialog_title)
-            .setSingleChoiceItems(mDevStrs, selid, new DialogInterface.OnClickListener()
-            {
-                public void onClick(DialogInterface dialog, int which)
-                {
-                    dialog.dismiss();
-                    //updatePathName(mDevs[which]);
-                    m_DirEdit.setText(mDevStrs[which]);
-                    String devpath = mDevs[which]==null? null : mDevs[which].toString();
-
-					if(devpath==null)
-					{
-						Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
-						return;
-					}
-					
-                    File pfile = new File(devpath);
-                    if( pfile!=null && pfile.isDirectory()==true )
-                    {
-                        //if((mScanRoot == null) || (mScanRoot.compareTo(devpath) != 0))
-                        {
-                            mScanRoot = devpath;
-                            startScanOp();
+        dir = new File(USB_PATH);
+        if (dir.exists() && dir.isDirectory()) { 
+            if (dir.listFiles() != null) {
+                for (File file : dir.listFiles()) {
+                    if (file.isDirectory()) {
+                    String devname = null;
+                    String path = file.getAbsolutePath();
+                        if ((path.startsWith(USB_PATH+"/sd")||path.startsWith(USB_PATH+"/sr"))&&!path.equals(SD_PATH)) {
+                            devCnt++;
+                            mDevs[devCnt]=file.toString();
                         }
-                        //else
-                            //Toast.makeText(main.this, "same dir path", Toast.LENGTH_SHORT).show();
-                    }
-                    else
-                    {
-                        Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
                     }
                 }
-            })
-            .setOnCancelListener(new DialogInterface.OnCancelListener()
+            }
+        }
+
+        int len = devCnt+1;
+        mDevStrs=new String[len];
+        for(int idx=0;idx<len;idx++)
+        {
+            if(mDevs[idx]==null)
             {
-                public void onCancel(DialogInterface dialog)
+                Log.e(TAG,"showChooseDev err, mDevs["+idx+"]==null.");
+                continue;
+            }
+
+            if (mDevs[idx].equals(NAND_PATH)) 
+            {
+                mDevStrs[idx]=DeviceArray[1];
+            }
+            else if (mDevs[idx].startsWith(USB_PATH+"/sd")&&!mDevs[idx].equals(SD_PATH))
+            {
+                dev_usb_count++;
+                char data = (char) ('A' +dev_usb_count-1);
+                mDevStrs[idx] = DeviceArray[2] +"(" +data + ":)" ;
+            }
+            else if (mDevs[idx].startsWith(USB_PATH+"/sr")&&!mDevs[idx].equals(SD_PATH))
+            {
+                dev_cd_count++;
+                char data = (char) ('A' +dev_cd_count-1);
+                mDevStrs[idx] = DeviceArray[3] +"(" +data + ":)" ;
+            }
+            else if (mDevs[idx].equals(SD_PATH)) 
+            {
+                mDevStrs[idx]=DeviceArray[4];
+            }
+            else
+            {
+                mDevStrs[idx]=mDevs[idx];
+            }
+
+            if(mDevs[idx].equals(mScanRoot))
+                selid = idx;
+        }
+
+        //show dialog to choose dialog
+        new AlertDialog.Builder(main.this)
+        .setTitle(R.string.alertdialog_title)
+        .setSingleChoiceItems(mDevStrs, selid, new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.dismiss();
+                //updatePathName(mDevs[which]);
+                m_DirEdit.setText(mDevStrs[which]);
+                String devpath = mDevs[which]==null? null : mDevs[which].toString();
+
+                if(devpath==null)
                 {
-                    if(mScanRoot == null)
-                        main.this.finish();
+                    Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-            })
-            .show();
+
+                File pfile = new File(devpath);
+                if( pfile!=null && pfile.isDirectory()==true )
+                {
+                    //if((mScanRoot == null) || (mScanRoot.compareTo(devpath) != 0))
+                    {
+                        mScanRoot = devpath;
+                        startScanOp();
+                    }
+                    //else
+                    //Toast.makeText(main.this, "same dir path", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
+                }
+            }
+        })
+        .setOnCancelListener(new DialogInterface.OnCancelListener()
+        {
+            public void onCancel(DialogInterface dialog)
+            {
+                if(mScanRoot == null)
+                main.this.finish();
+            }
+        })
+        .show();
 
     }
 
@@ -508,6 +516,7 @@ public class main extends Activity {
 		String internal = getString(R.string.memory_device_str);
 		String sdcard = getString(R.string.sdcard_device_str);
 		String usb = getString(R.string.usb_device_str);
+		String cdrom = getString(R.string.cdrom_device_str);
 		String sdcardExt = getString(R.string.ext_sdcard_device_str);
 		String str="";
 
@@ -524,6 +533,10 @@ public class main extends Activity {
 		else if (dev.startsWith(USB_PATH+"/sd")&&!dev.equals(SD_PATH))
 		{
 			str=usb;
+		}
+		else if (dev.startsWith(USB_PATH+"/sr")&&!dev.equals(SD_PATH))
+		{
+			str=cdrom;
 		}
 		else if(dev.equals(SD_PATH))
 		{

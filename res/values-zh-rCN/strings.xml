@@ -28,4 +28,5 @@
 	<string name="ext_sdcard_device_str">外部存储卡</string>
 	<string name="sata_device_str">SATA</string>
 	<string name="usb_device_str">USB设备</string>
+	<string name="cdrom_device_str">光盘驱动器</string>
 </resources>
