@@ -54,8 +54,8 @@ public class main extends Activity {
     private String mReleaseDate = "2012.04.01";
 
 	private static final String ROOT_PATH = "/storage";
-	private static final String SHEILD_EXT_STOR = "/storage/sdcard0/external_storage";
-	private static final String NAND_PATH = "/storage/sdcard0";
+	private static final String SHEILD_EXT_STOR = Environment.getExternalStorageDirectory().getPath()+"/external_storage";//"/storage/sdcard0/external_storage";
+	private static final String NAND_PATH = Environment.getExternalStorageDirectory().getPath();//"/storage/sdcard0";
 	private static final String SD_PATH = "/storage/external_storage/sdcard1";
 	private static final String USB_PATH ="/storage/external_storage";
 
