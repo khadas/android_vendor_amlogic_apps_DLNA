@@ -225,7 +225,10 @@ public class main extends Activity {
     }
     public void onStop()
     {
-        unregisterReceiver(mMountReceiver);
+        if(mMountReceiver != null) {
+            unregisterReceiver(mMountReceiver);
+            mMountReceiver = null;
+        }
         super.onStop();
     }
     protected void onDestroy()
