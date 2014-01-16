@@ -1,0 +1,45 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <include
+        android:id="@+id/title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        layout="@layout/titlebar" />
+
+    <View
+        android:id="@+id/top_divider"
+        style="@style/TopDivider"
+        android:layout_below="@id/title_bar" />
+
+    <LinearLayout
+        android:id="@+id/main_view"
+        android:layout_below="@id/top_divider"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal" >
+
+        <fragment
+            android:id="@+id/frag_list"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="4"
+            class="com.amlogic.mediacenter.FucFragment" >
+
+            <!-- Preview: layout=@layout/row_devices -->
+        </fragment>
+
+        <FrameLayout
+            android:id="@+id/frag_detail"
+            android:layout_width="0px"
+            android:background="?android:attr/detailsElementBackground"
+            android:layout_height="match_parent"
+            android:layout_weight="6">
+
+            <!-- Preview: layout=@layout/device_detail -->
+        </FrameLayout>
+    </LinearLayout>
+
+</RelativeLayout>

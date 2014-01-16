@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@color/black"
+    android:layout_height="match_parent"
+    android:id="@+id/image_control" >
+
+    <ImageView
+        android:id="@+id/imageview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true" />
+    <LinearLayout
+        android:id="@+id/split_layout"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:background="@drawable/play_bar"
+        android:layout_height="wrap_content"
+        android:paddingLeft="64dp"
+        android:paddingRight="64dp"
+        android:layout_width="fill_parent">
+        <ImageButton
+            android:id="@+id/back"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/exit_play" >
+        </ImageButton>
+
+        <ImageButton
+            android:id="@+id/bt_left"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/forward_play"
+            />
+        <ImageButton
+            android:id="@+id/bt_play_pause"
+            android:layout_height="wrap_content" 
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/play_play"
+            />
+        <ImageButton
+            android:id="@+id/bt_right"
+            android:layout_height="wrap_content" 
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/next_play"
+            />
+        <ImageButton
+            android:id="@+id/bt_roomin"
+            android:layout_height="wrap_content" 
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/zoom_in"
+            />
+        <ImageButton
+            android:id="@+id/bt_roomout"
+            android:layout_height="wrap_content" 
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:src="@drawable/zoom_out"
+            />
+    </LinearLayout>
+
+</RelativeLayout>

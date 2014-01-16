@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="music_mode">
+        <item>"全部循环"</item>
+        <item>"单曲循环"</item>
+        <item>"随机播放"</item>
+    </string-array> 
+</resources>   

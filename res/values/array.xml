@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="music_mode">
+        <item>"Repeat All"</item>
+        <item>"Repeat One"</item>
+        <item>"Random Play"</item>
+    </string-array>
+
+<!--     <integer-array name="play_mode">
+        <item>R.drawable.order_play</item>
+        <item>R.drawable.single_play</item>
+        <item>R.drawable.random_play</item>
+    </integer-array> -->
+
+</resources>

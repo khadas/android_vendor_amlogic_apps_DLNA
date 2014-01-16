@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <root xmlns="urn:schemas-upnp-org:device-1-0">
+    <specVersion>
+      <major>1</major>
+      <minor>0</minor>
+    </specVersion>
+    <device>
+      <deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType>
+      <friendlyName>AML-Intel DMR</friendlyName>
+      <manufacturer>Amlogic Corporation</manufacturer>
+      <manufacturerURL>http://www.amlogic.com</manufacturerURL>
+      <modelDescription>Intel AV Media Renderer device</modelDescription>
+      <modelName>AV Renderer</modelName>
+      <modelURL>http://www.amlogic.com/technology/upnp</modelURL>
+      <UDN>uuid:bda4efc0-db0c-41f8-b7d5-</UDN>
+      <serviceList>
+        <service>
+          <serviceType>urn:schemas-upnp-org:service:AVTransport:1</serviceType>
+          <serviceId>urn:schemas-upnp-org:service:AVTransport</serviceId>
+          <SCPDURL>INTEL.AVTransport.scpd.xml</SCPDURL>
+          <controlURL>_urn:schemas-upnp-org:service:AVTransport_control</controlURL>
+          <eventSubURL>_urn:schemas-upnp-org:service:AVTransport_event</eventSubURL>
+        </service>
+        <service>
+          <serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
+          <serviceId>urn:schemas-upnp-org:service:ConnectionManager</serviceId>
+          <SCPDURL>INTEL.ConnectionManager.scpd.xml</SCPDURL>
+          <controlURL>_urn:schemas-upnp-org:service:ConnectionManager_control</controlURL>
+          <eventSubURL>_urn:schemas-upnp-org:service:ConnectionManager_event</eventSubURL>
+        </service>
+        <service>
+          <serviceType>urn:schemas-upnp-org:service:RenderingControl:1</serviceType>
+          <serviceId>urn:schemas-upnp-org:service:RenderingControl</serviceId>
+          <SCPDURL>INTEL.RenderingControl.scpd.xml</SCPDURL>
+          <controlURL>_urn:schemas-upnp-org:service:RenderingControl_control</controlURL>
+          <eventSubURL>_urn:schemas-upnp-org:service:RenderingControl_event</eventSubURL>
+        </service>
+      </serviceList>
+    </device>
+  </root>

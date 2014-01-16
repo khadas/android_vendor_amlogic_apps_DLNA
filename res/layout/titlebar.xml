@@ -1,0 +1,32 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+    <ImageView 
+        android:id="@+id/icon"
+        android:src="@drawable/ic_launcher_mini"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentLeft="true"
+        />
+    <TextView
+        android:id="@+id/device_name"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:textColor="#ffffffff"
+        android:textSize="22px"
+        android:layout_alignBottom="@id/icon"
+        android:text="@string/app_name"
+        android:layout_toRightOf="@id/icon"
+        android:layout_marginLeft="20dp"
+        />
+    <ImageButton 
+        android:id="@+id/fresh"
+        android:background="@drawable/fresh_list"
+        android:visibility="gone"
+        android:layout_marginRight="32dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@id/icon"
+        android:layout_height="match_parent"
+        android:layout_width="wrap_content"/>
+</RelativeLayout>
