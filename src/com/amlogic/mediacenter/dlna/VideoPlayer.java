@@ -14,6 +14,7 @@ import android.app.ProgressDialog;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.AlertDialog;
+import android.app.SystemWriteManager;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
@@ -112,6 +113,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
     private boolean          mDisplayDMP         = false;
     private String           mVideoBuffer        = "0.0";
     private PowerManager.WakeLock mWakeLock;
+    private boolean mHideStatusBar = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -123,6 +125,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         Intent intent = getIntent();
         currentURI = intent.getStringExtra(AmlogicCP.EXTRA_MEDIA_URI);
         mediaType = intent.getStringExtra(AmlogicCP.EXTRA_MEDIA_TYPE);
+        mHideStatusBar = intent.getBooleanExtra("hideStatusBar",false);
         /*
          * if (!MediaRendererDevice.TYPE_VIDEO.equals(mediaType) || (currentURI
          * == null)) { finish(); return; }
@@ -266,9 +269,9 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
     }
     
     private void before() {
-        if (DeviceFileBrowser.playList.size()== 1)
-            return;
-        if (mCurIndex <= 0 || mCurIndex < 0) {
+        if (DeviceFileBrowser.playList.size()== 1){
+			mCurIndex = 0;
+        }else if (mCurIndex <= 0) {
             mCurIndex = (DeviceFileBrowser.playList.size() - 1);
         } else {
             mCurIndex--;
@@ -281,11 +284,11 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
     }
     
     private void next() {
-        if (DeviceFileBrowser.playList.size() == 1)
-            return;
-        if (mCurIndex > (DeviceFileBrowser.playList.size() - 1)|| mCurIndex < 0){
+        if (DeviceFileBrowser.playList.size() == 1){
             mCurIndex = 0;
-        }else if (mCurIndex < (DeviceFileBrowser.playList.size() - 2)) {
+        }else if (mCurIndex >= (DeviceFileBrowser.playList.size() - 1)|| mCurIndex < 0){
+            mCurIndex = 0;
+        }else if (mCurIndex < (DeviceFileBrowser.playList.size() - 1)) {
             mCurIndex++;
         } else {
             mCurIndex = 0;
@@ -318,6 +321,9 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         hideLoading();
         sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_PAUSED);
         SystemProperties.set("media.amplayer.buffertime", mVideoBuffer);
+	if(mHideStatusBar){
+            showStatusBar();
+        }
 		mWakeLock.release();
     }
     
@@ -450,6 +456,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             Debug.d(TAG, "#####VideoPlayer.UPNPReceiver: " + action
                     + ",  mediaType=" + mediaType);
             readyForFinish = false;
+	    mHideStatusBar = intent.getBooleanExtra("hideStatusBar",false);
             if (action.equals(AmlogicCP.UPNP_PLAY_ACTION)) {
                 String uri = intent.getStringExtra(AmlogicCP.EXTRA_MEDIA_URI);
                 stopExit();
@@ -864,4 +871,9 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         }
         return false;
     }
+
+     private void showStatusBar(){
+         SystemWriteManager sw = (SystemWriteManager)this.getSystemService("system_write");
+         sw.setProperty("persist.sys.hideStatusBar", "false");
+     }
 }

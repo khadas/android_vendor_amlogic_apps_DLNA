@@ -29,6 +29,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
+import android.app.SystemWriteManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -432,6 +433,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks{
             intent.putExtra(AmlogicCP.EXTRA_MEDIA_TYPE, TYPE_VIDEO);
             intent.putExtra(DEV_TYPE, TYPE_DMP);
             intent.putExtra(CURENT_POS, play_index);
+            intent.putExtra("hideStatusBar",hideStatusBar());
             intent.setClass(getActivity(), VideoPlayer.class);
             startActivity(intent);
             //startActivityForResult(intent, REQUEST_CODE);
@@ -455,6 +457,16 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks{
         }
     }
     
+     private boolean hideStatusBar(){
+          SystemWriteManager sw = (SystemWriteManager)getActivity().getApplicationContext().getSystemService("system_write");
+          boolean hideStatus = sw.getPropertyBoolean("persist.sys.hideStatusBar", true);
+          if(!hideStatus){
+               sw.setProperty("persist.sys.hideStatusBar", "true");
+               return true;
+          }
+          return false;
+	}
+
     @Override
     public void onResume() {
         super.onResume();

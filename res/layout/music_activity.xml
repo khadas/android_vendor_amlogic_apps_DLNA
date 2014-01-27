@@ -45,6 +45,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
+            android:focusable="false"
             android:text="@string/str_time_null" >
         </TextView>
 
@@ -62,6 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
+            android:focusable="false"
             android:text="@string/str_time_null" >
         </TextView>
     </LinearLayout>
@@ -82,7 +84,7 @@
             android:layout_marginLeft="0dp"
             android:ellipsize="marquee"
             android:gravity="center"
-            android:focusable="true"
+            android:focusable="false"
             android:focusableInTouchMode="true"
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
