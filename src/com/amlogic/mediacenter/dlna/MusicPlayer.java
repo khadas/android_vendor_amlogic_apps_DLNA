@@ -1035,6 +1035,15 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     }else{
                         isBrowserMode = false;
                     }
+                    if(!isBrowserMode){
+                        btn_prev.setVisibility(View.GONE);
+                        btn_next.setVisibility(View.GONE);
+                        btn_mode.setVisibility(View.GONE);
+                    }else{
+                        btn_prev.setVisibility(View.VISIBLE);
+                        btn_next.setVisibility(View.VISIBLE);
+                        btn_mode.setVisibility(View.VISIBLE);
+                    }
                     start();
                 } else if ((play_state == STATE_STOP) || (mPlayer == null)) {
                     start();
