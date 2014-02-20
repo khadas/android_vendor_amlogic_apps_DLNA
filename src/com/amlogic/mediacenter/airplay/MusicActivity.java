@@ -64,6 +64,7 @@ public class MusicActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        mProxy.postMusicPlayState(AudioCmdClient.AUDIO_STOP_URI);
         mInfoReceiver.unregister();
         mWakeLock.release();
     }
@@ -131,9 +132,9 @@ public class MusicActivity extends Activity {
                     }
                 }.start();
                 if (isPlaying)
-                    mPlayPause.setBackgroundResource(R.drawable.style_play);
+                    mPlayPause.setImageResource(R.drawable.style_play);
                 else
-                    mPlayPause.setBackgroundResource(R.drawable.style_pause);
+                    mPlayPause.setImageResource(R.drawable.style_pause);
             }
         });
         mStop = (ImageButton) findViewById(R.id.btn_stop);
@@ -143,7 +144,7 @@ public class MusicActivity extends Activity {
                 new Thread() {
                     public void run() {
                         mProxy.postMusicPlayState(AudioCmdClient.AUDIO_STOP_URI);
-                        mHandler.sendEmptyMessageDelayed(0, 5000);
+                        //mHandler.sendEmptyMessageDelayed(0, 5000);
                     }
                 }.start();
             }
@@ -152,6 +153,7 @@ public class MusicActivity extends Activity {
         mExit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            	mProxy.postMusicPlayState(AudioCmdClient.AUDIO_STOP_URI);
                 MusicActivity.this.finish();
             }
         });
@@ -192,7 +194,7 @@ public class MusicActivity extends Activity {
                 refreshInfo(title, act);
             } else if (AirplayBroadcastFactory.ACTION_MUSIC_EXIT.equals(action)) {
                 Debug.d(TAG, "==music exit");
-                mHandler.sendEmptyMessageDelayed(0, 5000);
+                mHandler.sendEmptyMessageDelayed(0, 2000);
             } else if (AirplayBroadcastFactory.ACTION_MUSIC_NEXT.equals(action)) {
                 Debug.d(TAG, "===onPlayNext");
                 onPlayNext();

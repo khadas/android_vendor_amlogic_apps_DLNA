@@ -224,8 +224,6 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);*/
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
-        handlerUI.sendEmptyMessageDelayed(SHOW_START, 2000);
         btn_prev.requestFocus();
         // btn_prev.setFocusableInTouchMode(true);
         // btn_prev.requestFocusFromTouch();
@@ -1359,8 +1357,9 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         filter.addAction(AmlogicCP.UPNP_SETVOLUME_ACTION);
         filter.addAction(AmlogicCP.UPNP_SETMUTE_ACTION);
         registerReceiver(mUPNPReceiver, filter);
-		showLoading();
-        /* enable backlight */
+		/*start*/
+        handlerUI.sendEmptyMessageDelayed(SHOW_START, 1000);
+        /* enable backlight */		
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG);
 		mWakeLock.acquire();

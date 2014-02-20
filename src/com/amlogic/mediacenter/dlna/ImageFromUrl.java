@@ -131,9 +131,9 @@ public class ImageFromUrl extends Activity{
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                unregistRec();
+                hideLoading();
                 mHandler = null;
-                mDecodeBitmapTask.stopThread();
-                mDecodeBitmapTask=null;
                 ImageFromUrl.this.finish();
             }
         });
