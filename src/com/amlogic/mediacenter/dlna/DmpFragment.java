@@ -150,7 +150,7 @@ public class DmpFragment extends ListFragment {
         if (timeout <= 0) {
             mHandler.removeMessages(DIPLAY_DEV);
             displayViewImmediate(true);
-            return;
+            return ;
         } else {
             mSearchTime++;
             Message msg = new Message();
@@ -163,20 +163,9 @@ public class DmpFragment extends ListFragment {
     }
     
     private void displayViewImmediate(boolean isforce) {
-        List<Map<String, Object>> list = getDevData();
-       
-        if(list != null && mDevList != null){
-            Iterator sListInterator = mDevList.iterator();
-            while(sListInterator.hasNext()){
-                if(!list.contains(sListInterator.next())){
-                    sListInterator.remove();
-                }
-            }
-            for(int i=0;i<list.size();i++){
-                if(!mDevList.contains(list.get(i))){
-                    mDevList.add(list.get(i));
-                }
-            }
+        getDevData();
+
+        if( mDevList != null){
             mHandler.sendEmptyMessage(UPDATE_DATA);
         }
         if (isforce && (mDevList == null || mDevList.size()==0)) {
@@ -240,9 +229,13 @@ public class DmpFragment extends ListFragment {
                              };
     private List<Map<String,Object>> getDevData(){
         ArrayList<String> deviceList = (ArrayList<String>) mFreshListener.getDevList();
-        List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
+        //List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
         HashMap<String, Object> map;
+        if(mDevList != null){
+            mDevList.clear();
+		}
         if(deviceList!=null && deviceList.size()>0){
+			
             hideLoading();
             try {
                 for(int i=0; i<deviceList.size(); i++) {
@@ -260,7 +253,7 @@ public class DmpFragment extends ListFragment {
                     msg.what=DEVICE_VIEW;
                     msg.obj=path;
                     mRemoteHandler.sendMessage(msg);*/
-                    list.add(map);
+                    mDevList.add(map);
                 }
             } catch(Exception e) {
                 e.printStackTrace();
@@ -269,7 +262,7 @@ public class DmpFragment extends ListFragment {
         }else{
             return null;
         }
-        return list;
+        return mDevList;
     }
     public interface FreshListener {
         public void startSearch();
