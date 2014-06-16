@@ -82,7 +82,14 @@ public class DmpFragment extends ListFragment {
         super.onAttach(activity);
         mFreshListener = (FreshListener) activity;
     }
-    
+
+	@Override
+	public void onDetach(){
+		super.onDetach();
+		mHandler.removeMessages(HIDE_LOADING);
+		hideLoading();
+	}
+
     @Override
     public void onListItemClick(ListView parent, View v, int pos, long id) {
         Map<String, Object> item = (Map<String, Object>)parent.getItemAtPosition(pos);
@@ -128,7 +135,7 @@ public class DmpFragment extends ListFragment {
         if (progressDialog != null) {
             progressDialog.stopAnim();
             progressDialog.dismiss();
-            progressDialog=null;
+            progressDialog = null;
         }
     }
     
