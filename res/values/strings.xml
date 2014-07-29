@@ -89,7 +89,7 @@
     <string name="airplay_title" translatable="false">AirPlayer</string>
     <string name="airplay_summary">support for ios network display</string>
     <string name="settings_summary">network player settings</string>
-    <string name="setting_version_summary" translatable="false">v201401151339</string>
+    <string name="setting_version_summary" translatable="false">v201407291611</string>
     
     <string name="toggle_airplay">AIRPLAY</string>
     <string name="toggle_setting">SETTINGS</string>

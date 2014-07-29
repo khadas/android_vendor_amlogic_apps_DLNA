@@ -87,6 +87,10 @@ public class DmpFragment extends ListFragment {
 	public void onDetach(){
 		super.onDetach();
 		mHandler.removeMessages(HIDE_LOADING);
+		mHandler.removeMessages(SEARCH_DEV);
+		mHandler.removeMessages(DIPLAY_DEV);
+		mHandler.removeMessages(UPDATE_VIEW);
+		mHandler.removeMessages(SHOW_LOADING);
 		hideLoading();
 	}
 
@@ -217,7 +221,9 @@ public class DmpFragment extends ListFragment {
                                          case SEARCH_DEV:
                                              if(mFreshBtn!=null){
                                                  Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.refresh_btn);
-                                                 mFreshBtn.startAnimation(animation);
+												 if(animation != null){
+                                                 	mFreshBtn.startAnimation(animation);
+												 }
                                              }
                                              mRemoteHandler.removeMessages(DIPLAY_DEV);
                                              mHandler.removeMessages(SEARCH_DEV);
