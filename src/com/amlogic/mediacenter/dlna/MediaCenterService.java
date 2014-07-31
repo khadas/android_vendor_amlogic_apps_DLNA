@@ -154,7 +154,7 @@ public class MediaCenterService extends Service {
             mac = SystemProperties.get("ubootenv.var.ethaddr", "UNKNOWN");
         }
         HostInterface.resetInterface();
-        return null;
+        return mac;
     }
     
     private void copyAsset(String absPath, String filename) {
