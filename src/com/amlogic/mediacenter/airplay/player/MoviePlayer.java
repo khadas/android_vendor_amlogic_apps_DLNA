@@ -116,8 +116,7 @@ public class MoviePlayer implements MediaPlayer.OnErrorListener,
                                                                              mController
                                                                                      .showPlaying();
                                                                              // mController.hide();
-                                                                             mController
-                                                                                     .showLoading();
+                                                                             //mController.showLoading();
                                                                          } else {
                                                                              mHandler.postDelayed(
                                                                                      mPlayingChecker,
