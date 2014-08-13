@@ -254,6 +254,8 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
     
     @Override
     protected void onResume() {
+    	if(currentURI == null)
+			return;
         super.onResume();
         running = true;
         showLoading();
@@ -321,7 +323,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         hideLoading();
         sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_PAUSED);
         SystemProperties.set("media.amplayer.buffertime", mVideoBuffer);
-	if(mHideStatusBar){
+		if(mHideStatusBar){
             showStatusBar();
         }
 		mWakeLock.release();
@@ -341,6 +343,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             unregisterReceiver(mUPNPReceiver);
             mCurPos = 0;
             mDuration = 0;
+			currentURI = null;
         }
         handlerUI = null;
         mBrocastProgress = null;
