@@ -44,7 +44,7 @@ import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
 
-import android.util.Log;
+
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -90,7 +90,7 @@ import org.cybergarage.util.Debug;
 import com.amlogic.mediacenter.R;
 
 public class MusicPlayer extends Activity implements OnPreparedListener,
-        OnErrorListener, OnCompletionListener, OnInfoListener{
+        OnCompletionListener, OnInfoListener{
     private static final boolean DEBUG_PLAYER = true;
     private static final String TAG                    = "MusicPlayer";
     public static final String  TIME_START             = "00:00:00";
@@ -105,6 +105,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
 	private static final int STOP_AND_START = 4;
     private static final int SHOW_LOADING = 5;
     private static final int HIDE_LOADING = 6;
+    private static final int STOP_BY_SEVER = 7;
+
     private LoadingDialog exitDlg;
     private Dialog              dialog_volume;
     private TextView            mFileName;
@@ -206,7 +208,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
          }
         mFileName = (TextView) findViewById(R.id.tx_music_name);
         if (file_name == null) {
-            file_name = getResources().getString(R.string.str_unknown);
+			file_name = cur_uri.substring(cur_uri.lastIndexOf('/')+1,cur_uri.length());
+            //file_name = getResources().getString(R.string.str_unknown);
         }
         /*mFileName.setText(file_name + "                                 "
                 + file_name + "                                 " + file_name
@@ -436,6 +439,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         	mPlayer.pause();
         	stopPlayback();
         }
+        hideLoading();
         Debug.d(TAG, "##########onStop####################");
     }
     
@@ -497,6 +501,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         if (isFinishing())
             return;
         mPlayer = (PreviewPlayer) mp;
+        mp = null;
         hideLoading();
         play();
         mTotalDuration = mPlayer.getDuration();
@@ -542,8 +547,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                                            };
     
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        Debug.d(TAG, "##########onError####################");
-        Toast.makeText(getApplicationContext(),R.string.error_info, Toast.LENGTH_SHORT).show();
+		Debug.d(TAG, "##########onError####################");
+		Toast.makeText(getApplicationContext(),R.string.error_info, Toast.LENGTH_SHORT).show();
 		next();
         return true;
     }
@@ -704,12 +709,15 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
 
     private void start() {
         handlerUI.sendEmptyMessage(SHOW_LOADING);
+        handlerUI.removeMessages(STOP_BY_SEVER);
+        handlerUI.sendEmptyMessageDelayed(STOP_BY_SEVER,5000);
         // mPath.setText(file_name==null?cur_uri:file_name);
         PreviewPlayer player = (PreviewPlayer) getLastNonConfigurationInstance();
-        android.util.Log.d(TAG, "*********************not get player"+(player == null));
-        if (mPlayer == null) {
+
+        if (player == null) {
             if(DEBUG_PLAYER)
                 Debug.d(TAG, "*********************not get player");
+            mPlayer = null;
             mPlayer = new PreviewPlayer();
             mPlayer.setActivity(this);
             try {
@@ -719,7 +727,6 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 // content URI, another content provider's URI, a file URI,
                 // an http URI, and there are different exceptions associated
                 // with failure to open each of those.
-                android.util.Log.d(TAG, "Failed to open file: " + ex);
 				ex.printStackTrace();
                 //finish();
                 exitNow();
@@ -728,13 +735,13 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         } else {
             Debug.d(TAG, "*********************get player");
             mPlayer = player;
-			try{
-				//player.release();
-				player=null;
-			}catch(Exception ex){
-			}finally{
-	            mPlayer.setActivity(this);
-	            if (mPlayer.isPrepared()) {
+            try{
+                //player.release();
+                player=null;
+            }catch(Exception ex){
+            }finally{
+                mPlayer.setActivity(this);
+                if (mPlayer.isPrepared()) {
 	                play();
 	                mTotalDuration = mPlayer.getDuration();
 	                if (mTotalDuration > 0) {
@@ -812,7 +819,6 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         if (mProgressRefresher != null) {
             mProgressRefresher.removeCallbacksAndMessages(null);
         }
-        play_state = STATE_STOP;
         readyForFinish = true;
         sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_STOPPED);
         updatePlayPause();
@@ -821,13 +827,14 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         mProgress.setProgress(0);
         if (mPlayer != null) {
             //mPlayer.pause();
-			try{
-				//mPlayer.setDataSource(this,null);
-				mPlayer.release();
-			}catch(Exception ex){}
-			finally{
-            	mPlayer = null;
-			}
+            try{
+                //mPlayer.setDataSource(this,null);
+                play_state = STATE_STOP;
+                mPlayer.release();
+            }catch(Exception ex){}
+            finally{
+                mPlayer = null;
+            }
             mAudioManager.abandonAudioFocus(mAudioFocusListener);
         }
     }
@@ -947,14 +954,14 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
      * any state.
      */
     private static class PreviewPlayer extends MediaPlayer implements
-            OnPreparedListener {
+            OnPreparedListener ,OnErrorListener{
         MusicPlayer mActivity;
         boolean     mIsPrepared = false;
         
         public void setActivity(MusicPlayer activity) {
             mActivity = activity;
             setOnPreparedListener(this);
-            setOnErrorListener(mActivity);
+            setOnErrorListener(this);
             setOnCompletionListener(mActivity);
         }
         
@@ -964,7 +971,15 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             setDataSource(mActivity, uri);
             prepareAsync();
         }
-        
+
+	@Override
+	public boolean onError(MediaPlayer mp, int what, int extra) {
+		if(mIsPrepared){
+			mActivity.onError( mp,  what,  extra);
+		}
+        return true;
+    }
+    
         /*
          * (non-Javadoc)
          * 
@@ -1010,15 +1025,18 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             if (action.equals(AmlogicCP.UPNP_PLAY_ACTION)) {
                 stopExit();
                 String uri = intent.getStringExtra(AmlogicCP.EXTRA_MEDIA_URI);
+
                 if (!cur_uri.equals(uri)) {
-                    android.util.Log.d(TAG,"curStatus:"+(play_state != STATE_STOP));
+
                     if (play_state != STATE_STOP) {
                         stopPlayback();
                     }
                     cur_uri = uri;
                     file_name = intent
                             .getStringExtra(AmlogicCP.EXTRA_FILE_NAME);
-                    Debug.d(TAG, "****get file name: " + file_name);
+                    if(file_name == null){
+                        file_name = cur_uri.substring(cur_uri.lastIndexOf('/')+1,cur_uri.length());
+                    }
                     if (mFileName != null) {
                         /*mFileName.setText(file_name
                                 + "                                 "
@@ -1043,7 +1061,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         btn_mode.setVisibility(View.VISIBLE);
                     }
                     start();
-                } else if ((play_state == STATE_STOP) || (mPlayer == null)) {
+                } else if ((play_state == STATE_PAUSE)) {
                     start();
                 } else if (!mPlayer.isPlaying()) {
                     play();
@@ -1125,6 +1143,14 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                               break;
                                           case HIDE_LOADING:
                                               hideLoading();
+                                              break;
+                                          case STOP_BY_SEVER:
+                                              if(!isShowingForehand){
+                                                  MusicPlayer.this.finish();
+                                                }else{
+                                                  handlerUI.sendEmptyMessageDelayed(STOP_BY_SEVER,5000);
+                                                }
+											  return;
                                       }
                                   }
                               };
@@ -1240,7 +1266,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         final List<Map<String,Object>> listItem = new ArrayList<Map<String,Object>>();
         for(int i =0; i<music_mode.length; i++)
         {
-            Log.d(TAG,"mode:"+new String(music_mode[i]));
+
             HashMap<String, Object> map = new HashMap<String, Object>();
             if(i==0){
                 if(mode == MODE_ALL_LOOP){
@@ -1267,7 +1293,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1,
                     int position, long arg3) {
-                Log.d(TAG,"onItemClick");
+
                 for(int i =0; i<music_mode.length; i++){
                     HashMap<String, Object> map = (HashMap<String, Object>) listItem.get(i);
                     if(i==position){
@@ -1358,6 +1384,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         filter.addAction(AmlogicCP.UPNP_SETMUTE_ACTION);
         registerReceiver(mUPNPReceiver, filter);
 		/*start*/
+        handlerUI.removeMessages(SHOW_START);
         handlerUI.sendEmptyMessageDelayed(SHOW_START, 1000);
         /* enable backlight */		
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);

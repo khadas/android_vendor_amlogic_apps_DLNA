@@ -254,9 +254,12 @@ public class MediaCenterService extends Service {
                 ActivityManager mactivitymanager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
                 ComponentName cn = mactivitymanager.getRunningTasks(1).get(0).topActivity;
                 String name = cn.getClassName();
+ 
                 if (!MusicPlayer.isShowingForehand && MediaRendererDevice.TYPE_AUDIO.equals(type)) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.setClass(MediaCenterService.this, MusicPlayer.class);
+                    VideoPlayer.running = false;
+                    ImageFromUrl.isShowingForehand = false;
                     stopMediaPlayer();
                     startActivity(intent);
                     return;
@@ -264,12 +267,16 @@ public class MediaCenterService extends Service {
                     intent.putExtra("hideStatusBar",hideStatusBar());
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.setClass(MediaCenterService.this, VideoPlayer.class);
+                    ImageFromUrl.isShowingForehand = false;
+                    MusicPlayer.isShowingForehand = false;
                     stopMediaPlayer();
                     startActivity(intent);
                     return;
                 } else if (!ImageFromUrl.isShowingForehand && MediaRendererDevice.TYPE_IMAGE.equals(type)) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.setClass(MediaCenterService.this, ImageFromUrl.class);
+                    MusicPlayer.isShowingForehand = false;
+                    VideoPlayer.running = false;
                     startActivity(intent);
                     return;
                 }

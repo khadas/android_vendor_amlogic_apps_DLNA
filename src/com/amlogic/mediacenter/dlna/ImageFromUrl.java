@@ -83,6 +83,7 @@ public class ImageFromUrl extends Activity{
     private static final int     SLID_SHOW           = 5;
     private static final int     SHOWPANEL           = 6;
     private static final int     HIDEPANEL           = 7;
+    private static final int     STOP_BY_SEVER       = 8;
     private static final int     STOP_DELAY          = 6000;
     private static final int     STOP_SHOW_INTERVAL  = 5000;
     private static final int     SLIDE_SHOW_INTERVAL = 5000;
@@ -413,6 +414,8 @@ public class ImageFromUrl extends Activity{
         super.onResume();
         isShowingForehand = true;
         onReg();
+        mHandler.removeMessages(STOP_BY_SEVER);
+        mHandler.sendEmptyMessageDelayed(STOP_BY_SEVER,5000);
         if(isBrowserMode){
             mHandler.sendEmptyMessageDelayed(HIDEPANEL, STOP_SHOW_INTERVAL);
         }
@@ -714,6 +717,13 @@ public class ImageFromUrl extends Activity{
                         mSlideView.setVisibility(View.INVISIBLE);
                     }
                     return;
+                 case STOP_BY_SEVER:
+                      if(!isShowingForehand){
+                          ImageFromUrl.this.finish();
+                        }else{
+                          mHandler.sendEmptyMessageDelayed(STOP_BY_SEVER,5000);
+                        }
+                      return;
             }
         }
     }

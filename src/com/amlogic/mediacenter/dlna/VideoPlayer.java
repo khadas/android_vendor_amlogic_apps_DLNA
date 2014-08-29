@@ -77,6 +77,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
     private static final int SHOW_LOADING        = 6;
     private static final int HIDE_LOADING        = 7;
     private static final int FORE_VIDEO          = 8;
+	private static final int STOP_BY_SEVER = 9;
     public static final int  STATE_PLAY          = 0;
     public static final int  STATE_PAUSE         = 1;
     public static final int  STATE_STOP          = 2;
@@ -196,7 +197,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                 if (nextDlg != null) {
                     nextDlg.dismiss();
                 }
-                handlerUI.sendEmptyMessageDelayed(HNALDE_HIDE_LOADING, 500);
+                handlerUI.sendEmptyMessageDelayed( HIDE_LOADING, 500);
             }
         });
         mVideoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -258,7 +259,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
 			return;
         super.onResume();
         running = true;
-        showLoading();
         mVideoBuffer = SystemProperties.get("media.amplayer.buffertime");
         SystemProperties.set("media.amplayer.buffertime", "6");
         if (mLastState == STATE_PLAY) {
@@ -345,8 +345,8 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             mDuration = 0;
 			currentURI = null;
         }
-        handlerUI = null;
-        mBrocastProgress = null;
+        //handlerUI = null;
+        //mBrocastProgress = null;
     }
     
     public void onDestory() {
@@ -402,7 +402,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             mBrocastProgress.postDelayed(new ProgressRefresher(), 500);
         }
     }
-    
+ 
     private void start() {
         // mAudioManager.requestAudioFocus(mAudioFocusListener,
         // AudioManager.STREAM_MUSIC,
@@ -410,6 +410,9 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         Debug.d(TAG, "*********************currentURI=" + currentURI);
         showLoading();
         mVideoView.setVideoPath(currentURI);
+		handlerUI.removeMessages(STOP_BY_SEVER);
+		handlerUI.sendEmptyMessageDelayed(STOP_BY_SEVER,5000);
+
         // mVideoView.start();
         // mVideoView.seekTo(mCurPos);
         // mBrocastProgress.postDelayed(new ProgressRefresher(), 200);
@@ -459,7 +462,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             Debug.d(TAG, "#####VideoPlayer.UPNPReceiver: " + action
                     + ",  mediaType=" + mediaType);
             readyForFinish = false;
-	    mHideStatusBar = intent.getBooleanExtra("hideStatusBar",false);
+            mHideStatusBar = intent.getBooleanExtra("hideStatusBar",false);
             if (action.equals(AmlogicCP.UPNP_PLAY_ACTION)) {
                 String uri = intent.getStringExtra(AmlogicCP.EXTRA_MEDIA_URI);
                 stopExit();
@@ -542,15 +545,16 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
     }
     
     private void showLoading() {
+        if (nextDlg != null) {
+            nextDlg.dismiss();
+        }
         if (progressDialog == null && running) {
             progressDialog = new LoadingDialog(this,
                     LoadingDialog.TYPE_LOADING, this.getResources().getString(
                             R.string.loading));
             progressDialog.show();
         }
-        if (nextDlg != null) {
-            nextDlg.dismiss();
-        }
+
     }
     
     private void hideLoading() {
@@ -607,6 +611,13 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                                           case FORE_VIDEO:
                                               before();
                                               return;
+                                          case STOP_BY_SEVER:
+                                              if(!running){
+                                                  VideoPlayer.this.finish();
+                                                }else{
+                                                  handlerUI.sendEmptyMessageDelayed(STOP_BY_SEVER,5000);
+                                                }
+											  return;
                                       }
                                   }
                               };
