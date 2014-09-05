@@ -386,18 +386,16 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
     
     class ProgressRefresher implements Runnable {
         public void run() {
-            if (mDuration > 0) {
+            mDuration = mVideoView.getDuration();
+            if(mDuration>0){
                 int curPos = mVideoView.getCurrentPosition();
                 Intent intent = new Intent(AmlogicCP.PLAY_POSTION_REFRESH);
                 intent.putExtra("curPosition", curPos);
                 intent.putExtra("totalDuration", mDuration);
                 sendBroadcast(intent);
                 Debug.d(TAG, "######sendBroadcast(progress)######" + curPos
-                        + "/" + mDuration);
-            } else {
-                mDuration = mVideoView.getDuration();
-                Debug.d(TAG, "########getDuration=" + mDuration);
-            }
+	                    + "/" + mDuration);
+			}
             mBrocastProgress.removeCallbacksAndMessages(null);
             mBrocastProgress.postDelayed(new ProgressRefresher(), 500);
         }
