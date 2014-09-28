@@ -106,15 +106,18 @@ public class VideoController extends FrameLayout {
     private ImageButton                mExitButton;
     private ImageButton                mVolumeButton;
     private Context                    con                      = null;
-    
-    public VideoController(Context context, AttributeSet attrs) {
+ 	private ControllerShowListener mContextShow;
+	public VideoController(Context context, AttributeSet attrs) {
         super(context, attrs);
         mRoot = this;
         mContext = context;
         mUseFastForward = true;
         mFromXml = true;
     }
-    
+ 	public void setControllerListener(ControllerShowListener listener){
+		mContextShow = listener;
+	}
+
     @Override
     public void onFinishInflate() {
         if (mRoot != null)
@@ -418,6 +421,9 @@ public class VideoController extends FrameLayout {
      *            until hide() is called.
      */
     public void show(int timeout) {
+    	if(mContextShow!=null){
+			mContextShow.onShowController();
+		}
         if (!mShowing && mAnchor != null) {
             setProgress();
             if (mPauseButton != null) {
@@ -797,7 +803,10 @@ public class VideoController extends FrameLayout {
             mExitButton.setEnabled(true);
         }
     }
-    
+ 	public interface ControllerShowListener{
+		public void onShowController();
+		public void onHideController();
+	}
     public interface MediaPlayerControl {
         void start();
         

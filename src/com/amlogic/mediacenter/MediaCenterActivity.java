@@ -212,22 +212,32 @@ public class MediaCenterActivity extends Activity  implements FreshListener{
     }
 
     private void checkNet(){
-        ConnectivityManager mConnectivityManager = (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);  
-        State wifiState = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
-        State ethState = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET).getState();
-		State mobileState = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
-        Debug.d(TAG,"State.CONNECTED != ethState "+(State.CONNECTED != ethState)+"State.CONNECTED != wifiState"+(State.CONNECTED != wifiState));
-        if (State.CONNECTED != ethState && State.CONNECTED != wifiState && mobileState != State.CONNECTED) {
-            Intent mIntent = new Intent();
-            mIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            mIntent.setClass(this, DMRError.class);
-            startActivity(mIntent);
-        }else{
-            startMediaCenterService();
-            startDmpService();
-            startAirplay();
-        }
-    }
+ 
+        ConnectivityManager mConnectivityManager = (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo wifiInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo ethInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);	
+    	NetworkInfo mobileInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+		if(ethInfo == null && ethInfo ==null && mobileInfo == null){
+			android.util.Log.d("tt","NetWork is null");
+			if(MediaCenterService.getAndroidOSVersion()>19){
+				startMediaCenterService();
+				startDmpService();
+				startAirplay();
+			 }else{ 
+			 	Intent mIntent = new Intent();
+	            mIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	            mIntent.setClass(this, DMRError.class);
+	            startActivity(mIntent);
+			}
+			return;
+ 		}
+		if(ethInfo.isConnectedOrConnecting()||wifiInfo.isConnectedOrConnecting()||mobileInfo.isConnectedOrConnecting()){
+			android.util.Log.d("tt","startService");
+			startMediaCenterService();
+			startDmpService();
+			startAirplay();
+		} 
+	}
 
     public interface Callbacks {
         public void onBackPressedCallback();

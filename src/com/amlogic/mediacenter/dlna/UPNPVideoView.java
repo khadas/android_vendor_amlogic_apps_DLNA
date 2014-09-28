@@ -23,6 +23,7 @@ package com.amlogic.mediacenter.dlna;
  * @Author 
  * @Version V1.0
  */
+import com.amlogic.mediacenter.airplay.util.ApiHelper;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -208,7 +209,7 @@ View.OnLayoutChangeListener
         mVideoWidth = 0;
         mVideoHeight = 0;
         getHolder().addCallback(mSHCallback);
-        getHolder().setFormat(PixelFormat.VIDEO_HOLE);
+        getHolder().setFormat(5);//PixelFormat.VIDEO_HOLE which is not in pdk
         getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         addOnLayoutChangeListener(this);
         setFocusable(true);
@@ -319,7 +320,7 @@ View.OnLayoutChangeListener
         if (mMediaPlayer != null && mVideoController != null) {
             mVideoController.setMediaPlayer(this);
             View anchorView = this.getParent() instanceof View ?
-                    (View)this.getParent() : this;
+                    (View)this.getParent() : this; 
             mVideoController.setAnchorView(anchorView);
             mVideoController.setEnabled(isInPlaybackState());
         }
@@ -343,9 +344,9 @@ View.OnLayoutChangeListener
             if(mOnStateChangedListener != null) {
                 mOnStateChangedListener.onStateChanged(mCurrentState);
             }
-            Debug.d(TAG,"MediaPlayer:"+
+            /*Debug.d(TAG,"MediaPlayer:"+
                 mp.getStringParameter(MediaPlayer.KEY_PARAMETER_AML_PLAYER_TYPE_STR)
-                +" Prepared");
+                +" Prepared");*/
             // Get the capabilities of the player for this stream
             Metadata data = mp.getMetadata(MediaPlayer.METADATA_ALL,
                                       MediaPlayer.BYPASS_METADATA_FILTER);
@@ -645,7 +646,8 @@ View.OnLayoutChangeListener
            int Rotation=0;
            Debug.d(TAG,"Layout changed,left="+left+" top="+top+" right="+right+" bottom="+bottom);   
        Debug.d(TAG,"Layout changed,oldLeft="+oldLeft+" oldTop="+oldTop+" oldRight="+oldRight+" oldBottom="+oldBottom);
-       if (mMediaPlayer != null){
+		
+	   if (mMediaPlayer != null){
         StringBuilder builder = new StringBuilder();;
         builder.append(".left="+left);
         builder.append(".top="+top);
@@ -659,8 +661,9 @@ View.OnLayoutChangeListener
 
         builder.append(".Rotation="+Rotation);
 
-        Debug.d(TAG,builder.toString());
-        mMediaPlayer.setParameter(MediaPlayer.KEY_PARAMETER_AML_VIDEO_POSITION_INFO,builder.toString());
+        Debug.d(TAG,builder.toString()); 
+		//mMediaPlayer.setParameter(MediaPlayer.KEY_PARAMETER_AML_VIDEO_POSITION_INFO,builder.toString());
+		
        }
     }
     @Override
@@ -670,6 +673,18 @@ View.OnLayoutChangeListener
         }
         return false;
     }
+    private void showSystemUi(boolean visible) {
+        if (!ApiHelper.HAS_VIEW_SYSTEM_UI_FLAG_LAYOUT_STABLE)
+            return;
+        int flag = View.SYSTEM_UI_FLAG_VISIBLE;
+        if (!visible) {
+            // We used the deprecated "STATUS_BAR_HIDDEN" for unbundling
+            flag |= View.STATUS_BAR_HIDDEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        }
+        this.setSystemUiVisibility(flag);
+    }
+	
 
     @Override
     public boolean onTrackballEvent(MotionEvent ev) {

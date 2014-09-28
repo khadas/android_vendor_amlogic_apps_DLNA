@@ -27,7 +27,6 @@ import com.amlogic.mediacenter.R;
 
 import android.app.ActivityManager;
 import android.app.Service;
-import android.app.SystemWriteManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -264,7 +263,6 @@ public class MediaCenterService extends Service {
                     startActivity(intent);
                     return;
                 } else if (!VideoPlayer.running && MediaRendererDevice.TYPE_VIDEO.equals(type)) {
-                    intent.putExtra("hideStatusBar",hideStatusBar());
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.setClass(MediaCenterService.this, VideoPlayer.class);
                     ImageFromUrl.isShowingForehand = false;
@@ -358,16 +356,6 @@ public class MediaCenterService extends Service {
        
     }
 
-	private boolean hideStatusBar(){
-		SystemWriteManager sw = (SystemWriteManager)getSystemService("system_write");
-		boolean hideStatus = sw.getPropertyBoolean("persist.sys.hideStatusBar", true);
-		if(!hideStatus){
-			sw.setProperty("persist.sys.hideStatusBar", "true");
-			return true;
-		}
-		return false;
-	}
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -375,5 +363,19 @@ public class MediaCenterService extends Service {
         	mDmrDevice.stopDMR();
 		}
     }
+	public static int getAndroidOSVersion()
+		{
+			 int osVersion;
+			 try
+			 {
+				osVersion = Integer.valueOf(android.os.Build.VERSION.SDK);
+			 }
+			 catch (NumberFormatException e)
+			 {
+				osVersion = 0;
+			 }
+			 
+			 return osVersion;
+	   }
 
 }

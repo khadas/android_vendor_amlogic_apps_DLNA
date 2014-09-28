@@ -56,8 +56,8 @@ public class DMRBroadcastReceiver extends BroadcastReceiver {
             NetworkInfo netInfo = (NetworkInfo) intent.getExtra(WifiManager.EXTRA_NETWORK_INFO, null);
             ConnectivityManager cMgr = (ConnectivityManager) cxt.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            if(cMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED
-            || cMgr.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET).getDetailedState() == NetworkInfo.DetailedState.DISCONNECTED){
+            if(!cMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting()
+            ||!cMgr.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET).isConnectedOrConnecting()){
                 Intent mNetIntent = new Intent(DmpService.NETWORK_ERROR);
                 cxt.sendBroadcast(mNetIntent);
                 //cxt.stopService(new Intent(cxt,MediaCenterService.class));

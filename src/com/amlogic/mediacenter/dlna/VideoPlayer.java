@@ -10,11 +10,12 @@
  */
 package com.amlogic.mediacenter.dlna;
 
+import com.amlogic.mediacenter.airplay.util.ApiHelper;
+
 import android.app.ProgressDialog;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.AlertDialog;
-import android.app.SystemWriteManager;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
@@ -65,11 +66,7 @@ import org.cybergarage.upnp.device.*;
 
 import com.amlogic.mediacenter.R;
 
-public class VideoPlayer extends Activity implements OnInfoListener// implements
-// OnPreparedListener,
-// OnErrorListener,
-// OnCompletionListener
-{
+public class VideoPlayer extends Activity implements OnInfoListener,VideoController.ControllerShowListener{
     private final String     TAG                 = "VideoPlayer";
     public static boolean    running             = false;
     private static final int VIDEO_START         = 0;
@@ -123,6 +120,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                 .getService("window"));
         setContentView(R.layout.video_view);
         mVideoController = new VideoController(this);
+		mVideoController.setControllerListener(this);
         Intent intent = getIntent();
         currentURI = intent.getStringExtra(AmlogicCP.EXTRA_MEDIA_URI);
         mediaType = intent.getStringExtra(AmlogicCP.EXTRA_MEDIA_TYPE);
@@ -252,7 +250,15 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         Debug.d(TAG, "##############################");
         Debug.d(TAG, "onCreate: make running as TRUE");
     }
-    
+
+	public void onShowController(){
+ 		showSystemUi(true);
+	}
+	public void onHideController(){
+ 		showSystemUi(false);
+	}
+
+	
     @Override
     protected void onResume() {
     	if(currentURI == null)
@@ -323,9 +329,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         hideLoading();
         sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_PAUSED);
         SystemProperties.set("media.amplayer.buffertime", mVideoBuffer);
-		if(mHideStatusBar){
-            showStatusBar();
-        }
 		mWakeLock.release();
     }
     
@@ -410,6 +413,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         mVideoView.setVideoPath(currentURI);
 		handlerUI.removeMessages(STOP_BY_SEVER);
 		handlerUI.sendEmptyMessageDelayed(STOP_BY_SEVER,5000);
+		showSystemUi(false);
 
         // mVideoView.start();
         // mVideoView.seekTo(mCurPos);
@@ -446,6 +450,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         // mVideoController.show();
         mVideoController.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN,
                 KeyEvent.KEYCODE_MEDIA_STOP));
+		showSystemUi(true);
     }
     
     class UPNPReceiver extends BroadcastReceiver {
@@ -883,9 +888,19 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         }
         return false;
     }
-
-     private void showStatusBar(){
-         SystemWriteManager sw = (SystemWriteManager)this.getSystemService("system_write");
-         sw.setProperty("persist.sys.hideStatusBar", "false");
-     }
+    private void showSystemUi(boolean visible) {
+        if (!ApiHelper.HAS_VIEW_SYSTEM_UI_FLAG_LAYOUT_STABLE)
+            return;
+        int flag = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+        if (!visible) {
+        // We used the deprecated "STATUS_BAR_HIDDEN" for unbundling
+        flag |= View.STATUS_BAR_HIDDEN | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        }
+		android.util.Log.d("tt","==============================");
+        mVideoView.setSystemUiVisibility(flag);
+    }
+ 
 }
