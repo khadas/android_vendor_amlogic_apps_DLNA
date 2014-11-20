@@ -26,7 +26,7 @@
             android:layout_width="0px"
             android:layout_height="match_parent"
             android:layout_weight="4"
-            class="com.amlogic.mediacenter.FucFragment" >
+            class="com.droidlogic.mediacenter.FucFragment" >
 
             <!-- Preview: layout=@layout/row_devices -->
         </fragment>

@@ -14,11 +14,11 @@
         android:layout_weight="1"
         android:background="#000" >
 
-        <com.amlogic.mediacenter.Render.VisualizerView
+        <com.droidlogic.mediacenter.Render.VisualizerView
             android:id="@+id/showvisual"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" >
-        </com.amlogic.mediacenter.Render.VisualizerView>
+        </com.droidlogic.mediacenter.Render.VisualizerView>
     </FrameLayout>
 -->
 
@@ -77,7 +77,7 @@
         android:paddingLeft="15dp"
         android:paddingRight="15dp" >
 
-        <com.amlogic.mediacenter.dlna.MarqueeTextView
+        <com.droidlogic.mediacenter.dlna.MarqueeTextView
             android:id="@+id/tx_music_name"
             android:layout_width="300dp"
             android:layout_height="wrap_content"

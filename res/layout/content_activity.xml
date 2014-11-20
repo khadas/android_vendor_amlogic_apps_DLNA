@@ -18,7 +18,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <fragment class="com.amlogic.mediacenter.airplay.image.ContentFragment"
+    <fragment class="com.droidlogic.mediacenter.airplay.image.ContentFragment"
             android:id="@+id/content_frag"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

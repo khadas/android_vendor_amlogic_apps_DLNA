@@ -16,7 +16,7 @@
         android:layout_marginLeft="0dp"
         android:orientation="vertical" >
 
-        <com.amlogic.mediacenter.dlna.MarqueeTextView
+        <com.droidlogic.mediacenter.dlna.MarqueeTextView
             android:id="@+id/music_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
