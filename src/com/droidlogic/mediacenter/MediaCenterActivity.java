@@ -274,8 +274,10 @@ public class MediaCenterActivity extends Activity  implements FreshListener
                 
                 return;
             }
-            
-            if ( ethInfo.isConnectedOrConnecting() || wifiInfo.isConnectedOrConnecting() || mobileInfo.isConnectedOrConnecting() )
+
+            if ( (ethInfo != null && ethInfo.isConnectedOrConnecting()) ||
+                    (wifiInfo != null && wifiInfo.isConnectedOrConnecting()) ||
+                    (mobileInfo != null && mobileInfo.isConnectedOrConnecting()) )
             {
                 android.util.Log.d ( "tt", "startService" );
                 startMediaCenterService();
