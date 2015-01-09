@@ -34,7 +34,6 @@
         <FrameLayout
             android:id="@+id/frag_detail"
             android:layout_width="0px"
-            android:background="?android:attr/detailsElementBackground"
             android:layout_height="match_parent"
             android:layout_weight="6">
 

@@ -52,9 +52,9 @@ public class MusicActivity extends Activity
             mContext = MusicActivity.this;
             mProxy = AirplayProxy.getInstance ( mContext );
             mInfoReceiver = new MusicInfoReceiver();
-            /* LayoutParams params = getWindow().getAttributes();
-             params.gravity=Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-             getWindow().setAttributes(params);*/
+             LayoutParams params = getWindow().getAttributes();
+              params.width = WindowManager.LayoutParams.MATCH_PARENT;
+             getWindow().setAttributes(params);
             getWindow().setGravity ( Gravity.BOTTOM | Gravity.FILL_HORIZONTAL );
         }
         

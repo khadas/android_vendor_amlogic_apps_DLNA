@@ -161,16 +161,16 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         {
             super.onCreate ( savedInstanceState );
             setContentView ( R.layout.music_activity );
-            //LayoutParams params = getWindow().getAttributes();
+            LayoutParams params = getWindow().getAttributes();
             //params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
             //| WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
             //params.flags = LayoutParams.FLAG_NOT_TOUCH_MODAL;
             //params.alpha = 1.0f;
             //params.dimAmount = 0.0f;
             //        params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-            //params.width = WindowManager.LayoutParams.MATCH_PARENT;
+            params.width = WindowManager.LayoutParams.MATCH_PARENT;
             //params.gravity=Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            //getWindow().setAttributes(params);
+            getWindow().setAttributes(params);
             /*getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
                     WindowManager.LayoutParams.FLAG_BLUR_BEHIND);*/
             getWindow().setGravity ( Gravity.BOTTOM | Gravity.FILL_HORIZONTAL );

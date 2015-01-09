@@ -19,6 +19,7 @@
     <color name="setup_divider_color">#333333</color>
     <color name="default_background">#000</color>
     <color name="darker_transparent">#C1000000</color>
+    <color name="darker_black">#1A1A1A</color>
 
     <!-- configuration for album set page -->
     <color name="albumset_background">#1A1A1A</color>
