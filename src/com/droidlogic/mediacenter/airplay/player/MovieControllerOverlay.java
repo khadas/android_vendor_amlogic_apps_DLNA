@@ -31,24 +31,20 @@ import android.view.animation.AnimationUtils;
  * The playback controller for the Movie Player.
  */
 public class MovieControllerOverlay extends CommonControllerOverlay implements
-    AnimationListener
-{
+        AnimationListener {
 
         private boolean hidden;
-        
+
         private final Handler handler;
         private final Runnable startHidingRunnable;
         private final Animation hideAnimation;
-        
-        public MovieControllerOverlay ( Context context )
-        {
+
+        public MovieControllerOverlay ( Context context ) {
             super ( context );
             handler = new Handler();
-            startHidingRunnable = new Runnable()
-            {
+            startHidingRunnable = new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     startHiding();
                 }
             };
@@ -56,167 +52,129 @@ public class MovieControllerOverlay extends CommonControllerOverlay implements
             hideAnimation.setAnimationListener ( this );
             hide();
         }
-        
+
         @Override
-        protected void createTimeBar ( Context context )
-        {
+        protected void createTimeBar ( Context context ) {
             mTimeBar = new TimeBar ( context, this );
         }
-        
+
         @Override
-        public void hide()
-        {
+        public void hide() {
             boolean wasHidden = hidden;
             hidden = true;
             super.hide();
-            
-            if ( mListener != null && wasHidden != hidden )
-            {
+            if ( mListener != null && wasHidden != hidden ) {
                 mListener.onHidden();
             }
         }
-        
+
         @Override
-        public void show()
-        {
+        public void show() {
             boolean wasHidden = hidden;
             hidden = false;
             super.show();
-            
-            if ( mListener != null && wasHidden != hidden )
-            {
+            if ( mListener != null && wasHidden != hidden ) {
                 mListener.onShown();
             }
-            
             maybeStartHiding();
         }
-        
-        private void maybeStartHiding()
-        {
+
+        private void maybeStartHiding() {
             cancelHiding();
-            
-            if ( mState == State.PLAYING )
-            {
+            if ( mState == State.PLAYING ) {
                 handler.postDelayed ( startHidingRunnable, 2500 );
             }
         }
-        
-        private void startHiding()
-        {
+
+        private void startHiding() {
             startHideAnimation ( mBackground );
             startHideAnimation ( mTimeBar );
             startHideAnimation ( mPlayPauseReplayView );
         }
-        
-        private void startHideAnimation ( View view )
-        {
-            if ( view.getVisibility() == View.VISIBLE )
-            {
+
+        private void startHideAnimation ( View view ) {
+            if ( view.getVisibility() == View.VISIBLE ) {
                 view.startAnimation ( hideAnimation );
             }
         }
-        
-        private void cancelHiding()
-        {
+
+        private void cancelHiding() {
             handler.removeCallbacks ( startHidingRunnable );
             mBackground.setAnimation ( null );
             mTimeBar.setAnimation ( null );
             mPlayPauseReplayView.setAnimation ( null );
         }
-        
+
         @Override
-        public void onAnimationStart ( Animation animation )
-        {
+        public void onAnimationStart ( Animation animation ) {
             // Do nothing.
         }
-        
+
         @Override
-        public void onAnimationRepeat ( Animation animation )
-        {
+        public void onAnimationRepeat ( Animation animation ) {
             // Do nothing.
         }
-        
+
         @Override
-        public void onAnimationEnd ( Animation animation )
-        {
+        public void onAnimationEnd ( Animation animation ) {
             hide();
         }
-        
+
         @Override
-        public boolean onKeyDown ( int keyCode, KeyEvent event )
-        {
-            if ( hidden )
-            {
+        public boolean onKeyDown ( int keyCode, KeyEvent event ) {
+            if ( hidden ) {
                 show();
             }
-            
             return super.onKeyDown ( keyCode, event );
         }
-        
+
         @Override
-        public boolean onTouchEvent ( MotionEvent event )
-        {
-            if ( super.onTouchEvent ( event ) )
-            {
+        public boolean onTouchEvent ( MotionEvent event ) {
+            if ( super.onTouchEvent ( event ) ) {
                 return true;
             }
-            
-            if ( hidden )
-            {
+            if ( hidden ) {
                 show();
                 return true;
             }
-            
-            switch ( event.getAction() )
-            {
+            switch ( event.getAction() ) {
                 case MotionEvent.ACTION_DOWN:
                     cancelHiding();
-                    
-                    if ( mState == State.PLAYING || mState == State.PAUSED )
-                    {
+                    if ( mState == State.PLAYING || mState == State.PAUSED ) {
                         mListener.onPlayPause();
                     }
-                    
                     break;
-                    
                 case MotionEvent.ACTION_UP:
                     maybeStartHiding();
                     break;
             }
-            
             return true;
         }
-        
+
         @Override
-        protected void updateViews()
-        {
-            if ( hidden )
-            {
+        protected void updateViews() {
+            if ( hidden ) {
                 return;
             }
-            
             super.updateViews();
         }
-        
+
         // TimeBar listener
-        
+
         @Override
-        public void onScrubbingStart()
-        {
+        public void onScrubbingStart() {
             cancelHiding();
             super.onScrubbingStart();
         }
-        
+
         @Override
-        public void onScrubbingMove ( int time )
-        {
+        public void onScrubbingMove ( int time ) {
             cancelHiding();
             super.onScrubbingMove ( time );
         }
-        
+
         @Override
-        public void onScrubbingEnd ( int time, int trimStartTime, int trimEndTime )
-        {
+        public void onScrubbingEnd ( int time, int trimStartTime, int trimEndTime ) {
             maybeStartHiding();
             super.onScrubbingEnd ( time, trimStartTime, trimEndTime );
         }

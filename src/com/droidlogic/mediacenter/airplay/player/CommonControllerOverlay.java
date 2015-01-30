@@ -36,13 +36,11 @@ import android.widget.TextView;
  * The common playback controller for the Movie Player or Video Trimming.
  */
 public abstract class CommonControllerOverlay extends FrameLayout implements
-    ControllerOverlay, OnClickListener, TimeBar.Listener
-{
-        protected enum State
-        {
+        ControllerOverlay, OnClickListener, TimeBar.Listener {
+        protected enum State {
             PLAYING, PAUSED, ENDED, ERROR, LOADING
         }
-        
+
         private static final float   ERROR_MESSAGE_RELATIVE_PADDING = 1.0f / 6;
         protected Listener           mListener;
         protected final View         mBackground;
@@ -53,9 +51,8 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
         protected final ImageView    mPlayPauseReplayView;
         protected State              mState;
         protected boolean            mCanReplay                     = true;
-        
-        public CommonControllerOverlay ( Context context )
-        {
+
+        public CommonControllerOverlay ( Context context ) {
             super ( context );
             mState = State.LOADING;
             // TODO: Move the following layout code into xml file.
@@ -96,73 +93,63 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
             setLayoutParams ( params );
             hide();
         }
-        
+
         abstract protected void createTimeBar ( Context context );
-        
-        private TextView createOverlayTextView ( Context context )
-        {
+
+        private TextView createOverlayTextView ( Context context ) {
             TextView view = new TextView ( context );
             view.setGravity ( Gravity.CENTER );
             view.setTextColor ( 0xFFFFFFFF );
             view.setPadding ( 0, 15, 0, 15 );
             return view;
         }
-        
+
         @Override
-        public void setListener ( Listener listener )
-        {
+        public void setListener ( Listener listener ) {
             this.mListener = listener;
         }
-        
-        public void hideLoading()
-        {
+
+        public void hideLoading() {
             mState = State.PLAYING;
             hide();
         }
-        
+
         @Override
-        public void setCanReplay ( boolean canReplay )
-        {
+        public void setCanReplay ( boolean canReplay ) {
             this.mCanReplay = canReplay;
         }
-        
+
         @Override
-        public View getView()
-        {
+        public View getView() {
             return this;
         }
-        
+
         @Override
-        public void showPlaying()
-        {
+        public void showPlaying() {
             mState = State.PLAYING;
             showMainView ( mPlayPauseReplayView );
         }
-        
+
         @Override
-        public void showPaused()
-        {
+        public void showPaused() {
             mState = State.PAUSED;
             showMainView ( mPlayPauseReplayView );
         }
-        
+
         @Override
-        public void showEnded()
-        {
+        public void showEnded() {
             mState = State.ENDED;
             showMainView ( mPlayPauseReplayView );
         }
-        
+
         @Override
-        public void showLoading()
-        {
+        public void showLoading() {
             mState = State.LOADING;
             showMainView ( mLoadingView );
         }
-        
+
         @Override
-        public void showErrorMessage ( String message )
-        {
+        public void showErrorMessage ( String message ) {
             mState = State.ERROR;
             int padding = ( int ) ( getMeasuredWidth() * ERROR_MESSAGE_RELATIVE_PADDING );
             mErrorView.setPadding ( padding, mErrorView.getPaddingTop(), padding,
@@ -170,16 +157,14 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
             mErrorView.setText ( message );
             showMainView ( mErrorView );
         }
-        
+
         @Override
         public void setTimes ( int currentTime, int totalTime, int trimStartTime,
-                               int trimEndTime )
-        {
+                               int trimEndTime ) {
             mTimeBar.setTime ( currentTime, totalTime, trimStartTime, trimEndTime );
         }
-        
-        public void hide()
-        {
+
+        public void hide() {
             mPlayPauseReplayView.setVisibility ( View.INVISIBLE );
             mLoadingView.setVisibility ( View.INVISIBLE );
             mBackground.setVisibility ( View.INVISIBLE );
@@ -188,9 +173,8 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
             setFocusable ( true );
             requestFocus();
         }
-        
-        private void showMainView ( View view )
-        {
+
+        private void showMainView ( View view ) {
             mMainView = view;
             mErrorView.setVisibility ( mMainView == mErrorView ? View.VISIBLE
                                        : View.INVISIBLE );
@@ -201,54 +185,42 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
                              : View.INVISIBLE );
             show();
         }
-        
+
         @Override
-        public void show()
-        {
+        public void show() {
             updateViews();
             setVisibility ( View.VISIBLE );
             setFocusable ( false );
         }
-        
+
         @Override
-        public void onClick ( View view )
-        {
-            if ( mListener != null )
-            {
-                if ( view == mPlayPauseReplayView )
-                {
-                    if ( mState == State.ENDED )
-                    {
-                        if ( mCanReplay )
-                        {
+        public void onClick ( View view ) {
+            if ( mListener != null ) {
+                if ( view == mPlayPauseReplayView ) {
+                    if ( mState == State.ENDED ) {
+                        if ( mCanReplay ) {
                             mListener.onReplay();
                         }
-                    }
-                    else if ( mState == State.PAUSED || mState == State.PLAYING )
-                    {
+                    } else if ( mState == State.PAUSED || mState == State.PLAYING ) {
                         mListener.onPlayPause();
                     }
                 }
             }
         }
-        
+
         @Override
-        public boolean onKeyDown ( int keyCode, KeyEvent event )
-        {
+        public boolean onKeyDown ( int keyCode, KeyEvent event ) {
             return super.onKeyDown ( keyCode, event );
         }
-        
+
         @Override
-        public boolean onTouchEvent ( MotionEvent event )
-        {
-            if ( super.onTouchEvent ( event ) )
-            {
+        public boolean onTouchEvent ( MotionEvent event ) {
+            if ( super.onTouchEvent ( event ) ) {
                 return true;
             }
-            
             return false;
         }
-        
+
         // The paddings of 4 sides which covered by system components. E.g.
         // +-----------------+\
         // | Action Bar | insets.top
@@ -261,20 +233,18 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
         // +-----------------+/
         // Please see View.fitSystemWindows() for more details.
         private final Rect mWindowInsets = new Rect();
-        
+
         @Override
-        protected boolean fitSystemWindows ( Rect insets )
-        {
+        protected boolean fitSystemWindows ( Rect insets ) {
             // We don't set the paddings of this View, otherwise,
             // the content will get cropped outside window
             mWindowInsets.set ( insets );
             return true;
         }
-        
+
         @Override
         protected void onLayout ( boolean changed, int left, int top, int right,
-                                  int bottom )
-        {
+                                  int bottom ) {
             Rect insets = mWindowInsets;
             int pl = insets.left; // the left paddings
             int pr = insets.right;
@@ -295,31 +265,26 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
             mTimeBar.requestLayout();
             // Put the play/pause/next/ previous button in the center of the screen
             layoutCenteredView ( mPlayPauseReplayView, 0, 0, w, h );
-            
-            if ( mMainView != null )
-            {
+            if ( mMainView != null ) {
                 layoutCenteredView ( mMainView, 0, 0, w, h );
             }
         }
-        
-        private void layoutCenteredView ( View view, int l, int t, int r, int b )
-        {
+
+        private void layoutCenteredView ( View view, int l, int t, int r, int b ) {
             int cw = view.getMeasuredWidth();
             int ch = view.getMeasuredHeight();
             int cl = ( r - l - cw ) / 2;
             int ct = ( b - t - ch ) / 2;
             view.layout ( cl, ct, cl + cw, ct + ch );
         }
-        
+
         @Override
-        protected void onMeasure ( int widthMeasureSpec, int heightMeasureSpec )
-        {
+        protected void onMeasure ( int widthMeasureSpec, int heightMeasureSpec ) {
             super.onMeasure ( widthMeasureSpec, heightMeasureSpec );
             measureChildren ( widthMeasureSpec, heightMeasureSpec );
         }
-        
-        protected void updateViews()
-        {
+
+        protected void updateViews() {
             mBackground.setVisibility ( View.VISIBLE );
             mTimeBar.setVisibility ( View.VISIBLE );
             mPlayPauseReplayView
@@ -332,23 +297,20 @@ public abstract class CommonControllerOverlay extends FrameLayout implements
                              : View.GONE );
             requestLayout();
         }
-        
+
         // TimeBar listener
         @Override
-        public void onScrubbingStart()
-        {
+        public void onScrubbingStart() {
             mListener.onSeekStart();
         }
-        
+
         @Override
-        public void onScrubbingMove ( int time )
-        {
+        public void onScrubbingMove ( int time ) {
             mListener.onSeekMove ( time );
         }
-        
+
         @Override
-        public void onScrubbingEnd ( int time, int trimStartTime, int trimEndTime )
-        {
+        public void onScrubbingEnd ( int time, int trimStartTime, int trimEndTime ) {
             mListener.onSeekEnd ( time, trimStartTime, trimEndTime );
         }
 }

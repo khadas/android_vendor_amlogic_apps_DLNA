@@ -31,8 +31,7 @@ import com.droidlogic.mediacenter.R;
  * @Version V1.0
  */
 public class DmpStartFragment extends SettingsPreferenceFragment implements
-    OnSharedPreferenceChangeListener, OnPreferenceChangeListener
-{
+        OnSharedPreferenceChangeListener, OnPreferenceChangeListener {
         private static final String TAG               = "SettingsPreferences";
         public static final String  KEY_START_SERVICE = "start_dmp";
         public static final String  KEY_BOOT_CFG      = "boot_dmp";
@@ -42,84 +41,65 @@ public class DmpStartFragment extends SettingsPreferenceFragment implements
          * @see android.preference.Preference.OnPreferenceChangeListener#onPreferenceChange(android.preference.Preference, java.lang.Object)
          */
         @Override
-        public boolean onPreferenceChange ( Preference preference, Object newValue )
-        {
+        public boolean onPreferenceChange ( Preference preference, Object newValue ) {
             return true;
         }
-        
+
         /* (non-Javadoc)
          * @see android.content.SharedPreferences.OnSharedPreferenceChangeListener#onSharedPreferenceChanged(android.content.SharedPreferences, java.lang.String)
          */
         @Override
         public void onSharedPreferenceChanged ( SharedPreferences sharedPreferences,
-                                                String key )
-        {
+                                                String key ) {
             Debug.d ( "startfragment", "onSharedPreferenceChanged:" + key );
             Intent intent = new Intent ( getActivity(), MediaCenterService.class );
-            
-            if ( key.equals ( KEY_START_SERVICE ) )
-            {
-                if ( mStartServicePref.isChecked() )
-                {
+            if ( key.equals ( KEY_START_SERVICE ) ) {
+                if ( mStartServicePref.isChecked() ) {
                     getActivity().startService ( intent );
-                }
-                else
-                {
-                    if ( !mBootCfgPref.isChecked() )
-                    {
+                } else {
+                    if ( !mBootCfgPref.isChecked() ) {
                         getActivity().stopService ( intent );
                     }
                 }
-            }
-            else if ( key.equals ( KEY_BOOT_CFG ) )
-            {
-                if ( mBootCfgPref.isChecked() )
-                {
+            } else if ( key.equals ( KEY_BOOT_CFG ) ) {
+                if ( mBootCfgPref.isChecked() ) {
                     getActivity().startService ( intent );
-                }
-                else
-                {
-                    if ( !mStartServicePref.isChecked() )
-                    {
+                } else {
+                    if ( !mStartServicePref.isChecked() ) {
                         getActivity().stopService ( intent );
                     }
                 }
             }
         }
-        
+
         @Override
-        public void onResume()
-        {
+        public void onResume() {
             super.onResume();
         }
-        
-        private void setPreferenceListeners ( OnPreferenceChangeListener listener )
-        {
+
+        private void setPreferenceListeners ( OnPreferenceChangeListener listener ) {
             mStartServicePref.setOnPreferenceChangeListener ( listener );
             mBootCfgPref.setOnPreferenceChangeListener ( listener );
         }
         @Override
-        public void onCreate ( Bundle icicle )
-        {
+        public void onCreate ( Bundle icicle ) {
             super.onCreate ( icicle );
             addPreferencesFromResource ( R.xml.settings_dlna );
             mStartServicePref = ( SwitchPreference ) findPreference ( KEY_START_SERVICE );
             mBootCfgPref = ( SwitchPreference ) findPreference ( KEY_BOOT_CFG );
         }
         @Override
-        public void onStart()
-        {
+        public void onStart() {
             super.onStart();
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener ( this );
             setPreferenceListeners ( this );
         }
-        
+
         @Override
-        public void onStop()
-        {
+        public void onStop() {
             getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener ( this );
             setPreferenceListeners ( null );
             super.onStop();
         }
-        
+
 }

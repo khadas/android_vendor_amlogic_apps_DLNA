@@ -5,11 +5,9 @@ import android.app.Application;
 import com.droidlogic.mediacenter.airplay.proxy.AirplayController;
 import com.droidlogic.mediacenter.airplay.proxy.AirplayProxy;
 
-public class AirplayApplication extends Application
-{
+public class AirplayApplication extends Application {
         @Override
-        public void onCreate()
-        {
+        public void onCreate() {
             // TODO Auto-generated method stub
             super.onCreate();
             AirplayProxy.getInstance ( this );

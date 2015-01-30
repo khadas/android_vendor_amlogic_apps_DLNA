@@ -48,8 +48,7 @@ import android.widget.Toast;
  * @Author
  * @Version V1.0
  */
-public class DeviceFileBrowser extends ListFragment implements Callbacks
-{
+public class DeviceFileBrowser extends ListFragment implements Callbacks {
         private String                          mediaServerName;
         private static final boolean DEBUG = false;
         private static final String             LABLE                = "media_name";
@@ -85,8 +84,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
         private static DeviceFileBrowser deviceInstance ;
         private Handler mHandler;
         /**************************************************************************************************************************/
-        static DeviceFileBrowser newInstance ( String label )
-        {
+        static DeviceFileBrowser newInstance ( String label ) {
             //if(deviceInstance != null && deviceInstance.mediaServerName == label){
             //    return deviceInstance;
             //}else{
@@ -97,34 +95,25 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
             //}
             return deviceInstance;
         }
-        
+
         @Override
-        public void onListItemClick ( ListView parent, View v, int pos, long id )
-        {
+        public void onListItemClick ( ListView parent, View v, int pos, long id ) {
             Map<String, Object> item = ( Map<String, Object> ) parent
                                        .getItemAtPosition ( pos );
-                                       
-            if ( item.get ( "item_type" ).equals ( R.drawable.item_type_back ) )
-            {
+            if ( item.get ( "item_type" ).equals ( R.drawable.item_type_back ) ) {
                 up2top();
                 return;
             }
-            
             curItemId = ( String ) item.get ( "item_id" );
             String item_type_desc = ( String ) item.get ( "item_type_desc" );
-            
             if ( item_type_desc == null )
             { return; }
-            
-            if ( item_type_desc.equals ( "container" ) )
-            {
+            if ( item_type_desc.equals ( "container" ) ) {
                 curTree = mediaServerTree.getTree ( item );
                 String name = ( String ) item.get ( "item_name" );
                 addPathList ( name, item );
                 displayView();
-            }
-            else if ( item_type_desc.equals ( "item" ) )
-            {
+            } else if ( item_type_desc.equals ( "item" ) ) {
                 String uri = ( String ) item.get ( "item_uri" );
                 String pre_uri = ( String ) item.get ( "preview_uri" );
                 String name = ( String ) item.get ( "item_name" );
@@ -135,15 +124,13 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
                 openNetFile ( uri, type, name );
             }
         }
-        
+
         @Override
-        public void onViewCreated ( View view, Bundle savedInstanceState )
-        {
+        public void onViewCreated ( View view, Bundle savedInstanceState ) {
             super.onViewCreated ( view, savedInstanceState );
         }
-        
-        private void addPathList ( String name, Map<String, Object> item )
-        {
+
+        private void addPathList ( String name, Map<String, Object> item ) {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put ( "item_name", name );
             map.put ( "item_map", item );
@@ -151,39 +138,30 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
             map.put ( "item_level", pathLevel );
             pathList.add ( pathLevel, map );
         }
-        
-        private void removePathList ( int level )
-        {
-            while ( ( pathLevel > level ) && ( pathLevel > 0 ) )
-            {
+
+        private void removePathList ( int level ) {
+            while ( ( pathLevel > level ) && ( pathLevel > 0 ) ) {
                 pathList.remove ( pathLevel );
                 pathLevel--;
             }
         }
-        
-        private void displayView()
-        {
+
+        private void displayView() {
             this.setListAdapter ( getFileAdapter ( 0 ) );
         }
-        
+
         @Override
-        public void onCreate ( Bundle savedInstanceState )
-        {
+        public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             Bundle args = getArguments();
-            
-            if ( args != null )
-            {
+            if ( args != null ) {
                 mediaServerName = args.getString ( LABLE );
             }
-            
             RemoteHandler = new HandlerThread ( "AsyncThreadHandler" );
             RemoteHandler.start();
-            mHandler = new Handler ( RemoteHandler.getLooper() )
-            {
+            mHandler = new Handler ( RemoteHandler.getLooper() ) {
                 @Override
-                public void handleMessage ( Message msg )
-                {
+                public void handleMessage ( Message msg ) {
                     super.handleMessage ( msg );
                 }
             };
@@ -191,41 +169,30 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
             curTree = mediaServerTree;
             addPathList ( mediaServerName, mediaServerTree.getHead() );
         }
-        
-        private UPNPAdapter getFileAdapter ( int type )
-        {
-            if ( type == 0 )
-            {
+
+        private UPNPAdapter getFileAdapter ( int type ) {
+            if ( type == 0 ) {
                 return new UPNPAdapter ( getActivity(), getListData ( false ),
-                                         R.layout.device_item, new String[]
-                {
+                R.layout.device_item, new String[] {
                     "item_type", "item_name", "item_sel"
-                }, new int[]
-                {
+                }, new int[] {
                     R.id.item_type, R.id.item_name, R.id.item_sel,
                 } );
-            }
-            else
-            {
-                if ( filelist == null )
-                {
+            } else {
+                if ( filelist == null ) {
                     filelist = new ArrayList<Map<String, Object>>();
                     handlerUI.sendEmptyMessageDelayed ( LOADERR, 500 );
                 }
-                
                 return new UPNPAdapter ( getActivity(), filelist,
-                                         R.layout.device_item, new String[]
-                {
+                R.layout.device_item, new String[] {
                     "item_type", "item_name", "item_sel"
-                }, new int[]
-                {
+                }, new int[] {
                     R.id.item_type, R.id.item_name, R.id.item_sel,
                 } );
             }
         }
-        
-        private List<Map<String, Object>> getListData ( boolean force )
-        {
+
+        private List<Map<String, Object>> getListData ( boolean force ) {
             filelist = null;/*
         if (mDeviceBrowserTask != null) {
             mDeviceBrowserTask = null;
@@ -238,27 +205,20 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
             return new ArrayList<Map<String, Object>>(); // getNetFileData(path,
             // item_id, type);
         }
-        
-        private List<Map<String, Object>> getNetFileData ( String item_id )
-        {
+
+        private List<Map<String, Object>> getNetFileData ( String item_id ) {
             List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
             Debug.d ( TAG, "getNetFileData: item_id[" + item_id + "]" );
             Collection<Map<String, Object>> children = null;
             children = curTree.getSuccessors ( curTree.getHead() );
-            
-            if ( children != null && children.size() > 0 )
-            {
+            if ( children != null && children.size() > 0 ) {
                 Debug.d ( TAG, "GET list from Cache" );
                 Object[] obj = children.toArray();
-                
-                for ( int i = 0; i < obj.length; i++ )
-                {
+                for ( int i = 0; i < obj.length; i++ ) {
                     Map<String, Object> tmp = ( Map<String, Object> ) obj[i];
                     list.add ( tmp );
                 }
-            }
-            else if ( mediaServerName != null )
-            {
+            } else if ( mediaServerName != null ) {
                 Debug.d ( TAG, "GET list by UPnP" );
                 String didl_str;
                 Map<String, Object> map = new HashMap<String, Object>();
@@ -270,196 +230,137 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
                 didl_str = ( ( MediaCenterActivity ) getActivity() ).actionBrowse (
                                mediaServerName, item_id, "BrowseDirectChildren" );
                 List<Map<String, Object>> list_returned;
-                
                 if ( getActivity() == null )
                 { return list; }
-                
                 list_returned = ( ( MediaCenterActivity ) getActivity() )
                                 .getBrowseResult ( didl_str, list, R.drawable.item_type_dir,
                                                    R.drawable.item_img_unsel );
-                                                   
-                if ( list_returned != null )
-                {
-                    for ( int i = 0; i < list_returned.size(); i++ )
-                    {
+                if ( list_returned != null ) {
+                    for ( int i = 0; i < list_returned.size(); i++ ) {
                         Map<String, Object> item = list_returned.get ( i );
                         String item_type_desc = ( String ) item.get ( "item_type_desc" );
-                        
-                        if ( item_type_desc != null && item_type_desc.equals ( "item" ) )
-                        {
+                        if ( item_type_desc != null && item_type_desc.equals ( "item" ) ) {
                             String upnp_class = ( String ) item.get ( "item_upnp_class" );
                             String type = TYPE_APP;
-                            
-                            if ( upnp_class != null )
-                            {
+                            if ( upnp_class != null ) {
                                 if ( DEBUG ) { Debug.d ( TAG, "upnp_class: " + upnp_class ); }
-                                
-                                if ( upnp_class.startsWith ( AmlogicCP.UPNP_CLASS_IMAGE ) )
-                                {
+                                if ( upnp_class.startsWith ( AmlogicCP.UPNP_CLASS_IMAGE ) ) {
                                     type = TYPE_IMAGE;
-                                }
-                                else if ( upnp_class.startsWith ( AmlogicCP.UPNP_CLASS_AUDIO ) )
-                                {
+                                } else if ( upnp_class.startsWith ( AmlogicCP.UPNP_CLASS_AUDIO ) ) {
                                     type = TYPE_AUDIO;
-                                }
-                                else if ( upnp_class.startsWith ( AmlogicCP.UPNP_CLASS_VIDEO ) )
-                                {
+                                } else if ( upnp_class.startsWith ( AmlogicCP.UPNP_CLASS_VIDEO ) ) {
                                     type = TYPE_VIDEO;
-                                }
-                                else
-                                {
+                                } else {
                                     type = TYPE_APP;
                                 }
                             }
-                            
-                            if ( TYPE_APP.equals ( type ) )
-                            {
+                            if ( TYPE_APP.equals ( type ) ) {
                                 type = DesUtils.CheckMediaType ( ( String ) item
                                                                  .get ( "item_uri" ) );
                             }
-                            
                             item.put ( "item_media_type", type );
                             item.put ( "item_type", getFileTypeImg ( type ) );
                         }
-                        
                         mediaServerTree.addLeaf ( curTree.getHead(), item );
-                        
                         if ( DEBUG ) { Debug.d ( TAG, "item[" + i + "] got: " + item ); }
                     }
-                }
-                else
-                {
+                } else {
                     Debug.d ( TAG, "actionBrowse fail" );
                     handlerUI.sendEmptyMessage ( LOADERR );
                     return list;
                 }
             }
-            
             return list;
         }
-        
-        private int getFileTypeImg ( String name )
-        {
+
+        private int getFileTypeImg ( String name ) {
             // int resid = type.equals(NetBrowserOp.LIST) ?
             // R.drawable.item_type_file : R.drawable.item_preview_file;
             int resid = R.drawable.item_type_dir;
-            
-            if ( name == null )
-            {
+            if ( name == null ) {
                 return resid;
             }
-            
-            if ( name.equals ( TYPE_VIDEO ) )
-            {
+            if ( name.equals ( TYPE_VIDEO ) ) {
                 resid = R.drawable.video;
-            }
-            else if ( name.equals ( TYPE_AUDIO ) )
-            {
+            } else if ( name.equals ( TYPE_AUDIO ) ) {
                 resid = R.drawable.music;
-            }
-            else if ( name.equals ( TYPE_IMAGE ) )
-            {
+            } else if ( name.equals ( TYPE_IMAGE ) ) {
                 resid = R.drawable.photo;
             }
-            
             return resid;
         }
-        
-        class NetDeviceBrowserThread implements Runnable
-        {
+
+        class NetDeviceBrowserThread implements Runnable {
                 private String mThreadName;
-                public NetDeviceBrowserThread ( String threadName )
-                {
+                public NetDeviceBrowserThread ( String threadName ) {
                     mThreadName = threadName;
                 }
-                
-                public void run()
-                {
-                    if ( if_thread_run == true )
-                    {
+
+                public void run() {
+                    if ( if_thread_run == true ) {
                         handlerUI.removeMessages ( DISPLAYDATA );
                         handlerUI.sendEmptyMessageDelayed ( LOADINGSHOW, 500 );
-                        
                         if ( curItemId == null )
                         { curItemId = MEDIA_SERVER_ROOT_ID; }
-                        
                         filelist = getNetFileData ( curItemId );
                         Map<String, Object> map = new HashMap<String, Object>();
                         map.put ( "item_name", getText ( R.string.str_back ) );
                         map.put ( "file_path", ".." );
                         map.put ( "item_sel", R.drawable.item_img_unsel );
                         map.put ( "item_type", R.drawable.item_type_back );
-                        
-                        if ( !filelist.contains ( map ) )
-                        {
+                        if ( !filelist.contains ( map ) ) {
                             Debug.d ( TAG, "filelist not contains back" );
-                            
-                            if ( filelist.get ( 0 ) != null )
-                            {
+                            if ( filelist.get ( 0 ) != null ) {
                                 filelist.add ( filelist.get ( 0 ) );
                                 filelist.set ( 0, map );
                             }
                         }
-                        
                         handlerUI.removeMessages ( LOADINGSHOW );
                         handlerUI.sendEmptyMessage ( DISPLAYDATA );
                         handlerUI.sendEmptyMessage ( LOADINGHIDE );
                     }
                 }
         }
-        
+
         private LoadingDialog progressDialog = null;
-        
-        private void showLoading()
-        {
-            if ( progressDialog == null )
-            {
+
+        private void showLoading() {
+            if ( progressDialog == null ) {
                 progressDialog = new LoadingDialog ( getActivity(),
                                                      LoadingDialog.TYPE_LOADING, this.getResources().getString (
                                                              R.string.str_loading ) );
                 progressDialog.show();
             }
         }
-        
-        private void hideLoading()
-        {
-            if ( progressDialog != null )
-            {
+
+        private void hideLoading() {
+            if ( progressDialog != null ) {
                 progressDialog.stopAnim();
                 progressDialog.dismiss();
                 progressDialog = null;
             }
         }
-        
-        private void displayData()
-        {
+
+        private void displayData() {
             UPNPAdapter adapter = getFileAdapter ( 1 );
-            
-            if ( adapter.getCount() <= 1 )
-            {
+            if ( adapter.getCount() <= 1 ) {
                 Toast.makeText ( getActivity(),
                                  getResources().getString ( R.string.no_files ),
                                  Toast.LENGTH_SHORT );
             }
-            
             setListAdapter ( adapter );
         }
-        
-        private Handler handlerUI = new Handler()
-        {
+
+        private Handler handlerUI = new Handler() {
             @Override
-            public void handleMessage ( Message msg )
-            {
-                switch ( msg.what )
-                {
+            public void handleMessage ( Message msg ) {
+                switch ( msg.what ) {
                     case LOADINGSHOW:
                         showLoading();
                         break;
-                        
                     case DISPLAYDATA:
                         displayData();
                         break;
-                        
                     case LOADERR:
                         hideLoading();
                         Toast.makeText (
@@ -469,74 +370,52 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
                                 R.string.browser_fail ),
                             Toast.LENGTH_SHORT );
                         break;
-                        
                     case LOADINGHIDE:
                         hideLoading();
-                        
                     default:
                         break;
                 }
             }
         };
-        
-        private void up2top()
-        {
+
+        private void up2top() {
             if ( curTree == null || curItemId == null
-                    || curItemId == MEDIA_SERVER_ROOT_ID )
-            {
+                    || curItemId == MEDIA_SERVER_ROOT_ID ) {
                 if_thread_run = false;
                 Debug.d ( TAG, "back to device list" );
                 FragmentManager fm = getFragmentManager();
-                
-                if ( fm.getBackStackEntryCount() > 0 )
-                {
+                if ( fm.getBackStackEntryCount() > 0 ) {
                     fm.popBackStack();
                 }
-                
                 return;
             }
-            
             curTree = curTree.getParent();
-            
-            if ( curTree == null )
-            {
+            if ( curTree == null ) {
                 curItemId = MEDIA_SERVER_ROOT_ID;
-            }
-            else
-            {
+            } else {
                 Map<String, Object> tmp = curTree.getHead();
                 curItemId = ( String ) tmp.get ( "item_id" );
             }
-            
             removePathList ( pathLevel - 1 );
             displayView();
         }
-        
-        private void getPlayList ( String type )
-        {
+
+        private void getPlayList ( String type ) {
             playList.clear();
-            
-            for ( int i = 0; i < filelist.size(); i++ )
-            {
+            for ( int i = 0; i < filelist.size(); i++ ) {
                 Map<String, Object> item = filelist.get ( i );
                 String mediaType = ( String ) item.get ( "item_media_type" );
-                
-                if ( type.equals ( mediaType ) )
-                {
+                if ( type.equals ( mediaType ) ) {
                     playList.add ( item );
                 }
             }
         }
-        
-        protected void openNetFile ( String uri, String type, String upnp_name )
-        {
-            if ( type == null )
-            {
+
+        protected void openNetFile ( String uri, String type, String upnp_name ) {
+            if ( type == null ) {
                 type = DesUtils.CheckMediaType ( uri );
             }
-            
-            if ( type.equals ( TYPE_IMAGE ) )
-            {
+            if ( type.equals ( TYPE_IMAGE ) ) {
                 getPlayList ( TYPE_IMAGE );
                 Intent intent = new Intent ( IMAGE_URI_ACTION );
                 intent.putExtra ( AmlogicCP.EXTRA_MEDIA_URI, uri );
@@ -545,9 +424,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
                 intent.putExtra ( DEV_TYPE, TYPE_DMP );
                 intent.putExtra ( CURENT_POS, play_index );
                 startActivity ( intent );
-            }
-            else if ( type.equals ( TYPE_VIDEO ) )
-            {
+            } else if ( type.equals ( TYPE_VIDEO ) ) {
                 getPlayList ( TYPE_VIDEO );
                 Intent intent = new Intent();
                 intent.putExtra ( AmlogicCP.EXTRA_MEDIA_URI, uri );
@@ -557,9 +434,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
                 intent.setClass ( getActivity(), VideoPlayer.class );
                 startActivity ( intent );
                 //startActivityForResult(intent, REQUEST_CODE);
-            }
-            else if ( type.equals ( TYPE_AUDIO ) )
-            {
+            } else if ( type.equals ( TYPE_AUDIO ) ) {
                 getPlayList ( TYPE_AUDIO );
                 Intent intent = new Intent();
                 intent.setClass ( getActivity(), MusicPlayer.class );
@@ -569,9 +444,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
                 intent.putExtra ( DEV_TYPE, TYPE_DMP );
                 intent.putExtra ( CURENT_POS, play_index );
                 startActivity ( intent );
-            }
-            else
-            {
+            } else {
                 Intent intent = new Intent();
                 intent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
                 intent.setAction ( android.content.Intent.ACTION_VIEW );
@@ -580,23 +453,21 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks
                 startActivity ( intent );
             }
         }
-        
-        
-        
+
+
+
         @Override
-        public void onResume()
-        {
+        public void onResume() {
             super.onResume();
             displayView();
         }
-        
+
         /* (non-Javadoc)
          * @see com.droidlogic.mediacenter.MediaCenterActivity.Callbacks#onBackPressedCallback()
          */
         @Override
-        public void onBackPressedCallback()
-        {
+        public void onBackPressedCallback() {
             up2top();
         }
-        
+
 }

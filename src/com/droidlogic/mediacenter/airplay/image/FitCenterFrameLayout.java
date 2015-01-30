@@ -25,21 +25,17 @@ import android.view.ViewGroup;
  * A simple layout that fits and centers each child view, maintaining aspect
  * ratio.
  */
-public class FitCenterFrameLayout extends ViewGroup
-{
-        public FitCenterFrameLayout ( Context context )
-        {
+public class FitCenterFrameLayout extends ViewGroup {
+        public FitCenterFrameLayout ( Context context ) {
             super ( context );
         }
-        
-        public FitCenterFrameLayout ( Context context, AttributeSet attrs )
-        {
+
+        public FitCenterFrameLayout ( Context context, AttributeSet attrs ) {
             super ( context, attrs );
         }
-        
+
         @Override
-        protected void onMeasure ( int widthMeasureSpec, int heightMeasureSpec )
-        {
+        protected void onMeasure ( int widthMeasureSpec, int heightMeasureSpec ) {
             // We purposely disregard child measurements.
             final int width = resolveSize ( getSuggestedMinimumWidth(),
                                             widthMeasureSpec );
@@ -51,16 +47,13 @@ public class FitCenterFrameLayout extends ViewGroup
             int childHeightSpec = MeasureSpec.makeMeasureSpec ( height,
                                   MeasureSpec.UNSPECIFIED );
             int childCount = getChildCount();
-            
-            for ( int i = 0; i < childCount; i++ )
-            {
+            for ( int i = 0; i < childCount; i++ ) {
                 getChildAt ( i ).measure ( childWidthSpec, childHeightSpec );
             }
         }
-        
+
         @Override
-        protected void onLayout ( boolean changed, int l, int t, int r, int b )
-        {
+        protected void onLayout ( boolean changed, int l, int t, int r, int b ) {
             final int childCount = getChildCount();
             final int parentLeft = getPaddingLeft();
             final int parentTop = getPaddingTop();
@@ -70,16 +63,11 @@ public class FitCenterFrameLayout extends ViewGroup
             final int parentHeight = parentBottom - parentTop;
             int unpaddedWidth, unpaddedHeight, parentUnpaddedWidth, parentUnpaddedHeight;
             int childPaddingLeft, childPaddingTop, childPaddingRight, childPaddingBottom;
-            
-            for ( int i = 0; i < childCount; i++ )
-            {
+            for ( int i = 0; i < childCount; i++ ) {
                 final View child = getChildAt ( i );
-                
-                if ( child.getVisibility() == GONE )
-                {
+                if ( child.getVisibility() == GONE ) {
                     continue;
                 }
-                
                 // Fit and center the child within the parent. Make sure not to
                 // consider padding
                 // as part of the child's aspect ratio.
@@ -95,10 +83,8 @@ public class FitCenterFrameLayout extends ViewGroup
                                       - childPaddingRight;
                 parentUnpaddedHeight = parentHeight - childPaddingTop
                                        - childPaddingBottom;
-                                       
                 if ( parentUnpaddedWidth * unpaddedHeight > parentUnpaddedHeight
-                        * unpaddedWidth )
-                {
+                        * unpaddedWidth ) {
                     // The child view should be left/right letterboxed.
                     final int scaledChildWidth = unpaddedWidth
                                                  * parentUnpaddedHeight / unpaddedHeight
@@ -107,9 +93,7 @@ public class FitCenterFrameLayout extends ViewGroup
                                    parentTop, parentRight
                                    - ( parentWidth - scaledChildWidth ) / 2,
                                    parentBottom );
-                }
-                else
-                {
+                } else {
                     // The child view should be top/bottom letterboxed.
                     final int scaledChildHeight = unpaddedHeight
                                                   * parentUnpaddedWidth / unpaddedWidth + childPaddingTop

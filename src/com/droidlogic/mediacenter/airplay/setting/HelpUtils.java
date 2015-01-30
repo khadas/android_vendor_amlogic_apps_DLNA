@@ -31,28 +31,27 @@ import java.util.Locale;
  * Functions to easily prepare contextual help menu option items with an intent that opens up the
  * browser to a particular URL, while taking into account the preferred language and app version.
  */
-public class HelpUtils
-{
+public class HelpUtils {
         private final static String TAG = HelpUtils.class.getName();
-        
+
         /**
          * Help URL query parameter key for the preferred language.
          */
         private final static String PARAM_LANGUAGE_CODE = "hl";
-        
+
         /**
          * Help URL query parameter key for the app version.
          */
         private final static String PARAM_VERSION = "version";
-        
+
         /**
          * Cached version code to prevent repeated calls to the package manager.
          */
         private static String sCachedVersionCode = null;
-        
+
         /** Static helper that is not instantiable*/
         private HelpUtils() { }
-        
+
         /**
          * Prepares the help menu item by doing the following.
          * - If the string corresponding to the helpUrlResourceId is empty or null, then the help menu
@@ -63,12 +62,11 @@ public class HelpUtils
          * @return returns whether the help menu item has been made visible.
          */
         public static boolean prepareHelpMenuItem ( Context context, MenuItem helpMenuItem,
-                int helpUrlResourceId )
-        {
+                int helpUrlResourceId ) {
             String helpUrlString = context.getResources().getString ( helpUrlResourceId );
             return prepareHelpMenuItem ( context, helpMenuItem, helpUrlString );
         }
-        
+
         /**
          * Prepares the help menu item by doing the following.
          * - If the helpUrlString is empty or null, the help menu item is made invisible.
@@ -78,17 +76,13 @@ public class HelpUtils
          * @return returns whether the help menu item has been made visible.
          */
         public static boolean prepareHelpMenuItem ( Context context, MenuItem helpMenuItem,
-                String helpUrlString )
-        {
-            if ( TextUtils.isEmpty ( helpUrlString ) )
-            {
+                String helpUrlString ) {
+            if ( TextUtils.isEmpty ( helpUrlString ) ) {
                 // The help url string is empty or null, so set the help menu item to be invisible.
                 helpMenuItem.setVisible ( false );
                 // return that the help menu item is not visible (i.e. false)
                 return false;
-            }
-            else
-            {
+            } else {
                 // The help url string exists, so first add in some extra query parameters.
                 final Uri fullUri = uriWithAddedParameters ( context, Uri.parse ( helpUrlString ) );
                 // Then, create an intent that will be fired when the user
@@ -105,43 +99,34 @@ public class HelpUtils
                 return true;
             }
         }
-        
+
         /**
          * Adds two query parameters into the Uri, namely the language code and the version code
          * of the app's package as gotten via the context.
          * @return the uri with added query parameters
          */
-        private static Uri uriWithAddedParameters ( Context context, Uri baseUri )
-        {
+        private static Uri uriWithAddedParameters ( Context context, Uri baseUri ) {
             Uri.Builder builder = baseUri.buildUpon();
             // Add in the preferred language
             builder.appendQueryParameter ( PARAM_LANGUAGE_CODE, Locale.getDefault().toString() );
-            
             // Add in the package version code
-            if ( sCachedVersionCode == null )
-            {
+            if ( sCachedVersionCode == null ) {
                 // There is no cached version code, so try to get it from the package manager.
-                try
-                {
+                try {
                     // cache the version code
                     PackageInfo info = context.getPackageManager().getPackageInfo (
                                            context.getPackageName(), 0 );
                     sCachedVersionCode = Integer.toString ( info.versionCode );
                     // append the version code to the uri
                     builder.appendQueryParameter ( PARAM_VERSION, sCachedVersionCode );
-                }
-                catch ( NameNotFoundException e )
-                {
+                } catch ( NameNotFoundException e ) {
                     // Cannot find the package name, so don't add in the version parameter
                     // This shouldn't happen.
                     Debug.wtf ( TAG, "Invalid package name for context", e );
                 }
-            }
-            else
-            {
+            } else {
                 builder.appendQueryParameter ( PARAM_VERSION, sCachedVersionCode );
             }
-            
             // Build the full uri and return it
             return builder.build();
         }

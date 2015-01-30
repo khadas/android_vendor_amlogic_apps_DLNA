@@ -38,8 +38,7 @@ import com.droidlogic.mediacenter.dlna.PrefUtils;
  */
 public class SettingsFragment extends SettingsPreferenceFragment implements
     DialogInterface.OnClickListener, OnSharedPreferenceChangeListener,
-    OnPreferenceChangeListener
-{
+        OnPreferenceChangeListener {
         public static final String KEY_NAME = "name";
         public static final String KEY_VERSION = "version";
         public static final String KEY_DEVICE_NAME = PrefUtils.SERVICE_NAME;
@@ -53,22 +52,19 @@ public class SettingsFragment extends SettingsPreferenceFragment implements
          * @see android.preference.Preference.OnPreferenceChangeListener#onPreferenceChange(android.preference.Preference, java.lang.Object)
          */
         @Override
-        public boolean onPreferenceChange ( Preference arg0, Object arg1 )
-        {
+        public boolean onPreferenceChange ( Preference arg0, Object arg1 ) {
             return false;
         }
-        
+
         /* (non-Javadoc)
          * @see android.content.SharedPreferences.OnSharedPreferenceChangeListener#onSharedPreferenceChanged(android.content.SharedPreferences, java.lang.String)
          */
         @Override
-        public void onSharedPreferenceChanged ( SharedPreferences arg0, String arg1 )
-        {
+        public void onSharedPreferenceChanged ( SharedPreferences arg0, String arg1 ) {
         }
-        
+
         @Override
-        public void onCreate ( Bundle icicle )
-        {
+        public void onCreate ( Bundle icicle ) {
             super.onCreate ( icicle );
             addPreferencesFromResource ( R.xml.about_preferences );
             mVersionPref = ( Preference ) findPreference ( KEY_VERSION );
@@ -76,51 +72,40 @@ public class SettingsFragment extends SettingsPreferenceFragment implements
             mAirplayProxy = AirplayProxy.getInstance ( getActivity() );
         }
         @Override
-        public void onResume()
-        {
+        public void onResume() {
             super.onResume();
             SharedPreferences prefs = Utils.getSharedPreferences ( getActivity() );
             mDeviceName = prefs.getString ( KEY_DEVICE_NAME, getActivity().getString ( R.string.config_default_name ) );
             mDeviceNamePref.setSummary ( mDeviceName );
         }
-        
+
         @Override
-        public boolean onPreferenceTreeClick ( PreferenceScreen screen, Preference preference )
-        {
-            if ( preference == mDeviceNamePref )
-            {
+        public boolean onPreferenceTreeClick ( PreferenceScreen screen, Preference preference ) {
+            if ( preference == mDeviceNamePref ) {
                 showDialog ( DIALOG_NAME_SETTINGS );
             }
-            
             return super.onPreferenceTreeClick ( screen, preference );
         }
-        
+
         @Override
-        public void onClick ( DialogInterface dialogInterface, int button )
-        {
-            if ( button == DialogInterface.BUTTON_POSITIVE )
-            {
+        public void onClick ( DialogInterface dialogInterface, int button ) {
+            if ( button == DialogInterface.BUTTON_POSITIVE ) {
                 onDeviceNameChanged ( mDialog.getName() );
             }
         }
-        
+
         @Override
-        public Dialog onCreateDialog ( int id )
-        {
-            if ( id == DIALOG_NAME_SETTINGS )
-            {
+        public Dialog onCreateDialog ( int id ) {
+            if ( id == DIALOG_NAME_SETTINGS ) {
                 final Activity activity = getActivity();
                 mDialog = new NameSetDialog ( activity, this, mDeviceName );
                 return mDialog;
             }
-            
             return null;
         }
-        
-        private void onDeviceNameChanged ( String name )
-        {
-            if ( name != null && !mDeviceName.equals ( name ) )
-            {
+
+        private void onDeviceNameChanged ( String name ) {
+            if ( name != null && !mDeviceName.equals ( name ) ) {
                 mDeviceName = name;
                 SharedPreferences prefs = Utils.getSharedPreferences ( getActivity() );
                 prefs.edit().putString ( KEY_DEVICE_NAME, mDeviceName )
@@ -132,12 +117,11 @@ public class SettingsFragment extends SettingsPreferenceFragment implements
                 send2DLNAServer ( name );
             }
         }
-        
+
         /**
          * @Description TODO
          */
-        private void send2DLNAServer ( String name )
-        {
+        private void send2DLNAServer ( String name ) {
             Intent intent = new Intent (
                 MediaCenterService.SERVICE_NAME_CHANGE );
             intent.putExtra ( "service_name", name );

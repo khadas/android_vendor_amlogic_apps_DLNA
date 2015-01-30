@@ -28,8 +28,7 @@ import android.widget.TextView;
 
 import com.droidlogic.mediacenter.R;
 
-public class MusicActivity extends Activity
-{
+public class MusicActivity extends Activity {
         public static final String           TAG             = "MusicActivity";
         private static final OnClickListener OnClickListener = null;
         public Context                       mContext;
@@ -45,50 +44,44 @@ public class MusicActivity extends Activity
         public ImageButton                   mStop;
         public ImageButton                   mNext;
         @Override
-        public void onCreate ( Bundle savedInstanceState )
-        {
+        public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             setContentView ( R.layout.music_airplay );
             mContext = MusicActivity.this;
             mProxy = AirplayProxy.getInstance ( mContext );
             mInfoReceiver = new MusicInfoReceiver();
-             LayoutParams params = getWindow().getAttributes();
-              params.width = WindowManager.LayoutParams.MATCH_PARENT;
-             getWindow().setAttributes(params);
+            LayoutParams params = getWindow().getAttributes();
+            params.width = WindowManager.LayoutParams.MATCH_PARENT;
+            getWindow().setAttributes ( params );
             getWindow().setGravity ( Gravity.BOTTOM | Gravity.FILL_HORIZONTAL );
         }
-        
+
         @Override
-        protected void onStart()
-        {
+        protected void onStart() {
             super.onStart();
         }
-        
+
         @Override
-        protected void onPause()
-        {
+        protected void onPause() {
             super.onPause();
             mProxy.postMusicPlayState ( AudioCmdClient.AUDIO_STOP_URI );
             mInfoReceiver.unregister();
             mWakeLock.release();
         }
-        
+
         @Override
-        protected void onStop()
-        {
+        protected void onStop() {
             super.onStop();
             running = false;
         }
-        
+
         @Override
-        protected void onDestroy()
-        {
+        protected void onDestroy() {
             super.onDestroy();
         }
-        
+
         @Override
-        protected void onResume()
-        {
+        protected void onResume() {
             mInfoReceiver.register();
             super.onResume();
             /* enable backlight */
@@ -102,57 +95,41 @@ public class MusicActivity extends Activity
             // mPoster.setAlpha(128);
             isPlaying = true;
             mPrev = ( ImageButton ) findViewById ( R.id.btn_pre );
-            mPrev.setOnClickListener ( new View.OnClickListener()
-            {
-                public void onClick ( View view )
-                {
+            mPrev.setOnClickListener ( new View.OnClickListener() {
+                public void onClick ( View view ) {
                     Debug.d ( TAG, "prev clicked" );
-                    new Thread()
-                    {
-                        public void run()
-                        {
+                    new Thread() {
+                        public void run() {
                             mProxy.postMusicPlayState ( AudioCmdClient.AUDIO_ITEM_PREV );
                         }
                     } .start();
                 }
             } );
             mNext = ( ImageButton ) findViewById ( R.id.btn_next );
-            mNext.setOnClickListener ( new View.OnClickListener()
-            {
-                public void onClick ( View view )
-                {
-                    new Thread()
-                    {
-                        public void run()
-                        {
+            mNext.setOnClickListener ( new View.OnClickListener() {
+                public void onClick ( View view ) {
+                    new Thread() {
+                        public void run() {
                             mProxy.postMusicPlayState ( AudioCmdClient.AUDIO_ITEM_NEXT );
                         }
                     } .start();
                 }
             } );
             mPlayPause = ( ImageButton ) findViewById ( R.id.btn_play_pause );
-            mPlayPause.setOnClickListener ( new View.OnClickListener()
-            {
-                public void onClick ( View view )
-                {
+            mPlayPause.setOnClickListener ( new View.OnClickListener() {
+                public void onClick ( View view ) {
                     Debug.d ( TAG, "play_pause clicked" );
-                    new Thread()
-                    {
-                        public void run()
-                        {
-                            if ( isPlaying )
-                            {
+                    new Thread() {
+                        public void run() {
+                            if ( isPlaying ) {
                                 mProxy.postMusicPlayState ( AudioCmdClient.AUDIO_PAUSE_URI );
                                 isPlaying = false;
-                            }
-                            else
-                            {
+                            } else {
                                 mProxy.postMusicPlayState ( AudioCmdClient.AUDIO_PLAY_URI );
                                 isPlaying = true;
                             }
                         }
                     } .start();
-                    
                     if ( isPlaying )
                     { mPlayPause.setImageResource ( R.drawable.style_play ); }
                     else
@@ -160,15 +137,11 @@ public class MusicActivity extends Activity
                 }
             } );
             mStop = ( ImageButton ) findViewById ( R.id.btn_stop );
-            mStop.setOnClickListener ( new View.OnClickListener()
-            {
-                public void onClick ( View view )
-                {
+            mStop.setOnClickListener ( new View.OnClickListener() {
+                public void onClick ( View view ) {
                     Debug.d ( TAG, "stop clicked" );
-                    new Thread()
-                    {
-                        public void run()
-                        {
+                    new Thread() {
+                        public void run() {
                             mProxy.postMusicPlayState ( AudioCmdClient.AUDIO_STOP_URI );
                             //mHandler.sendEmptyMessageDelayed(0, 5000);
                         }
@@ -176,11 +149,9 @@ public class MusicActivity extends Activity
                 }
             } );
             ImageButton mExit = ( ImageButton ) findViewById ( R.id.btn_back );
-            mExit.setOnClickListener ( new View.OnClickListener()
-            {
+            mExit.setOnClickListener ( new View.OnClickListener() {
                 @Override
-                public void onClick ( View v )
-                {
+                public void onClick ( View v ) {
                     mProxy.postMusicPlayState ( AudioCmdClient.AUDIO_STOP_URI );
                     MusicActivity.this.finish();
                 }
@@ -194,75 +165,59 @@ public class MusicActivity extends Activity
                 moveTaskToBack(false);
             }
             */
-        private void refreshInfo ( String title, String artist )
-        {
+        private void refreshInfo ( String title, String artist ) {
             mTitle.setText ( title );
             mArtist.setText ( artist );
         }
-        
-        private class MusicInfoReceiver extends BroadcastReceiver
-        {
-                public void register()
-                {
+
+        private class MusicInfoReceiver extends BroadcastReceiver {
+                public void register() {
                     IntentFilter filter = new IntentFilter();
                     filter.addAction ( AirplayBroadcastFactory.ACTION_UPDATE_INFO );
                     filter.addAction ( AirplayBroadcastFactory.ACTION_MUSIC_EXIT );
                     filter.addAction ( AirplayBroadcastFactory.ACTION_MUSIC_NEXT );
                     mContext.registerReceiver ( this, filter );
                 }
-                
-                public void unregister()
-                {
+
+                public void unregister() {
                     mContext.unregisterReceiver ( this );
                 }
-                
+
                 @Override
-                public void onReceive ( Context context, Intent intent )
-                {
+                public void onReceive ( Context context, Intent intent ) {
                     // TODO Auto-generated method stub
                     String action = intent.getAction();
-                    
-                    if ( AirplayBroadcastFactory.ACTION_UPDATE_INFO.equals ( action ) )
-                    {
+                    if ( AirplayBroadcastFactory.ACTION_UPDATE_INFO.equals ( action ) ) {
                         String title = intent.getStringExtra ( "title" );
                         String act = intent.getStringExtra ( "artist" );
                         refreshInfo ( title, act );
-                    }
-                    else if ( AirplayBroadcastFactory.ACTION_MUSIC_EXIT.equals ( action ) )
-                    {
+                    } else if ( AirplayBroadcastFactory.ACTION_MUSIC_EXIT.equals ( action ) ) {
                         Debug.d ( TAG, "==music exit" );
                         mHandler.sendEmptyMessageDelayed ( 0, 2000 );
-                    }
-                    else if ( AirplayBroadcastFactory.ACTION_MUSIC_NEXT.equals ( action ) )
-                    {
+                    } else if ( AirplayBroadcastFactory.ACTION_MUSIC_NEXT.equals ( action ) ) {
                         Debug.d ( TAG, "===onPlayNext" );
                         onPlayNext();
                     }
                 }
         }
-        
-        private Handler mHandler = new Handler()
-        {
+
+        private Handler mHandler = new Handler() {
             @Override
-            public void handleMessage ( Message msg )
-            {
-                if ( msg.what == 0 )
-                {
+            public void handleMessage ( Message msg ) {
+                if ( msg.what == 0 ) {
                     Debug.d ( TAG, "handleMessage finish" );
                     finish();
                 }
             }
         };
-        
-        public void onPlayNext()
-        {
+
+        public void onPlayNext() {
             Debug.d ( TAG, "onPlayNext" );
             mHandler.removeMessages ( 0 );
         }
-        
-        public static boolean isRunning()
-        {
+
+        public static boolean isRunning() {
             return running;
         }
-        
+
 }

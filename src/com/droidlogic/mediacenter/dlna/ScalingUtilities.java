@@ -24,8 +24,7 @@ import android.graphics.Rect;
  *
  * @author Andreas Agvard (andreas.agvard@sonyericsson.com)
  */
-public class ScalingUtilities
-{
+public class ScalingUtilities {
 
         /**
          * Utility function for decoding an image resource. The decoded bitmap will
@@ -40,8 +39,7 @@ public class ScalingUtilities
          * @return Decoded bitmap
          */
         public static Bitmap decodeResource ( Resources res, int resId, int dstWidth, int dstHeight,
-                                              ScalingLogic scalingLogic )
-        {
+                                              ScalingLogic scalingLogic ) {
             Options options = new Options();
             options.inJustDecodeBounds = true;
             BitmapFactory.decodeResource ( res, resId, options );
@@ -51,7 +49,7 @@ public class ScalingUtilities
             Bitmap unscaledBitmap = BitmapFactory.decodeResource ( res, resId, options );
             return unscaledBitmap;
         }
-        
+
         /**
          * Utility function for creating a scaled version of an existing bitmap
          *
@@ -62,8 +60,7 @@ public class ScalingUtilities
          * @return New scaled bitmap object
          */
         public static Bitmap createScaledBitmap ( Bitmap unscaledBitmap, int dstWidth, int dstHeight,
-                ScalingLogic scalingLogic )
-        {
+                ScalingLogic scalingLogic ) {
             Rect srcRect = calculateSrcRect ( unscaledBitmap.getWidth(), unscaledBitmap.getHeight(),
                                               dstWidth, dstHeight, scalingLogic );
             Rect dstRect = calculateDstRect ( unscaledBitmap.getWidth(), unscaledBitmap.getHeight(),
@@ -74,7 +71,7 @@ public class ScalingUtilities
             canvas.drawBitmap ( unscaledBitmap, srcRect, dstRect, new Paint ( Paint.FILTER_BITMAP_FLAG ) );
             return scaledBitmap;
         }
-        
+
         /**
          * ScalingLogic defines how scaling should be carried out if source and
          * destination image has different aspect ratio.
@@ -88,11 +85,10 @@ public class ScalingUtilities
          * destination dimensions might be adjusted to a smaller size than
          * requested.
          */
-        public static enum ScalingLogic
-        {
+        public static enum ScalingLogic {
             CROP, FIT
         }
-        
+
         /**
          * Calculate optimal down-sampling factor given the dimensions of a source
          * image, the dimensions of a destination area and a scaling logic.
@@ -105,38 +101,26 @@ public class ScalingUtilities
          * @return Optimal down scaling sample size for decoding
          */
         public static int calculateSampleSize ( int srcWidth, int srcHeight, int dstWidth, int dstHeight,
-                                                ScalingLogic scalingLogic )
-        {
-            if ( scalingLogic == ScalingLogic.FIT )
-            {
+                                                ScalingLogic scalingLogic ) {
+            if ( scalingLogic == ScalingLogic.FIT ) {
                 final float srcAspect = ( float ) srcWidth / ( float ) srcHeight;
                 final float dstAspect = ( float ) dstWidth / ( float ) dstHeight;
-                
-                if ( srcAspect > dstAspect )
-                {
+                if ( srcAspect > dstAspect ) {
                     return srcWidth / dstWidth;
-                }
-                else
-                {
+                } else {
                     return srcHeight / dstHeight;
                 }
-            }
-            else
-            {
+            } else {
                 final float srcAspect = ( float ) srcWidth / ( float ) srcHeight;
                 final float dstAspect = ( float ) dstWidth / ( float ) dstHeight;
-                
-                if ( srcAspect > dstAspect )
-                {
+                if ( srcAspect > dstAspect ) {
                     return srcHeight / dstHeight;
-                }
-                else
-                {
+                } else {
                     return srcWidth / dstWidth;
                 }
             }
         }
-        
+
         /**
          * Calculates source rectangle for scaling bitmap
          *
@@ -148,32 +132,24 @@ public class ScalingUtilities
          * @return Optimal source rectangle
          */
         public static Rect calculateSrcRect ( int srcWidth, int srcHeight, int dstWidth, int dstHeight,
-                                              ScalingLogic scalingLogic )
-        {
-            if ( scalingLogic == ScalingLogic.CROP )
-            {
+                                              ScalingLogic scalingLogic ) {
+            if ( scalingLogic == ScalingLogic.CROP ) {
                 final float srcAspect = ( float ) srcWidth / ( float ) srcHeight;
                 final float dstAspect = ( float ) dstWidth / ( float ) dstHeight;
-                
-                if ( srcAspect > dstAspect )
-                {
+                if ( srcAspect > dstAspect ) {
                     final int srcRectWidth = ( int ) ( srcHeight * dstAspect );
                     final int srcRectLeft = ( srcWidth - srcRectWidth ) / 2;
                     return new Rect ( srcRectLeft, 0, srcRectLeft + srcRectWidth, srcHeight );
-                }
-                else
-                {
+                } else {
                     final int srcRectHeight = ( int ) ( srcWidth / dstAspect );
                     final int scrRectTop = ( int ) ( srcHeight - srcRectHeight ) / 2;
                     return new Rect ( 0, scrRectTop, srcWidth, scrRectTop + srcRectHeight );
                 }
-            }
-            else
-            {
+            } else {
                 return new Rect ( 0, 0, srcWidth, srcHeight );
             }
         }
-        
+
         /**
          * Calculates destination rectangle for scaling bitmap
          *
@@ -185,26 +161,18 @@ public class ScalingUtilities
          * @return Optimal destination rectangle
          */
         public static Rect calculateDstRect ( int srcWidth, int srcHeight, int dstWidth, int dstHeight,
-                                              ScalingLogic scalingLogic )
-        {
-            if ( scalingLogic == ScalingLogic.FIT )
-            {
+                                              ScalingLogic scalingLogic ) {
+            if ( scalingLogic == ScalingLogic.FIT ) {
                 final float srcAspect = ( float ) srcWidth / ( float ) srcHeight;
                 final float dstAspect = ( float ) dstWidth / ( float ) dstHeight;
-                
-                if ( srcAspect > dstAspect )
-                {
+                if ( srcAspect > dstAspect ) {
                     return new Rect ( 0, 0, dstWidth, ( int ) ( dstWidth / srcAspect ) );
-                }
-                else
-                {
+                } else {
                     return new Rect ( 0, 0, ( int ) ( dstHeight * srcAspect ), dstHeight );
                 }
-            }
-            else
-            {
+            } else {
                 return new Rect ( 0, 0, dstWidth, dstHeight );
             }
         }
-        
+
 }

@@ -42,30 +42,26 @@ import com.amlogic.airplay.CacheBuffer;
  * in MainActivity.
  */
 import com.droidlogic.mediacenter.R;
-public class ContentFragment extends Fragment
-{
+public class ContentFragment extends Fragment {
         private final String TAG = "ContentFragment";
         private View mContentView;
         private int mImageId = -1;
         private boolean mSystemUiVisible = true;
-        
+
         // The bitmap currently used by ImageView
         private Bitmap mBitmap = null;
-        
+
         /**
          * This is where we initialize the fragment's UI and attach some event
          * listeners to UI components.
          */
         @Override
         public View onCreateView ( LayoutInflater inflater, ViewGroup container,
-                                   Bundle savedInstanceState )
-        {
+                                   Bundle savedInstanceState ) {
             mContentView = inflater.inflate ( R.layout.content_welcome, null );
             // Show/hide the system status bar when single-clicking a photo.
-            mContentView.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View view )
-                {
+            mContentView.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View view ) {
                     /*  if (mSystemUiVisible) {
                             setSystemUiVisible(false);
                         } else {
@@ -75,40 +71,35 @@ public class ContentFragment extends Fragment
             } );
             return mContentView;
         }
-        
+
         /**
          * This is where we perform additional setup for the fragment that's either
          * not related to the fragment's layout or must be done after the layout is
          * drawn.
          */
         @Override
-        public void onActivityCreated ( Bundle savedInstanceState )
-        {
+        public void onActivityCreated ( Bundle savedInstanceState ) {
             super.onActivityCreated ( savedInstanceState );
-            
             // Current position and UI visibility should survive screen rotations.
-            if ( savedInstanceState != null )
-            {
+            if ( savedInstanceState != null ) {
                 setSystemUiVisible ( savedInstanceState.getBoolean ( "systemUiVisible" ) );
                 mImageId = savedInstanceState.getInt ( "image_id" );
                 updateContentAndRecycleBitmap ( mImageId );
             }
         }
-        
+
         @Override
-        public boolean onOptionsItemSelected ( MenuItem item )
-        {
+        public boolean onOptionsItemSelected ( MenuItem item ) {
             return super.onOptionsItemSelected ( item );
         }
-        
+
         @Override
-        public void onSaveInstanceState ( Bundle outState )
-        {
+        public void onSaveInstanceState ( Bundle outState ) {
             super.onSaveInstanceState ( outState );
             outState.putInt ( "image_id", mImageId );
             outState.putBoolean ( "systemUiVisible", mSystemUiVisible );
         }
-        
+
         /**
          * Toggle whether the system UI (status bar / system bar) is visible. This
          * also toggles the action bar visibility.
@@ -116,28 +107,22 @@ public class ContentFragment extends Fragment
          * @param show
          *            True to show the system UI, false to hide it.
          */
-        void setSystemUiVisible ( boolean show )
-        {
+        void setSystemUiVisible ( boolean show ) {
             mSystemUiVisible = show;
             Window window = getActivity().getWindow();
             WindowManager.LayoutParams winParams = window.getAttributes();
             View view = getView();
             ActionBar actionBar = getActivity().getActionBar();
-            
             if ( actionBar == null )
             { return; }
-            
-            if ( show )
-            {
+            if ( show ) {
                 // Show status bar (remove fullscreen flag)
                 window.setFlags ( 0, WindowManager.LayoutParams.FLAG_FULLSCREEN );
                 // Show system bar
                 view.setSystemUiVisibility ( View.STATUS_BAR_VISIBLE );
                 // Show action bar
                 actionBar.show();
-            }
-            else
-            {
+            } else {
                 // Add fullscreen flag (hide status bar)
                 window.setFlags ( WindowManager.LayoutParams.FLAG_FULLSCREEN,
                                   WindowManager.LayoutParams.FLAG_FULLSCREEN );
@@ -146,39 +131,31 @@ public class ContentFragment extends Fragment
                 // Hide action bar
                 actionBar.hide();
             }
-            
             window.setAttributes ( winParams );
         }
-        
+
         /**
          * Sets the current image visible.
          */
-        public void updateContentAndRecycleBitmap ( int imageId )
-        {
+        public void updateContentAndRecycleBitmap ( int imageId ) {
             mImageId = imageId;
-            
-            if ( mBitmap != null )
-            {
+            if ( mBitmap != null ) {
                 // This is an advanced call and should be used if you
                 // are working with a lot of bitmaps. The bitmap is dead
                 // after this call.
                 mBitmap.recycle();
             }
-            
             // Get the bitmap that needs to be drawn and update the ImageView
             CacheBuffer buffer = HttpVideoHandler.getImageContent ( imageId );
             Debug.i ( TAG, "AssetKey=" + buffer.getAssetKey() + ",buffer.size=" + buffer.size() );
             mBitmap = BitmapFactory.decodeByteArray ( buffer.toByteArray(), 0,
                       buffer.toByteArray().length );
-                      
-            if ( mBitmap != null )
-            {
+            if ( mBitmap != null ) {
                 ImageView view = ( ( ImageView ) getView().findViewById ( R.id.image ) );
                 view.startAnimation ( AnimationUtils.loadAnimation ( getActivity(), R.anim.fade_in ) );
                 view.setImageBitmap ( mBitmap );
-            }
-            else
+            } else
             { Debug.i ( TAG, "FUCK!!!Bitmap decode error" ); }
         }
-        
+
 }

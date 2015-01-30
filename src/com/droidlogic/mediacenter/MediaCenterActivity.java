@@ -36,8 +36,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
-public class MediaCenterActivity extends Activity  implements FreshListener
-{
+public class MediaCenterActivity extends Activity  implements FreshListener {
         private static final String TAG = "DLNA";
         private PrefUtils mPrefUtils;
         private Animation animation;
@@ -49,8 +48,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener
         private Fragment mCallbacks;
         private AirplayProxy mAirplayProxy;
         @Override
-        protected void onCreate ( Bundle savedInstanceState )
-        {
+        protected void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             mAirplayProxy = AirplayProxy.getInstance ( this );
             setContentView ( R.layout.activity_main );
@@ -60,77 +58,64 @@ public class MediaCenterActivity extends Activity  implements FreshListener
             checkNet();
             LogStart();
         }
-        
-        private void startDmpService()
-        {
-            mConn = new ServiceConnection()
-            {
+
+        private void startDmpService() {
+            mConn = new ServiceConnection() {
                 @Override
-                public void onServiceConnected ( ComponentName name, IBinder service )
-                {
+                public void onServiceConnected ( ComponentName name, IBinder service ) {
                     DmpBinder mBinder = ( DmpBinder ) service;
                     mService = mBinder.getServiceInstance();
                 }
                 @Override
-                public void onServiceDisconnected ( ComponentName name )
-                {
+                public void onServiceDisconnected ( ComponentName name ) {
                     mService.forceStop();
                 }
             };
             getApplicationContext().bindService ( new Intent ( this, DmpService.class ), mConn, Context.BIND_AUTO_CREATE );
             mStartDmp = true;
         }
-        
-        private void startAirplay()
-        {
-            if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) )
-            {
+
+        private void startAirplay() {
+            if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
                 Log.d ( TAG, "onStartAirProxy" );
                 mAirplayProxy.startAirReceiver();
             }
         }
-        
-        private void stopAirplay()
-        {
-            if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) && !mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) )
-            {
+
+        private void stopAirplay() {
+            if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) && !mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
                 Log.d ( TAG, "onStartAirProxy" );
                 mAirplayProxy.stopAirReceiver();
                 stopService ( new Intent ( this, AirReceiverService.class ) );
             }
         }
-        
+
         /**
          * @Description TODO
          * @return
          */
-        public PrefUtils getPref()
-        {
+        public PrefUtils getPref() {
             return mPrefUtils;
         }
-        
-        
+
+
         @Override
-        protected void onDestroy()
-        {
+        protected void onDestroy() {
             stopMediaCenterService();
             stopDmpService();
             stopAirplay();
             super.onDestroy();
         }
-        
-        private void stopDmpService()
-        {
-            if ( mStartDmp && mConn != null )
-            {
+
+        private void stopDmpService() {
+            if ( mStartDmp && mConn != null ) {
                 mStartDmp = false;
                 getApplicationContext().unbindService ( mConn );
             }
         }
-        
+
         @Override
-        protected void onResume()
-        {
+        protected void onResume() {
             super.onResume();
             /*mRefreshView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -140,174 +125,131 @@ public class MediaCenterActivity extends Activity  implements FreshListener
             });*/
             showDeviceName();
         }
-        
-        public void showDeviceName()
-        {
+
+        public void showDeviceName() {
             String serviceName = mPrefUtils.getString ( SettingsFragment.KEY_DEVICE_NAME, getString ( R.string.config_default_name ) );
             mDeviceName.setText ( serviceName );
         }
-        
-        public void startMediaCenterService()
-        {
+
+        public void startMediaCenterService() {
             boolean startApk = mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_START_SERVICE, false );
             boolean startReboot = mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false );
-            
-            if ( startApk || startReboot )
-            {
+            if ( startApk || startReboot ) {
                 Intent intent = new Intent ( this, MediaCenterService.class );
                 startService ( intent );
             }
         }
-        
-        private void stopMediaCenterService()
-        {
+
+        private void stopMediaCenterService() {
             boolean startApk = mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_START_SERVICE, false );
             boolean startReboot = mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false );
-            
-            if ( !startReboot )
-            {
+            if ( !startReboot ) {
                 Intent intent = new Intent ( this, MediaCenterService.class );
                 stopService ( intent );
             }
         }
-        
+
         /* (non-Javadoc)
          * @see com.droidlogic.mediacenter.DmpFragment.FreshListener#startSearch()
          */
         @Override
-        public void startSearch()
-        {
+        public void startSearch() {
             if ( mService != null )
             { mService.startSearch(); }
         }
-        
+
         /* (non-Javadoc)
          * @see com.droidlogic.mediacenter.DmpFragment.FreshListener#getFullList()
          */
         @Override
-        public List<String> getDevList()
-        {
+        public List<String> getDevList() {
             if ( mService == null )
             { return null; }
-            
             return mService.getDevList();
         }
-        
+
         /* (non-Javadoc)
          * @see com.droidlogic.mediacenter.FreshListener#getDevIcon(java.lang.String)
          */
         @Override
-        public String getDevIcon ( String path )
-        {
+        public String getDevIcon ( String path ) {
             if ( mService == null )
             { return null; }
-            
             return mService.getDeviceIcon ( path );
         }
-        
-        public List<Map<String, Object>> getBrowseResult ( String didl_str, List<Map<String, Object>> list, int itemTypeDir, int itemImgUnsel )
-        {
+
+        public List<Map<String, Object>> getBrowseResult ( String didl_str, List<Map<String, Object>> list, int itemTypeDir, int itemImgUnsel ) {
             if ( mService == null )
             { return null; }
-            
             return mService.getBrowseResult ( didl_str, list, itemTypeDir, itemImgUnsel );
         }
-        
+
         public String actionBrowse ( String mediaServerName, String item_id,
-                                     String flag )
-        {
+        String flag ) {
             if ( mService == null )
             { return null; }
-            
             return mService.actionBrowse ( mediaServerName, item_id, flag );
         }
-        
+
         @Override
-        public boolean onKeyDown ( int keyCode, KeyEvent event )
-        {
-            if ( keyCode == KeyEvent.KEYCODE_BACK )
-            {
+        public boolean onKeyDown ( int keyCode, KeyEvent event ) {
+            if ( keyCode == KeyEvent.KEYCODE_BACK ) {
                 mCallbacks = getFragmentManager().findFragmentById ( R.id.frag_detail );
-                
-                if ( mCallbacks instanceof Callbacks )
-                {
+                if ( mCallbacks instanceof Callbacks ) {
                     ( ( Callbacks ) mCallbacks ).onBackPressedCallback();
-                }
-                else
-                {
+                } else {
                     stopMediaCenterService();
                     stopDmpService();
                     stopAirplay();
                     MediaCenterActivity.this.finish();
                 }
-                
                 return true;
             }
-            
             return super.onKeyDown ( keyCode, event );
         }
-        
-        private void checkNet()
-        {
+
+        private void checkNet() {
             ConnectivityManager mConnectivityManager = ( ConnectivityManager ) this.getSystemService ( Context.CONNECTIVITY_SERVICE );
             NetworkInfo wifiInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_WIFI );
             NetworkInfo ethInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_ETHERNET );
             NetworkInfo mobileInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_MOBILE );
-            
-            if ( ethInfo == null && ethInfo == null && mobileInfo == null )
-            {
+            if ( ethInfo == null && ethInfo == null && mobileInfo == null ) {
                 android.util.Log.d ( "tt", "NetWork is null" );
-                
-                if ( MediaCenterService.getAndroidOSVersion() > 19 )
-                {
+                if ( MediaCenterService.getAndroidOSVersion() > 19 ) {
                     startMediaCenterService();
                     startDmpService();
                     startAirplay();
-                }
-                else
-                {
+                } else {
                     Intent mIntent = new Intent();
                     mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
                     mIntent.setClass ( this, DMRError.class );
                     startActivity ( mIntent );
                 }
-                
                 return;
             }
-
-            if ( (ethInfo != null && ethInfo.isConnectedOrConnecting()) ||
-                    (wifiInfo != null && wifiInfo.isConnectedOrConnecting()) ||
-                    (mobileInfo != null && mobileInfo.isConnectedOrConnecting()) )
-            {
+            if ( ( ethInfo != null && ethInfo.isConnectedOrConnecting() ) ||
+                    ( wifiInfo != null && wifiInfo.isConnectedOrConnecting() ) ||
+            ( mobileInfo != null && mobileInfo.isConnectedOrConnecting() ) ) {
                 android.util.Log.d ( "tt", "startService" );
                 startMediaCenterService();
                 startDmpService();
                 startAirplay();
             }
         }
-        
-        public interface Callbacks
-        {
+
+        public interface Callbacks {
             public void onBackPressedCallback();
         }
-        
-        public void LogStart()
-        {
-            if ( !SystemProperties.getBoolean ( "rw.app.dlna.debug", false ) )
-            {
+
+        public void LogStart() {
+            if ( !SystemProperties.getBoolean ( "rw.app.dlna.debug", false ) ) {
                 org.cybergarage.util.Debug.off(); //LOG OFF
-            }
-            else
-            {
+            } else {
                 org.cybergarage.util.Debug.on();  //LOG ON
             }
-            
-            if ( !SystemProperties.getBoolean ( "rw.app.airplay.debug", false ) )
-            {
+            if ( !SystemProperties.getBoolean ( "rw.app.airplay.debug", false ) ) {
                 com.amlogic.util.Debug.Off(); // LOG OFF
-            }
-            else
-            {
+            } else {
                 com.amlogic.util.Debug.On(); // LOG ON
             }
         }

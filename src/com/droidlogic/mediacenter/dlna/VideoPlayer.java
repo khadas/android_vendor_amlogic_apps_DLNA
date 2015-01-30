@@ -66,8 +66,7 @@ import org.cybergarage.upnp.device.*;
 
 import com.droidlogic.mediacenter.R;
 
-public class VideoPlayer extends Activity implements OnInfoListener, VideoController.ControllerShowListener
-{
+public class VideoPlayer extends Activity implements OnInfoListener, VideoController.ControllerShowListener {
         private final String     TAG                 = "VideoPlayer";
         public static boolean    running             = false;
         private static final int VIDEO_START         = 0;
@@ -113,10 +112,9 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
         private String           mVideoBuffer        = "0.0";
         private PowerManager.WakeLock mWakeLock;
         private boolean mHideStatusBar = false;
-        
+
         @Override
-        public void onCreate ( Bundle savedInstanceState )
-        {
+        public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             iWindowManager = IWindowManager.Stub.asInterface ( ServiceManager
                              .getService ( "window" ) );
@@ -127,158 +125,113 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
             currentURI = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
             mediaType = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_TYPE );
             mHideStatusBar = intent.getBooleanExtra ( "hideStatusBar", false );
-            
             /*
              * if (!MediaRendererDevice.TYPE_VIDEO.equals(mediaType) || (currentURI
              * == null)) { finish(); return; }
              */
             if ( DeviceFileBrowser.TYPE_DMP.equals ( intent
-                    .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) )
-            {
+                    .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) ) {
                 mDisplayDMP = true;
                 mCurIndex = intent.getIntExtra ( DeviceFileBrowser.CURENT_POS, 0 );
-            }
-            else
-            {
+            } else {
                 mDisplayDMP = false;
             }
-            
             mVideoView = ( UPNPVideoView ) findViewById ( R.id.videoView1 );
             mVideoView.setVideoController ( mVideoController );
-            mVideoController.setExitListener ( new View.OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            mVideoController.setExitListener ( new View.OnClickListener() {
+                public void onClick ( View v ) {
                     finish();
                 }
             } );
-            mVideoController.setVolumeListener ( new View.OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            mVideoController.setVolumeListener ( new View.OnClickListener() {
+                public void onClick ( View v ) {
                     showDialog ( DIALOG_VOLUME_ID );
                 }
             } );
-            
-            if ( mDisplayDMP )
-            {
-                mVideoController.setPrevNextListeners ( new View.OnClickListener()
-                {
+            if ( mDisplayDMP ) {
+                mVideoController.setPrevNextListeners ( new View.OnClickListener() {
                     @Override
-                    public void onClick ( View v )
-                    {
+                    public void onClick ( View v ) {
                         handlerUI.sendEmptyMessageDelayed ( NEXT_VIDEO, 3000 );
                     }
-                }, new View.OnClickListener()
-                {
+                }, new View.OnClickListener() {
                     @Override
-                    public void onClick ( View v )
-                    {
+                    public void onClick ( View v ) {
                         handlerUI.sendEmptyMessageDelayed ( FORE_VIDEO, 3000 );
                     }
                 } );
-            }
-            else
-            {
+            } else {
                 mVideoController.setPrevNextListeners ( null, null );
             }
-            
             start();
             mBrocastProgress = new Handler();
             mAudioManager = ( AudioManager ) getSystemService ( Context.AUDIO_SERVICE );
-            mVideoView.setOnCompletionListener ( new MediaPlayer.OnCompletionListener()
-            {
-                public void onCompletion ( MediaPlayer mp )
-                {
+            mVideoView.setOnCompletionListener ( new MediaPlayer.OnCompletionListener() {
+                public void onCompletion ( MediaPlayer mp ) {
                     Debug.d ( TAG, "##########onCompletion####################" );
                     mCurPos = 0;
                     mDuration = 0;
                     mAudioManager.abandonAudioFocus ( mAudioFocusListener );
-                    
                     /*
                      * if(nextDlg == null){ showDialog(DIALOG_NEXT_ID); }
                      * nextDlg.show();
                      */
                     if ( DeviceFileBrowser.playList.size() > 0
-                            && mDisplayDMP )
-                    {
+                    && mDisplayDMP ) {
                         handlerUI.sendEmptyMessageDelayed ( NEXT_VIDEO, 3000 );
-                    }
-                    else
-                    {
+                    } else {
                         stopExit();
                         handlerUI.sendEmptyMessage ( SHOW_STOP );
                     }
                 }
             } );
-            mVideoView.setOnPreparedListener ( new MediaPlayer.OnPreparedListener()
-            {
-                public void onPrepared ( MediaPlayer mp )
-                {
+            mVideoView.setOnPreparedListener ( new MediaPlayer.OnPreparedListener() {
+                public void onPrepared ( MediaPlayer mp ) {
                     Debug.d ( TAG, "##########onPrepared####################" );
-                    
                     if ( isFinishing() )
                     { return; }
-                    
                     mp.setOnInfoListener ( VideoPlayer.this );
                     play();
-                    
-                    if ( nextDlg != null )
-                    {
+                    if ( nextDlg != null ) {
                         nextDlg.dismiss();
                     }
-                    
                     handlerUI.sendEmptyMessageDelayed ( HIDE_LOADING, 500 );
                 }
             } );
-            mVideoView.setOnErrorListener ( new MediaPlayer.OnErrorListener()
-            {
+            mVideoView.setOnErrorListener ( new MediaPlayer.OnErrorListener() {
                 public boolean onError ( MediaPlayer mp, int framework_err,
-                                         int impl_err )
-                {
+                int impl_err ) {
                     Debug.d ( TAG, "##########onError####################" );
                     showDialog ( DIALOG_EXIT_ID );
                     return true;
                 }
             } );
-            mVideoView.setOnStateChangedListener ( new UPNPVideoView.OnStateChangedListener()
-            {
-                public void onStateChanged ( int state )
-                {
+            mVideoView.setOnStateChangedListener ( new UPNPVideoView.OnStateChangedListener() {
+                public void onStateChanged ( int state ) {
                     Debug.d ( TAG,
                               "##########onStateChanged####################" );
-                              
-                    switch ( state )
-                    {
+                    switch ( state ) {
                         case UPNPVideoView.STATE_PAUSED:
                             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PAUSED );
-                            
                             if ( mBrocastProgress != null )
                                 mBrocastProgress
                                 .removeCallbacksAndMessages ( null );
-                                
                             play_state = STATE_PAUSE;
                             break;
-                            
                         case UPNPVideoView.STATE_PLAYING:
                             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
-                            
                             if ( mBrocastProgress != null )
                                 mBrocastProgress.postDelayed (
                                     new ProgressRefresher(), 500 );
-                                    
                             play_state = STATE_PLAY;
                             readyForFinish = false;
                             break;
-                            
                         case UPNPVideoView.STATE_PLAYBACK_COMPLETED:
                         case UPNPVideoView.STATE_ERROR:
                         case UPNPVideoView.STATE_IDLE:
                             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
-                            
                             if ( mBrocastProgress != null )
                             { mBrocastProgress.removeCallbacksAndMessages ( null ); }
-                            
                             play_state = STATE_STOP;
                             break;
                     }
@@ -297,112 +250,80 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "onCreate: make running as TRUE" );
         }
-        
-        public void onShowController()
-        {
+
+        public void onShowController() {
             showSystemUi ( true );
         }
-        public void onHideController()
-        {
+        public void onHideController() {
             showSystemUi ( false );
         }
-        
-        
+
+
         @Override
-        protected void onResume()
-        {
+        protected void onResume() {
             if ( currentURI == null )
             { return; }
-            
             super.onResume();
             running = true;
             mVideoBuffer = SystemProperties.get ( "media.amplayer.buffertime" );
             SystemProperties.set ( "media.amplayer.buffertime", "6" );
-            
-            if ( mLastState == STATE_PLAY )
-            {
+            if ( mLastState == STATE_PLAY ) {
                 play();
             }
-            
             /* enable backlight */
             PowerManager pm = ( PowerManager ) getSystemService ( Context.POWER_SERVICE );
             mWakeLock = pm.newWakeLock ( PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG );
             mWakeLock.acquire();
         }
-        
-        private void before()
-        {
-            if ( DeviceFileBrowser.playList.size() == 1 )
-            {
+
+        private void before() {
+            if ( DeviceFileBrowser.playList.size() == 1 ) {
                 mCurIndex = 0;
-            }
-            else if ( mCurIndex <= 0 )
-            {
+            } else if ( mCurIndex <= 0 ) {
                 mCurIndex = ( DeviceFileBrowser.playList.size() - 1 );
-            }
-            else
-            {
+            } else {
                 mCurIndex--;
             }
-            
             Map<String, Object> item = ( Map<String, Object> ) DeviceFileBrowser.playList
                                        .get ( mCurIndex );
             currentURI = ( String ) item.get ( "item_uri" );
             mCurPos = 0;
             start();
         }
-        
-        private void next()
-        {
-            if ( DeviceFileBrowser.playList.size() == 1 )
-            {
+
+        private void next() {
+            if ( DeviceFileBrowser.playList.size() == 1 ) {
                 mCurIndex = 0;
-            }
-            else if ( mCurIndex >= ( DeviceFileBrowser.playList.size() - 1 ) || mCurIndex < 0 )
-            {
+            } else if ( mCurIndex >= ( DeviceFileBrowser.playList.size() - 1 ) || mCurIndex < 0 ) {
                 mCurIndex = 0;
-            }
-            else if ( mCurIndex < ( DeviceFileBrowser.playList.size() - 1 ) )
-            {
+            } else if ( mCurIndex < ( DeviceFileBrowser.playList.size() - 1 ) ) {
                 mCurIndex++;
-            }
-            else
-            {
+            } else {
                 mCurIndex = 0;
             }
-            
             Map<String, Object> item = ( Map<String, Object> ) DeviceFileBrowser.playList
                                        .get ( mCurIndex );
             currentURI = ( String ) item.get ( "item_uri" );
             mCurPos = 0;
             start();
         }
-        
+
         @Override
-        protected void onPause()
-        {
+        protected void onPause() {
             Debug.d ( TAG, "onPause: " );
             super.onPause();
-            
-            if ( exitDlg != null )
-            {
+            if ( exitDlg != null ) {
                 exitDlg.dismiss();
                 exitDlg = null;
             }
-            
             mTransitionAnimationScale = Settings.System.getFloat (
                                             VideoPlayer.this.getContentResolver(),
                                             Settings.System.TRANSITION_ANIMATION_SCALE,
                                             mTransitionAnimationScale );
-                                            
-            try
-            {
+            try {
                 iWindowManager.setAnimationScale ( 1, 0.0f );
+            } catch ( RemoteException e ) {
             }
-            catch ( RemoteException e )
-            {
-            }
-            
             mLastState = play_state;
             pause();
             hideLoading();
@@ -410,9 +331,8 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
             SystemProperties.set ( "media.amplayer.buffertime", mVideoBuffer );
             mWakeLock.release();
         }
-        
-        public void onStop()
-        {
+
+        public void onStop() {
             stopPlayback();
             hideLoading();
             super.onStop();
@@ -421,78 +341,56 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "onStop: make running as FALSE" );
             mAudioManager.setStreamMute ( AudioManager.STREAM_MUSIC, false );
-            
-            if ( running == true )
-            {
+            if ( running == true ) {
                 running = false;
                 unregisterReceiver ( mUPNPReceiver );
                 mCurPos = 0;
                 mDuration = 0;
                 currentURI = null;
             }
-            
             //handlerUI = null;
             //mBrocastProgress = null;
         }
-        
-        public void onDestory()
-        {
+
+        public void onDestory() {
             super.onDestroy();
-            
-            try
-            {
+            try {
                 iWindowManager.setAnimationScale ( 1, mTransitionAnimationScale );
-            }
-            catch ( RemoteException e )
-            {
+            } catch ( RemoteException e ) {
             }
         }
-        
-        private OnAudioFocusChangeListener mAudioFocusListener = new OnAudioFocusChangeListener()
-        {
+
+        private OnAudioFocusChangeListener mAudioFocusListener = new OnAudioFocusChangeListener() {
             public void onAudioFocusChange (
-                int focusChange )
-            {
+            int focusChange ) {
                 Debug.d ( TAG,
                           "##########onAudioFocusChange####################" );
-                          
-                switch ( focusChange )
-                {
+                switch ( focusChange ) {
                     case AudioManager.AUDIOFOCUS_LOSS:
                         mPausedByTransientLossOfFocus = false;
                         pause();
                         break;
-                        
                     case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                     case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                        if ( play_state == STATE_PLAY )
-                        {
+                        if ( play_state == STATE_PLAY ) {
                             mPausedByTransientLossOfFocus = true;
                             pause();
                         }
-                        
                         break;
-                        
                     case AudioManager.AUDIOFOCUS_GAIN:
-                        if ( mPausedByTransientLossOfFocus )
-                        {
+                        if ( mPausedByTransientLossOfFocus ) {
                             mPausedByTransientLossOfFocus = false;
                             play();
                         }
-                        
                         break;
                 }
             }
         };
-        
-        class ProgressRefresher implements Runnable
-        {
-                public void run()
-                {
+
+        class ProgressRefresher implements Runnable {
+                public void run() {
                     mDuration = mVideoView.getDuration();
-                    
-                    if ( mDuration > 0 )
-                    {
+                    if ( mDuration > 0 ) {
                         int curPos = mVideoView.getCurrentPosition();
                         Intent intent = new Intent ( AmlogicCP.PLAY_POSTION_REFRESH );
                         intent.putExtra ( "curPosition", curPos );
@@ -501,14 +399,12 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                         Debug.d ( TAG, "######sendBroadcast(progress)######" + curPos
                                   + "/" + mDuration );
                     }
-                    
                     mBrocastProgress.removeCallbacksAndMessages ( null );
                     mBrocastProgress.postDelayed ( new ProgressRefresher(), 500 );
                 }
         }
-        
-        private void start()
-        {
+
+        private void start() {
             // mAudioManager.requestAudioFocus(mAudioFocusListener,
             // AudioManager.STREAM_MUSIC,
             // AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
@@ -527,9 +423,8 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
             // mVideoController.updatePausePlay();
             // mVideoController.show();
         }
-        
-        private void play()
-        {
+
+        private void play() {
             mAudioManager.requestAudioFocus ( mAudioFocusListener,
                                               AudioManager.STREAM_MUSIC,
                                               AudioManager.AUDIOFOCUS_GAIN_TRANSIENT );
@@ -538,16 +433,14 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
             mVideoController.dispatchKeyEvent ( new KeyEvent ( KeyEvent.ACTION_DOWN,
                                                 KeyEvent.KEYCODE_MEDIA_PLAY ) );
         }
-        
-        private void pause()
-        {
+
+        private void pause() {
             mCurPos = mVideoView.getCurrentPosition();
             mVideoController.dispatchKeyEvent ( new KeyEvent ( KeyEvent.ACTION_DOWN,
                                                 KeyEvent.KEYCODE_MEDIA_PAUSE ) );
         }
-        
-        private void stopPlayback()
-        {
+
+        private void stopPlayback() {
             mVideoView.stopPlayback();
             mCurPos = 0;
             mDuration = 0;
@@ -558,16 +451,12 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                                                 KeyEvent.KEYCODE_MEDIA_STOP ) );
             showSystemUi ( true );
         }
-        
-        class UPNPReceiver extends BroadcastReceiver
-        {
-                public void onReceive ( Context context, Intent intent )
-                {
+
+        class UPNPReceiver extends BroadcastReceiver {
+                public void onReceive ( Context context, Intent intent ) {
                     String action = intent.getAction();
-                    
                     if ( action == null )
                     { return; }
-                    
                     String mediaType = intent
                                        .getStringExtra ( AmlogicCP.EXTRA_MEDIA_TYPE );
                     // if(!MediaRendererDevice.TYPE_VIDEO.equals(mediaType))
@@ -576,97 +465,66 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                               + ",  mediaType=" + mediaType );
                     readyForFinish = false;
                     mHideStatusBar = intent.getBooleanExtra ( "hideStatusBar", false );
-                    
-                    if ( action.equals ( AmlogicCP.UPNP_PLAY_ACTION ) )
-                    {
+                    if ( action.equals ( AmlogicCP.UPNP_PLAY_ACTION ) ) {
                         String uri = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
                         stopExit();
-                        
                         if ( DeviceFileBrowser.TYPE_DMP.equals ( intent
-                                .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) )
-                        {
+                                .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) ) {
                             mDisplayDMP = true;
                             mCurIndex = intent.getIntExtra (
                                             DeviceFileBrowser.CURENT_POS, 0 );
-                        }
-                        else
-                        {
+                        } else {
                             mDisplayDMP = false;
                         }
-                        
                         Debug.d ( TAG, "show UpnpReceiver:" + mDisplayDMP );
-                        
-                        if ( mDisplayDMP )
-                        {
-                            mVideoController.setPrevNextListeners ( new View.OnClickListener()
-                            {
+                        if ( mDisplayDMP ) {
+                            mVideoController.setPrevNextListeners ( new View.OnClickListener() {
                                 @Override
-                                public void onClick ( View v )
-                                {
+                                public void onClick ( View v ) {
                                     handlerUI.sendEmptyMessageDelayed ( FORE_VIDEO, 3000 );
                                 }
-                            }, new View.OnClickListener()
-                            {
+                            }, new View.OnClickListener() {
                                 @Override
-                                public void onClick ( View v )
-                                {
+                                public void onClick ( View v ) {
                                     handlerUI.sendEmptyMessageDelayed ( NEXT_VIDEO, 3000 );
                                 }
                             } );
-                        }
-                        else
-                        {
+                        } else {
                             mVideoController.setPrevNextListeners ( null, null );
                         }
-                        
-                        if ( !currentURI.equals ( uri ) || ( play_state == STATE_STOP ) )
-                        {
+                        if ( !currentURI.equals ( uri ) || ( play_state == STATE_STOP ) ) {
                             mCurPos = 0;
                             currentURI = uri;
                             // showLoading();
                             // mPlayerThread.start();
                             start();
-                        }
-                        else
-                        {
+                        } else {
                             play();
                         }
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_PAUSE_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_PAUSE_ACTION ) ) {
                         pause();
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) ) {
                         stopPlayback();
                         stopExit();
                         handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, 6000 );
-                    }
-                    else if ( action.equals ( MediaRendererDevice.PLAY_STATE_SEEK ) )
-                    {
+                    } else if ( action.equals ( MediaRendererDevice.PLAY_STATE_SEEK ) ) {
                         mBrocastProgress.removeCallbacksAndMessages ( null );
                         String time = intent.getStringExtra ( "REL_TIME" );
                         int msecs = parseTimeStringToMSecs ( time );
-                        
                         if ( msecs < 0 )
                         { msecs = 0; }
                         else if ( ( msecs > mDuration ) && ( mDuration > 0 ) )
                         { msecs = mDuration; }
-                        
                         Debug.d ( TAG, "*********seek to: " + time + ",   msecs=" + msecs );
                         mVideoView.seekTo ( msecs );
                         handlerUI.sendEmptyMessageDelayed ( 3, 500 );
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_SETVOLUME_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_SETVOLUME_ACTION ) ) {
                         int vol = intent.getIntExtra ( "DesiredVolume", 50 );
                         int max = mAudioManager
                                   .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
                         mAudioManager.setStreamVolume ( AudioManager.STREAM_MUSIC, vol
                                                         * max / 100, AudioManager.FLAG_SHOW_UI );
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_SETMUTE_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_SETMUTE_ACTION ) ) {
                         Debug.d ( TAG, "*******setMuteAction" );
                         Boolean mute = ( Boolean ) intent.getExtra ( "DesiredMute", false );
                         Debug.d ( TAG, "*******setMuteAction=" + mute );
@@ -675,14 +533,11 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                     }
                 }
         }
-        
-        public static int parseTimeStringToMSecs ( String time )
-        {
+
+        public static int parseTimeStringToMSecs ( String time ) {
             String[] str = time.split ( ":|\\." );
-            
             if ( str.length < 3 )
             { return 0; }
-            
             int hour = Integer.parseInt ( str[0] );
             int min = Integer.parseInt ( str[1] );
             int sec = Integer.parseInt ( str[2] );
@@ -690,59 +545,47 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
             // "***********parseTimeStringToInt: "+hour+":"+min+":"+sec);
             return ( hour * 3600 + min * 60 + sec ) * 1000;
         }
-        
-        private void showLoading()
-        {
-            if ( nextDlg != null )
-            {
+
+        private void showLoading() {
+            if ( nextDlg != null ) {
                 nextDlg.dismiss();
             }
-            
-            if ( progressDialog == null && running )
-            {
+            if ( progressDialog == null && running ) {
                 progressDialog = new LoadingDialog ( this,
                                                      LoadingDialog.TYPE_LOADING, this.getResources().getString (
                                                              R.string.loading ) );
                 progressDialog.show();
             }
         }
-        
-        private void hideLoading()
-        {
-            if ( progressDialog != null )
-            {
+
+        private void hideLoading() {
+            if ( progressDialog != null ) {
                 progressDialog.stopAnim();
                 progressDialog.dismiss();
                 progressDialog = null;
             }
         }
-        
+
         /*
          * private void waitForExit(long delay) { Debug.d(TAG,
          * "********waitForExit"); handlerUI.removeMessages(1); readyForFinish =
          * true; handlerUI.sendEmptyMessageDelayed(1, delay); }
          */
-        private Handler handlerUI = new Handler()
-        {
+        private Handler handlerUI = new Handler() {
             @Override
-            public void handleMessage ( Message msg )
-            {
-                switch ( msg.what )
-                {
+            public void handleMessage ( Message msg ) {
+                switch ( msg.what ) {
                     case SHOW_STOP:
                         wait2Exit();
                         return;
-                        
                     case VIDEO_START:
                         start();
                         return;
-                        
                     case 3:
                         mBrocastProgress.postDelayed (
                             new ProgressRefresher(),
                             500 );
                         return;
-                        
                     case HNALDE_HIDE_LOADING:
                         /*
                          * if (mVideoView != null &&
@@ -757,101 +600,79 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                          * HNALDE_HIDE_LOADING, 500); }
                          */
                         return;
-                        
                     case NEXT_VIDEO:
                         next();
                         return;
-                        
                     case SHOW_LOADING:
                         showLoading();
                         return;
-                        
                     case HIDE_LOADING:
                         hideLoading();
                         return;
-                        
                     case FORE_VIDEO:
                         before();
                         return;
-                        
                     case STOP_BY_SEVER:
-                        if ( !running )
-                        {
+                        if ( !running ) {
                             VideoPlayer.this.finish();
-                        }
-                        else
-                        {
+                        } else {
                             handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
                         }
-                        
                         return;
                 }
             }
         };
-        
-        class PlayerThread extends Thread
-        {
+
+        class PlayerThread extends Thread {
                 private String mThreadName;
-                
-                public PlayerThread ( String threadName )
-                {
+
+                public PlayerThread ( String threadName ) {
                     super ( threadName );
                     mThreadName = threadName;
                 }
-                
-                public void run()
-                {
+
+                public void run() {
                     Debug.d ( TAG, "*********************currentURI=" + currentURI );
                     // showLoading();
                     mVideoView.setVideoPath ( currentURI );
                 }
         }
-        
-        private void sendPlayStateChangeBroadcast ( String stat )
-        {
+
+        private void sendPlayStateChangeBroadcast ( String stat ) {
             Intent intent = new Intent();
             intent.setAction ( stat );
             sendBroadcast ( intent );
             Debug.d ( TAG, "########sendPlayStateChangeBroadcast:  " + stat );
             return;
         }
-        
+
         @Override
-        protected Dialog onCreateDialog ( int id )
-        {
+        protected Dialog onCreateDialog ( int id ) {
             LayoutInflater inflater = ( LayoutInflater ) VideoPlayer.this
                                       .getSystemService ( LAYOUT_INFLATER_SERVICE );
-                                      
-            switch ( id )
-            {
+            switch ( id ) {
                 case DIALOG_VOLUME_ID:
                     View layout_volume = inflater.inflate ( R.layout.volume_dialog,
                                                             ( ViewGroup ) findViewById ( R.id.layout_root_volume ) );
                     dialog_volume = new VolumeDialog ( this );
                     return dialog_volume;
-                    
                 case DIALOG_EXIT_ID:
                     Dialog errDlg = new AlertDialog.Builder ( VideoPlayer.this )
                     .setTitle ( R.string.video_err_title )
                     .setMessage ( R.string.video_err_summary )
                     .setPositiveButton ( R.string.str_ok,
-                                         new DialogInterface.OnClickListener()
-                    {
+                    new DialogInterface.OnClickListener() {
                         public void onClick ( DialogInterface dialog,
-                                              int which )
-                        {
+                        int which ) {
                             VideoPlayer.this.finish();
                         }
                     } ).create();
-                    errDlg.setOnDismissListener ( new DialogInterface.OnDismissListener()
-                    {
-                        public void onDismiss ( DialogInterface dialog )
-                        {
+                    errDlg.setOnDismissListener ( new DialogInterface.OnDismissListener() {
+                        public void onDismiss ( DialogInterface dialog ) {
                             VideoPlayer.this.finish();
                         }
                     } );
                     return errDlg;
-                    
                 case DIALOG_NEXT_ID:
                     nextDlg = new LoadingDialog ( this, LoadingDialog.TYPE_LOADING,
                                                   this.getResources().getString (
@@ -870,133 +691,101 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                      * onClick(DialogInterface dialog,int which) {
                      * //waitForExit(500); VideoPlayer.this.finish(); } });
                      */
-                    nextDlg.setOnCancelListener ( new DialogInterface.OnCancelListener()
-                    {
+                    nextDlg.setOnCancelListener ( new DialogInterface.OnCancelListener() {
                         @Override
-                        public void onCancel ( DialogInterface arg0 )
-                        {
+                        public void onCancel ( DialogInterface arg0 ) {
                             VideoPlayer.this.finish();
                         }
                     } );
                     return nextDlg;
             }
-            
             return null;
         }
-        
+
         @Override
-        protected void onPrepareDialog ( int id, Dialog dialog )
-        {
+        protected void onPrepareDialog ( int id, Dialog dialog ) {
             WindowManager wm = getWindowManager();
             Display display = wm.getDefaultDisplay();
             LayoutParams lp = dialog.getWindow().getAttributes();
-            
-            switch ( id )
-            {
-                case DIALOG_VOLUME_ID:
-                    {
-                        if ( display.getHeight() > display.getWidth() )
-                        {
-                            lp.width = ( int ) ( display.getWidth() * 1.0 );
-                        }
-                        else
-                        {
-                            lp.width = ( int ) ( display.getWidth() * 0.5 );
-                        }
-                        
-                        dialog.getWindow().setAttributes ( lp );
-                        vol_bar = ( ProgressBar ) dialog_volume.getWindow().findViewById (
-                                      android.R.id.progress );
-                        int mmax = mAudioManager
-                                   .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
-                        int current = mAudioManager
-                                      .getStreamVolume ( AudioManager.STREAM_MUSIC );
-                        volume_level = current * 100 / mmax;
-                        
-                        if ( vol_bar instanceof SeekBar )
-                        {
-                            SeekBar seeker = ( SeekBar ) vol_bar;
-                            seeker.setOnSeekBarChangeListener ( new OnSeekBarChangeListener()
-                            {
-                                private long mLastTime = 0;
-                                public void onStartTrackingTouch ( SeekBar bar )
-                                {
-                                    Debug.d ( TAG, "vol_bar:onStartTrackingTouch" );
-                                    mLastTime = 0;
-                                    mVolTouch = true;
-                                }
-                                public void onProgressChanged ( SeekBar bar,
-                                                                int progress, boolean fromuser )
-                                {
-                                    Debug.d ( TAG, "vol_bar:onProgressChanged="
-                                              + progress );
-                                              
-                                    if ( !fromuser )
-                                    { return; }
-                                    
-                                    long now = SystemClock.elapsedRealtime();
-                                    
-                                    if ( ( now - mLastTime ) > 250 )
-                                    {
-                                        mLastTime = now;
-                                        
-                                        // trackball event, allow progress updates
-                                        if ( mVolTouch )
-                                        {
-                                            Debug.d ( TAG, "***progress=" + progress );
-                                            vol_bar.setProgress ( progress );
-                                            volume_level = progress;
-                                            int max = mAudioManager
-                                                      .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
-                                            mAudioManager.setStreamVolume (
-                                                AudioManager.STREAM_MUSIC,
-                                                volume_level * max / 100, 0 );
-                                            Intent intent = new Intent();
-                                            intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
-                                            intent.putExtra ( "VOLUME", volume_level );
-                                            sendBroadcast ( intent );
-                                        }
+            switch ( id ) {
+                case DIALOG_VOLUME_ID: {
+                    if ( display.getHeight() > display.getWidth() ) {
+                        lp.width = ( int ) ( display.getWidth() * 1.0 );
+                    } else {
+                        lp.width = ( int ) ( display.getWidth() * 0.5 );
+                    }
+                    dialog.getWindow().setAttributes ( lp );
+                    vol_bar = ( ProgressBar ) dialog_volume.getWindow().findViewById (
+                                  android.R.id.progress );
+                    int mmax = mAudioManager
+                               .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
+                    int current = mAudioManager
+                                  .getStreamVolume ( AudioManager.STREAM_MUSIC );
+                    volume_level = current * 100 / mmax;
+                    if ( vol_bar instanceof SeekBar ) {
+                        SeekBar seeker = ( SeekBar ) vol_bar;
+                        seeker.setOnSeekBarChangeListener ( new OnSeekBarChangeListener() {
+                            private long mLastTime = 0;
+                            public void onStartTrackingTouch ( SeekBar bar ) {
+                                Debug.d ( TAG, "vol_bar:onStartTrackingTouch" );
+                                mLastTime = 0;
+                                mVolTouch = true;
+                            }
+                            public void onProgressChanged ( SeekBar bar,
+                            int progress, boolean fromuser ) {
+                                Debug.d ( TAG, "vol_bar:onProgressChanged="
+                                          + progress );
+                                if ( !fromuser )
+                                { return; }
+                                long now = SystemClock.elapsedRealtime();
+                                if ( ( now - mLastTime ) > 250 ) {
+                                    mLastTime = now;
+                                    // trackball event, allow progress updates
+                                    if ( mVolTouch ) {
+                                        Debug.d ( TAG, "***progress=" + progress );
+                                        vol_bar.setProgress ( progress );
+                                        volume_level = progress;
+                                        int max = mAudioManager
+                                                  .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
+                                        mAudioManager.setStreamVolume (
+                                            AudioManager.STREAM_MUSIC,
+                                            volume_level * max / 100, 0 );
+                                        Intent intent = new Intent();
+                                        intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
+                                        intent.putExtra ( "VOLUME", volume_level );
+                                        sendBroadcast ( intent );
                                     }
                                 }
-                                public void onStopTrackingTouch ( SeekBar bar )
-                                {
-                                    Debug.d ( TAG, "vol_bar:onStopTrackingTouch: "
-                                              + volume_level );
-                                    mVolTouch = false;
-                                }
-                            } );
-                        }
-                        
-                        vol_bar.setMax ( 100 );
-                        vol_bar.setProgress ( volume_level );
-                        break;
+                            }
+                            public void onStopTrackingTouch ( SeekBar bar ) {
+                                Debug.d ( TAG, "vol_bar:onStopTrackingTouch: "
+                                          + volume_level );
+                                mVolTouch = false;
+                            }
+                        } );
                     }
+                    vol_bar.setMax ( 100 );
+                    vol_bar.setProgress ( volume_level );
+                    break;
+                }
             }
         }
-        
+
         @Override
-        public boolean onKeyDown ( int keyCode, KeyEvent event )
-        {
-            if ( keyCode == KeyEvent.KEYCODE_BACK )
-            {
+        public boolean onKeyDown ( int keyCode, KeyEvent event ) {
+            if ( keyCode == KeyEvent.KEYCODE_BACK ) {
                 hideLoading();
-                
-                if ( nextDlg != null )
-                {
+                if ( nextDlg != null ) {
                     nextDlg.dismiss();
                 }
-                
                 finish();
                 return true;
             }
-            
             return super.onKeyDown ( keyCode, event );
         }
-        
-        private class VolumeDialog extends Dialog
-        {
-                VolumeDialog ( Context context )
-                {
+
+        private class VolumeDialog extends Dialog {
+                VolumeDialog ( Context context ) {
                     super ( context, R.style.theme_dialog );
                     setContentView ( R.layout.volume_dialog );
                     LayoutParams params = getWindow().getAttributes();
@@ -1004,44 +793,30 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                     params.y = -120;
                     getWindow().setAttributes ( params );
                 }
-                
+
                 @Override
-                public boolean onKeyDown ( int keyCode, KeyEvent event )
-                {
+                public boolean onKeyDown ( int keyCode, KeyEvent event ) {
                     if ( keyCode == 24 || keyCode == 25
                             || keyCode == KeyEvent.KEYCODE_DPAD_LEFT
-                            || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT )
-                    {
-                        if ( keyCode == 24 || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT )
-                        {
+                            || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ) {
+                        if ( keyCode == 24 || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ) {
                             volume_level = vol_bar.getProgress() + 5;
-                            
-                            if ( volume_level < vol_bar.getMax() )
-                            {
+                            if ( volume_level < vol_bar.getMax() ) {
                                 vol_bar.setProgress ( volume_level );
-                            }
-                            else
-                            {
+                            } else {
                                 volume_level = vol_bar.getMax();
                                 vol_bar.setProgress ( volume_level );
                             }
-                        }
-                        else if ( keyCode == 25
-                                  || keyCode == KeyEvent.KEYCODE_DPAD_LEFT )
-                        {
+                        } else if ( keyCode == 25
+                                    || keyCode == KeyEvent.KEYCODE_DPAD_LEFT ) {
                             volume_level = vol_bar.getProgress() - 5;
-                            
-                            if ( volume_level > 0 )
-                            {
+                            if ( volume_level > 0 ) {
                                 vol_bar.setProgress ( volume_level );
-                            }
-                            else
-                            {
+                            } else {
                                 volume_level = 0;
                                 vol_bar.setProgress ( volume_level );
                             }
                         }
-                        
                         int max = mAudioManager
                                   .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
                         mAudioManager.setStreamVolume ( AudioManager.STREAM_MUSIC,
@@ -1051,74 +826,54 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                         intent.putExtra ( "VOLUME", volume_level );
                         sendBroadcast ( intent );
                         return true;
-                    }
-                    else if ( keyCode == KeyEvent.KEYCODE_BACK )
-                    {
+                    } else if ( keyCode == KeyEvent.KEYCODE_BACK ) {
                         VolumeDialog.this.cancel();
                         return true;
                     }
-                    
                     return super.onKeyDown ( keyCode, event );
                 }
         }
-        
-        private void stopExit()
-        {
+
+        private void stopExit() {
             handlerUI.removeMessages ( SHOW_STOP );
-            
-            if ( exitDlg != null )
-            {
+            if ( exitDlg != null ) {
                 exitDlg.dismiss();
                 exitDlg = null;
             }
         }
-        
-        public void wait2Exit()
-        {
+
+        public void wait2Exit() {
             Debug.d ( TAG, "wait2Exit......" + running );
             hideLoading();
-            
-            if ( !running )
-            {
+            if ( !running ) {
                 VideoPlayer.this.finish();
                 return;
             }
-            
-            if ( exitDlg == null )
-            {
+            if ( exitDlg == null ) {
                 exitDlg = new LoadingDialog ( this, LoadingDialog.TYPE_EXIT_TIMER, "" );
                 exitDlg.setCancelable ( true );
-                exitDlg.setOnDismissListener ( new OnDismissListener()
-                {
+                exitDlg.setOnDismissListener ( new OnDismissListener() {
                     @Override
-                    public void onDismiss ( DialogInterface arg0 )
-                    {
+                    public void onDismiss ( DialogInterface arg0 ) {
                         if ( exitDlg != null && ( VideoPlayer.this.getClass().getName().equals ( exitDlg.getTopActivity ( VideoPlayer.this ) ) ||
-                                                  exitDlg.getCountNum() == 0 ) )
-                        {
+                        exitDlg.getCountNum() == 0 ) ) {
                             VideoPlayer.this.finish();
                         }
                     }
                 } );
                 exitDlg.show();
-            }
-            else
-            {
+            } else {
                 exitDlg.setCountNum ( 4 );
                 exitDlg.show();
             }
         }
-        
+
         @Override
-        public boolean onInfo ( MediaPlayer mp, int what, int extra )
-        {
-            if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_START )
-            {
+        public boolean onInfo ( MediaPlayer mp, int what, int extra ) {
+            if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_START ) {
                 handlerUI.sendEmptyMessageDelayed ( SHOW_LOADING, 1000 );
                 // showLoading();
-            }
-            else if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_END )
-            {
+            } else if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_END ) {
                 handlerUI.removeMessages ( SHOW_LOADING );
                 handlerUI.sendEmptyMessage ( HIDE_LOADING );
                 Intent intent = new Intent ( MediaCenterService.DEVICE_STATUS_CHANGE );
@@ -1126,27 +881,21 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                 sendBroadcast ( intent );
                 // hideLoading();
             }
-            
             return false;
         }
-        private void showSystemUi ( boolean visible )
-        {
+        private void showSystemUi ( boolean visible ) {
             if ( !ApiHelper.HAS_VIEW_SYSTEM_UI_FLAG_LAYOUT_STABLE )
             { return; }
-            
             int flag = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-                       
-            if ( !visible )
-            {
+            if ( !visible ) {
                 // We used the deprecated "STATUS_BAR_HIDDEN" for unbundling
                 flag |= View.STATUS_BAR_HIDDEN | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             }
-            
             android.util.Log.d ( "tt", "==============================" );
             mVideoView.setSystemUiVisibility ( flag );
         }
-        
+
 }

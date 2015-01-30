@@ -36,48 +36,41 @@ import android.widget.TextView;
  * @Author
  * @Version V1.0
  */
-public class DMRError extends Activity implements OnClickListener
-{
+public class DMRError extends Activity implements OnClickListener {
         private Button btn;
         @Override
-        protected void onCreate ( Bundle arg0 )
-        {
+        protected void onCreate ( Bundle arg0 ) {
             super.onCreate ( arg0 );
             setContentView ( R.layout.dmr_error_dialog );
             btn = ( Button ) findViewById ( R.id.btn_ok );
             btn.setOnClickListener ( this );
         }
-        
+
         @Override
-        protected void onDestroy()
-        {
+        protected void onDestroy() {
             super.onDestroy();
         }
-        
+
         @Override
-        protected void onResume()
-        {
+        protected void onResume() {
             super.onResume();
         }
-        
+
         @Override
-        protected void onStop()
-        {
+        protected void onStop() {
             super.onStop();
             exitApp();
         }
-        
+
         /* (non-Javadoc)
          * @see android.view.View.OnClickListener#onClick(android.view.View)
          */
         @Override
-        public void onClick ( View arg0 )
-        {
+        public void onClick ( View arg0 ) {
             exitApp();
         }
-        
-        private void exitApp()
-        {
+
+        private void exitApp() {
             ActivityManager activityMgr = ( ActivityManager ) getSystemService ( ACTIVITY_SERVICE );
             activityMgr.forceStopPackage ( getPackageName() );
             this.stopService ( new Intent ( DMRError.this, MediaCenterService.class ) );

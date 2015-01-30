@@ -53,8 +53,7 @@ import android.os.SystemProperties;
  * @Author
  * @Version V1.0
  */
-public class MediaCenterService extends Service
-{
+public class MediaCenterService extends Service {
 
         private static final String TAG = "MediaCenterService";
         private static final String CONFIG_DIR = "DMR-Intel/";
@@ -75,199 +74,141 @@ public class MediaCenterService extends Service
          * @see android.app.Service#onBind(android.content.Intent)
          */
         @Override
-        public IBinder onBind ( Intent arg0 )
-        {
+        public IBinder onBind ( Intent arg0 ) {
             return null;
         }
-        
+
         @Override
-        public void onCreate()
-        {
+        public void onCreate() {
             super.onCreate();
             mPref = new PrefUtils ( this );
             initDMR();
         }
-        
-        
-        private void initDMR()
-        {
+
+
+        private void initDMR() {
             String mAbsPath = getFilesDir().getAbsolutePath();
-            
-            if ( mPref.getBooleanVal ( PrefUtils.FISAT_START, true ) )
-            {
+            if ( mPref.getBooleanVal ( PrefUtils.FISAT_START, true ) ) {
                 // showStartImage
                 copyAsset ( mAbsPath, CONFIG_DIR + DESCRIPTION_FILENAME );
                 copyAsset ( mAbsPath, CONFIG_DIR + SERVICE_AVT_FILENAME );
                 copyAsset ( mAbsPath, CONFIG_DIR + SERVICE_RC_FILENAME );
                 copyAsset ( mAbsPath, CONFIG_DIR + SERVICE_CM_FILENMAE );
             }
-            
-            if ( mDmrDevice == null )
-            {
-                try
-                {
+            if ( mDmrDevice == null ) {
+                try {
                     mDmrDevice = new DMRDevice ( mAbsPath + "/" + DESCRIPTION_FILENAME );
                     String mac = getNetWorkMac();
                     PrefUtils mPrefUtils = new PrefUtils ( this );
                     String serviceName = mPrefUtils.getString ( PrefUtils.SERVICE_NAME, null );
-                    
-                    if ( serviceName != null )
-                    {
+                    if ( serviceName != null ) {
                         mDmrDevice.setFriendlyName ( "DLNA-" + serviceName );
-                    }
-                    else
-                    {
+                    } else {
                         mDmrDevice.setFriendlyName ( "DLNA-" + MediaCenterService.this
                                                      .getResources().getString (
                                                          R.string.config_default_name ) );
                     }
-                    
                     mDmrDevice.setUDN ( mDmrDevice.getUDN() + mac );
-                }
-                catch ( InvalidDescriptionException e )
-                {
+                } catch ( InvalidDescriptionException e ) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
         }
-        
+
         /**
          * @Description TODO
          * @return
          */
-        private String getNetWorkMac()
-        {
+        private String getNetWorkMac() {
             ConnectivityManager connectivityManager = ( ConnectivityManager ) this
                     .getSystemService ( Context.CONNECTIVITY_SERVICE );
             NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
             int netType = ConnectivityManager.TYPE_WIFI;
-            
             if ( activeNetInfo != null )
             { netType = activeNetInfo.getType(); }
-            
             String mac = null;
-            
-            if ( netType == ConnectivityManager.TYPE_WIFI )
-            {
+            if ( netType == ConnectivityManager.TYPE_WIFI ) {
                 WifiManager wifi = ( WifiManager ) getSystemService ( Context.WIFI_SERVICE );
                 WifiInfo info = wifi.getConnectionInfo();
                 mac = info.getMacAddress();
-            }
-            else if ( netType == ConnectivityManager.TYPE_ETHERNET )
-            {
+            } else if ( netType == ConnectivityManager.TYPE_ETHERNET ) {
                 File fl = new File ( "/sys/class/net/eth0/address" );
-                
-                if ( fl.exists() )
-                {
-                    try
-                    {
+                if ( fl.exists() ) {
+                    try {
                         FileReader fr = new FileReader ( fl );
                         char[] buf = new char[32];
                         int len = fr.read ( buf );
-                        
-                        if ( len > 0 )
-                        {
+                        if ( len > 0 ) {
                             if ( len > 17 )
                             { len = 17; }
-                            
                             mac = new String ( buf, 0, len );
                             fr.close();
                         }
-                    }
-                    catch ( Exception e )
-                    {
+                    } catch ( Exception e ) {
                     }
                 }
             }
-            
-            if ( mac == null )
-            {
+            if ( mac == null ) {
                 mac = SystemProperties.get ( "ubootenv.var.ethaddr", "UNKNOWN" );
             }
-            
             HostInterface.resetInterface();
             return mac;
         }
-        
-        private void copyAsset ( String absPath, String filename )
-        {
+
+        private void copyAsset ( String absPath, String filename ) {
             InputStream i_s = null;
             FileOutputStream fos;
             String sourcefilename = absPath + "/" + filename;
             File f = new File ( sourcefilename );
-            
-            try
-            {
+            try {
                 i_s = getAssets().open ( filename );
                 fos = openFileOutput ( f.getName(), Context.MODE_PRIVATE );
-                
-                while ( i_s.available() > 0 )
-                {
+                while ( i_s.available() > 0 ) {
                     byte[] b = new byte[1024];
                     int bytesread = i_s.read ( b );
                     fos.write ( b, 0, bytesread );
                 }
-                
                 fos.close();
                 i_s.close();
-            }
-            catch ( FileNotFoundException e2 )
-            {
+            } catch ( FileNotFoundException e2 ) {
                 e2.printStackTrace();
-            }
-            catch ( IOException e )
-            {
+            } catch ( IOException e ) {
                 e.printStackTrace();
             }
         }
-        
+
         @Override
-        public int onStartCommand ( Intent intent, int flags, int startId )
-        {
-            if ( mDmrDevice != null )
-            {
+        public int onStartCommand ( Intent intent, int flags, int startId ) {
+            if ( mDmrDevice != null ) {
                 mPref.setBoolean ( PrefUtils.FISAT_START, false );
                 mDmrDevice.startDMR();
             }
-            
             return super.onStartCommand ( intent, flags, startId );
         }
-        
-        class DMRDevice extends MediaRendererDevice
-        {
+
+        class DMRDevice extends MediaRendererDevice {
                 private boolean isDMRStart = false;
                 private Handler mHandler = null;
                 private HandlerThread mDMRDemoThread;
                 private PowerManager.WakeLock mWakeLock;
                 private boolean isRegistReceiver = false;
-                
-                private BroadcastReceiver mDMRServiceListener = new BroadcastReceiver()
-                {
+
+                private BroadcastReceiver mDMRServiceListener = new BroadcastReceiver() {
                     @Override
-                    public void onReceive ( Context context, Intent intent )
-                    {
-                        if ( isDMRStart )
-                        {
-                            if ( intent.getAction() == SERVICE_NAME_CHANGE )
-                            {
+                    public void onReceive ( Context context, Intent intent ) {
+                        if ( isDMRStart ) {
+                            if ( intent.getAction() == SERVICE_NAME_CHANGE ) {
                                 mDmrDevice.stopDMR();
                                 mDmrDevice.setFriendlyName ( "DLNA-" + intent.getStringExtra ( "service_name" ) );
                                 mDmrDevice.startDMR();
-                            }
-                            else if ( intent.getAction() == DEVICE_STATUS_CHANGE )
-                            {
+                            } else if ( intent.getAction() == DEVICE_STATUS_CHANGE ) {
                                 String status = intent.getStringExtra ( "status" );
-                                
-                                if ( status == null )
-                                {
+                                if ( status == null ) {
                                     status = "PLAYING";
                                 }
-                                
                                 mDmrDevice.changeStatus ( status );
-                            }
-                            else
-                            {
+                            } else {
                                 Message msg = new Message();
                                 msg.what = DMR_CMD;
                                 msg.obj = intent;
@@ -280,26 +221,20 @@ public class MediaCenterService extends Service
                  * @Description TODO
                  * @param string
                  */
-                public DMRDevice ( String conf ) throws InvalidDescriptionException
-                {
+                public DMRDevice ( String conf ) throws InvalidDescriptionException {
                     super ( conf );
                     mDMRDemoThread = new HandlerThread ( "DMRDevice" );
                     mDMRDemoThread.start();
-                    mHandler = new Handler ( mDMRDemoThread.getLooper() )
-                    {
-                        public void handleMessage ( Message msg )
-                        {
-                            switch ( msg.what )
-                            {
+                    mHandler = new Handler ( mDMRDemoThread.getLooper() ) {
+                        public void handleMessage ( Message msg ) {
+                            switch ( msg.what ) {
                                 case DMR_CMD:
                                     Intent intent = ( Intent ) msg.obj;
                                     DMRDevice.this.handleMessage ( intent );
                                     break;
-                                    
                                 case DMR_DEV_START:
                                     startDMRInternal();
                                     break;
-                                    
                                 case  DMR_DEV_STOP:
                                     stopDMRInternal();
                                     break;
@@ -307,21 +242,16 @@ public class MediaCenterService extends Service
                         }
                     };
                 }
-                
+
                 @Override
-                public void notifyDMR ( Intent intent )
-                {
+                public void notifyDMR ( Intent intent ) {
                     String action = intent.getAction();
-                    
-                    if ( AmlogicCP.UPNP_PLAY_ACTION.equals ( action ) )
-                    {
+                    if ( AmlogicCP.UPNP_PLAY_ACTION.equals ( action ) ) {
                         String type = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_TYPE );
                         ActivityManager mactivitymanager = ( ActivityManager ) getSystemService ( ACTIVITY_SERVICE );
                         ComponentName cn = mactivitymanager.getRunningTasks ( 1 ).get ( 0 ).topActivity;
                         String name = cn.getClassName();
-                        
-                        if ( !MusicPlayer.isShowingForehand && MediaRendererDevice.TYPE_AUDIO.equals ( type ) )
-                        {
+                        if ( !MusicPlayer.isShowingForehand && MediaRendererDevice.TYPE_AUDIO.equals ( type ) ) {
                             intent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
                             intent.setClass ( MediaCenterService.this, MusicPlayer.class );
                             VideoPlayer.running = false;
@@ -329,9 +259,7 @@ public class MediaCenterService extends Service
                             stopMediaPlayer();
                             startActivity ( intent );
                             return;
-                        }
-                        else if ( !VideoPlayer.running && MediaRendererDevice.TYPE_VIDEO.equals ( type ) )
-                        {
+                        } else if ( !VideoPlayer.running && MediaRendererDevice.TYPE_VIDEO.equals ( type ) ) {
                             intent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
                             intent.setClass ( MediaCenterService.this, VideoPlayer.class );
                             ImageFromUrl.isShowingForehand = false;
@@ -339,9 +267,7 @@ public class MediaCenterService extends Service
                             stopMediaPlayer();
                             startActivity ( intent );
                             return;
-                        }
-                        else if ( !ImageFromUrl.isShowingForehand && MediaRendererDevice.TYPE_IMAGE.equals ( type ) )
-                        {
+                        } else if ( !ImageFromUrl.isShowingForehand && MediaRendererDevice.TYPE_IMAGE.equals ( type ) ) {
                             intent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
                             intent.setClass ( MediaCenterService.this, ImageFromUrl.class );
                             MusicPlayer.isShowingForehand = false;
@@ -350,25 +276,19 @@ public class MediaCenterService extends Service
                             return;
                         }
                     }
-                    
                     sendBroadcast ( intent );
                 }
                 /**
                  * @Description TODO
                  */
-                private void stopMediaPlayer()
-                {
+                private void stopMediaPlayer() {
                     ActivityManager mactivitymanager = ( ActivityManager ) getSystemService ( ACTIVITY_SERVICE );
                     ComponentName cn = mactivitymanager.getRunningTasks ( 1 ).get ( 0 ).topActivity;
                     String name = cn.getClassName();
-                    
-                    if ( name.equals ( "com.farcore.videoplayer.playermenu" ) )
-                    {
+                    if ( name.equals ( "com.farcore.videoplayer.playermenu" ) ) {
                         mactivitymanager.restartPackage ( cn.getPackageName() );
-                    }
-                    else if ( name
-                              .equals ( "org.geometerplus.android.fbreader.FBReader" ) )
-                    {
+                    } else if ( name
+                                .equals ( "org.geometerplus.android.fbreader.FBReader" ) ) {
                         Intent intent = new Intent();
                         intent.setAction ( "com.android.music.musicservicecommand.pause" );
                         intent.putExtra ( "command", "stop" );
@@ -377,42 +297,30 @@ public class MediaCenterService extends Service
                         sendBroadcast ( intent );
                     }
                 }
-                
-                private void startDMRInternal()
-                {
-                    if ( super.isRunning() )
-                    {
+
+                private void startDMRInternal() {
+                    if ( super.isRunning() ) {
                         super.stop();
                     }
-                    
-                    if ( !super.isRunning() )
-                    {
+                    if ( !super.isRunning() ) {
                         super.start();
                         isDMRStart = true;
                     }
                 }
-                
-                public void stopDMRInternal()
-                {
-                    if ( super.isRunning() )
-                    {
+
+                public void stopDMRInternal() {
+                    if ( super.isRunning() ) {
                         super.stop();
                     }
-                    
                     isDMRStart = false;
                 }
-                
-                public void startDMR()
-                {
-                    if ( mHandler == null )
-                    {
+
+                public void startDMR() {
+                    if ( mHandler == null ) {
                         return;
                     }
-                    
                     mHandler.sendEmptyMessage ( DMR_DEV_START );
-                    
-                    if ( !isRegistReceiver )
-                    {
+                    if ( !isRegistReceiver ) {
                         IntentFilter f = new IntentFilter();
                         f.addAction ( AmlogicCP.PLAY_POSTION_REFRESH );
                         f.addAction ( MediaRendererDevice.PLAY_STATE_PAUSED );
@@ -425,52 +333,39 @@ public class MediaCenterService extends Service
                         isRegistReceiver = true;
                     }
                 }
-                
-                public void stopDMR()
-                {
-                    if ( isRegistReceiver )
-                    {
+
+                public void stopDMR() {
+                    if ( isRegistReceiver ) {
                         isRegistReceiver = false;
                         unregisterReceiver ( mDMRServiceListener );
                     }
-                    
-                    if ( mHandler != null )
-                    {
+                    if ( mHandler != null ) {
                         mHandler.sendEmptyMessage ( DMR_DEV_STOP );
                     }
                 }
-                
+
                 /*public void stopDreaming(){
                     Intent intent = new Intent("android.intent.action.DREAMING_STOPPED");
                     sendBroadcast(intent);
                 }*/
-                
+
         }
-        
+
         @Override
-        public void onDestroy()
-        {
+        public void onDestroy() {
             super.onDestroy();
-            
-            if ( mDmrDevice != null )
-            {
+            if ( mDmrDevice != null ) {
                 mDmrDevice.stopDMR();
             }
         }
-        public static int getAndroidOSVersion()
-        {
+        public static int getAndroidOSVersion() {
             int osVersion;
-            
-            try
-            {
+            try {
                 osVersion = Integer.valueOf ( android.os.Build.VERSION.SDK );
-            }
-            catch ( NumberFormatException e )
-            {
+            } catch ( NumberFormatException e ) {
                 osVersion = 0;
             }
-            
             return osVersion;
         }
-        
+
 }

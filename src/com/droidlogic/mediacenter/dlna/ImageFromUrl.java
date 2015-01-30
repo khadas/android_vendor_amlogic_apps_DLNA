@@ -65,8 +65,7 @@ import android.graphics.BitmapFactory.Options;
  * @Author
  * @Version V1.0
  */
-public class ImageFromUrl extends Activity
-{
+public class ImageFromUrl extends Activity {
         private static final String  TAG                 = "ImageFromUrl";
         private PowerManager.WakeLock mWakeLock;
         private DecordUri            mCurUri;
@@ -110,8 +109,7 @@ public class ImageFromUrl extends Activity
         private boolean reg = false;
         private boolean stopZoom = false;
         @Override
-        protected void onCreate ( Bundle arg0 )
-        {
+        protected void onCreate ( Bundle arg0 ) {
             super.onCreate ( arg0 );
             setContentView ( R.layout.display_image_activity );
             mCurUri = new DecordUri();
@@ -121,24 +119,19 @@ public class ImageFromUrl extends Activity
             mDecodeBitmapTask.start();
             ViewGroup mainView = ( ViewGroup ) findViewById ( R.id.image_control );
             android.util.Log.d ( TAG, "On Create" );
-            mainView.setOnClickListener ( new View.OnClickListener()
-            {
+            mainView.setOnClickListener ( new View.OnClickListener() {
                 @Override
-                public void onClick ( View v )
-                {
-                    if ( isBrowserMode )
-                    {
+                public void onClick ( View v ) {
+                    if ( isBrowserMode ) {
                         mHandler.sendEmptyMessage ( SHOWPANEL );
                         hideBar ( 3000 );
                     }
                 }
             } );
             btnBack = ( ImageButton ) findViewById ( R.id.back );
-            btnBack.setOnClickListener ( new View.OnClickListener()
-            {
+            btnBack.setOnClickListener ( new View.OnClickListener() {
                 @Override
-                public void onClick ( View v )
-                {
+                public void onClick ( View v ) {
                     unregistRec();
                     hideLoading();
                     mHandler = null;
@@ -146,20 +139,16 @@ public class ImageFromUrl extends Activity
                 }
             } );
             btnLeft = ( ImageButton ) findViewById ( R.id.bt_left );
-            btnLeft.setOnClickListener ( new View.OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btnLeft.setOnClickListener ( new View.OnClickListener() {
+                public void onClick ( View v ) {
                     mSlideShow = SLIDE_UNSTATE;
                     hideBar ( 3000 );
                     prev();
                 }
             } );
             btnRight = ( ImageButton ) findViewById ( R.id.bt_right );
-            btnRight.setOnClickListener ( new View.OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btnRight.setOnClickListener ( new View.OnClickListener() {
+                public void onClick ( View v ) {
                     mSlideShow = SLIDE_UNSTATE;
                     hideBar ( 3000 );
                     next();
@@ -169,18 +158,13 @@ public class ImageFromUrl extends Activity
             /*mShowView.setFocusableInTouchMode(true);
             mShowView.requestFocusFromTouch();*/
             btnPlay.requestFocus();
-            btnPlay.setOnClickListener ( new View.OnClickListener()
-            {
-                public void onClick ( View v )
-                {
-                    if ( mSlideShow == SLIDE_START )
-                    {
+            btnPlay.setOnClickListener ( new View.OnClickListener() {
+                public void onClick ( View v ) {
+                    if ( mSlideShow == SLIDE_START ) {
                         btnPlay.setImageResource ( R.drawable.play_play );
                         mSlideShow = SLIDE_STOP;
                         mCurUri.setUrl ( null );
-                    }
-                    else
-                    {
+                    } else {
                         btnPlay.setImageResource ( R.drawable.suspend_play );
                         mSlideShow = SLIDE_START;
                         showLoading();
@@ -191,20 +175,16 @@ public class ImageFromUrl extends Activity
                 }
             } );
             btnRoomIn = ( ImageButton ) findViewById ( R.id.bt_roomin );
-            btnRoomIn.setOnClickListener ( new View.OnClickListener()
-            {
+            btnRoomIn.setOnClickListener ( new View.OnClickListener() {
                 @Override
-                public void onClick ( View v )
-                {
+                public void onClick ( View v ) {
                     zoomIn();
                 }
             } );
             btnRoomOut = ( ImageButton ) findViewById ( R.id.bt_roomout );
-            btnRoomOut.setOnClickListener ( new View.OnClickListener()
-            {
+            btnRoomOut.setOnClickListener ( new View.OnClickListener() {
                 @Override
-                public void onClick ( View v )
-                {
+                public void onClick ( View v ) {
                     zoomOut();
                 }
             } );
@@ -227,15 +207,11 @@ public class ImageFromUrl extends Activity
                     }
                 }
             });*/
-            OnFocusChangeListener listener = new View.OnFocusChangeListener()
-            {
+            OnFocusChangeListener listener = new View.OnFocusChangeListener() {
                 @Override
-                public void onFocusChange ( View v, boolean hasFocus )
-                {
+                public void onFocusChange ( View v, boolean hasFocus ) {
                     Debug.d ( TAG, "image View:" + hasFocus + "isBrowserMode:" + isBrowserMode );
-                    
-                    if ( hasFocus && isBrowserMode )
-                    {
+                    if ( hasFocus && isBrowserMode ) {
                         mHandler.removeMessages ( HIDEPANEL );
                         mHandler.sendEmptyMessageDelayed ( HIDEPANEL, STOP_SHOW_INTERVAL );
                     }
@@ -250,149 +226,107 @@ public class ImageFromUrl extends Activity
             reg = false;
             Intent intent = getIntent();
             android.util.Log.d ( TAG, "intent!=null" + ( intent != null ) + intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI ) );
-            
-            if ( intent != null )
-            {
+            if ( intent != null ) {
                 String url = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
                 Message msg = new Message();
-                
                 if ( DeviceFileBrowser.TYPE_DMP.equals ( intent
-                        .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) )
-                {
+                        .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) ) {
                     mCurIndex = intent.getIntExtra ( DeviceFileBrowser.CURENT_POS, 0 );
                     isBrowserMode = true;
                     mSlideView.setVisibility ( View.VISIBLE );
-                }
-                else
-                {
+                } else {
                     mCurIndex = -1;
                     isBrowserMode = false;
                     mSlideView.setVisibility ( View.INVISIBLE );
                 }
-                
                 msg.what = LOADING_URL_IMAG;
                 msg.obj = url;
                 mHandler.sendMessage ( msg );
             }
         }
-        private void unregistRec()
-        {
-            if ( reg )
-            {
+        private void unregistRec() {
+            if ( reg ) {
                 unregisterReceiver ( imageFromUrlReceiver );
                 reg = false;
             }
         }
-        private void zoomIn()
-        {
+        private void zoomIn() {
             Display display = getWindowManager().getDefaultDisplay();
             Rect rect = new Rect();
             display.getRectSize ( rect );
-            
-            if ( myBitmap == null )
-            {
+            if ( myBitmap == null ) {
                 Toast.makeText ( getApplicationContext(),
                                  R.string.pic_unspport, Toast.LENGTH_SHORT ).show();
                 return;
             }
-            
             /*BitmapDrawable bitmapDrawable = (BitmapDrawable)mShowView.getDrawable();
             Bitmap bm = bitmapDrawable.getBitmap();*/
             double newCount = zoomCount;
             newCount = newCount * 2;
             int newWidth = ( int ) ( myBitmap.getWidth() * newCount );
             int newHeight = ( int ) ( myBitmap.getHeight() * newCount );
-            
-            if ( newCount < TOP_LEVEL || ( newWidth <= rect.width() && newHeight <= rect.height() ) )
-            {
+            if ( newCount < TOP_LEVEL || ( newWidth <= rect.width() && newHeight <= rect.height() ) ) {
                 zoomCount = newCount;
                 Bitmap scaledBitmap;
-                
-                if ( newWidth >= rect.width() || newHeight >= rect.height() )
-                {
+                if ( newWidth >= rect.width() || newHeight >= rect.height() ) {
                     newWidth = newWidth > rect.width() ? rect.width() : newWidth;
                     newHeight = newHeight > rect.height() ? rect.height() : newHeight;
                     scaledBitmap = ScalingUtilities.createScaledBitmap ( myBitmap, newWidth,
                                    newHeight, ScalingLogic.CROP );
-                }
-                else
-                {
+                } else {
                     scaledBitmap = ScalingUtilities.createScaledBitmap ( myBitmap, newWidth,
                                    newHeight, ScalingLogic.FIT );
                 }
-                
                 mShowView.setImageBitmap ( scaledBitmap );
                 scaledBitmap = null;
-            }
-            else
-            {
+            } else {
                 Toast.makeText ( getApplicationContext(),
                                  R.string.pic_largest, Toast.LENGTH_SHORT ).show();
             }
         }
-        
-        private void zoomOut()
-        {
+
+        private void zoomOut() {
             Display display = getWindowManager().getDefaultDisplay();
             Rect rect = new Rect();
             display.getRectSize ( rect );
-            
             /*BitmapDrawable bitmapDrawable = (BitmapDrawable)mShowView.getDrawable();
             Bitmap bm = bitmapDrawable.getBitmap();*/
-            if ( myBitmap == null )
-            {
+            if ( myBitmap == null ) {
                 Toast.makeText ( getApplicationContext(),
                                  R.string.pic_unspport, Toast.LENGTH_SHORT ).show();
                 return;
             }
-            
             Debug.d ( TAG, "zoomCount:" + zoomCount + " Top_level:" + ( 1.0 / TOP_LEVEL ) );
             double newCount = zoomCount / 2;
             int newWidth = ( int ) ( myBitmap.getWidth() * newCount );
             int newHeight = ( int ) ( myBitmap.getHeight() * newCount );
-            
-            if ( newCount > ( 1.0 / TOP_LEVEL ) || ( newWidth > 16 && newHeight > 16 ) )
-            {
+            if ( newCount > ( 1.0 / TOP_LEVEL ) || ( newWidth > 16 && newHeight > 16 ) ) {
                 zoomCount = newCount;
                 Bitmap scaledBitmap = null;
-                
-                if ( newCount == 1 )
-                {
+                if ( newCount == 1 ) {
                     mShowView.setImageBitmap ( myBitmap );
-                }
-                else
-                {
-                    if ( newWidth > rect.width() || newHeight > rect.height() )
-                    {
+                } else {
+                    if ( newWidth > rect.width() || newHeight > rect.height() ) {
                         newWidth = newWidth > rect.width() ? rect.width() : newWidth;
                         newHeight = newHeight > rect.height() ? rect.height() : newHeight;
                         scaledBitmap = ScalingUtilities.createScaledBitmap ( myBitmap, newWidth,
                                        newHeight, ScalingLogic.CROP );
-                    }
-                    else
-                    {
+                    } else {
                         scaledBitmap = ScalingUtilities.createScaledBitmap ( myBitmap, newWidth,
                                        newHeight, ScalingLogic.FIT );
                     }
-                    
                     mShowView.setImageBitmap ( scaledBitmap );
                 }
-                
                 scaledBitmap = null;
-            }
-            else
-            {
+            } else {
                 Toast.makeText ( getApplicationContext(), R.string.pic_lest, Toast.LENGTH_SHORT ).show();
                 return;
             }
         }
-        
-        private void onReg()
-        {
+
+        private void onReg() {
             imageFromUrlReceiver = new ImageFromUrlReceiver();
-            
-            if ( !reg )
-            {
+            if ( !reg ) {
                 IntentFilter filter = new IntentFilter();
                 filter.addAction ( AmlogicCP.UPNP_STOP_ACTION );
                 filter.addAction ( AmlogicCP.UPNP_PLAY_ACTION );
@@ -400,101 +334,72 @@ public class ImageFromUrl extends Activity
                 reg = true;
             }
         }
-        public boolean onKeyDown ( int keyCode, KeyEvent event )
-        {
+        public boolean onKeyDown ( int keyCode, KeyEvent event ) {
             Debug.d ( TAG, "******keycode=" + keyCode );
-            
-            if ( keyCode == KeyEvent.KEYCODE_BACK )
-            {
-                if ( isBrowserMode && mSlideShow == SLIDE_START )
-                {
+            if ( keyCode == KeyEvent.KEYCODE_BACK ) {
+                if ( isBrowserMode && mSlideShow == SLIDE_START ) {
                     mHandler.removeMessages ( HIDEPANEL );
                     mSlideShow = SLIDE_STOP;
                     mCurUri.setUrl ( null );
                     mHandler.sendEmptyMessage ( SHOWPANEL );
-                }
-                else
-                {
+                } else {
                     mHandler = null;
                     unregistRec();
                     hideLoading();
                     ImageFromUrl.this.finish();
                 }
-                
                 return true;
-            }
-            else if ( !mSlideView.isShown()
-                      && keyCode == KeyEvent.KEYCODE_DPAD_CENTER )
-            {
-                if ( isBrowserMode )
-                {
+            } else if ( !mSlideView.isShown()
+                        && keyCode == KeyEvent.KEYCODE_DPAD_CENTER ) {
+                if ( isBrowserMode ) {
                     mHandler.sendEmptyMessage ( SHOWPANEL );
                     hideBar ( 10000 );
                 }
-                
                 return true;
-            }
-            else if ( ( keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN )
-                      && ( mSlideShow == SLIDE_START ) )
-            {
+            } else if ( ( keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN )
+                        && ( mSlideShow == SLIDE_START ) ) {
                 mHandler.sendEmptyMessage ( SHOWPANEL );
                 hideBar ( 3000 );
                 return true;
             }
-            
             return super.onKeyDown ( keyCode, event );
         }
-        
-        private void next()
-        {
+
+        private void next() {
             getCurIndex ( true );
             play();
         }
-        
+
         @Override
-        protected void onDestroy()
-        {
+        protected void onDestroy() {
             super.onDestroy();
         }
-        
-        private void getCurIndex ( boolean next )
-        {
+
+        private void getCurIndex ( boolean next ) {
             if ( mCurIndex > ( DeviceFileBrowser.playList.size() - 1 )
                     || mCurIndex < 0 )
             { mCurIndex = 0; }
-            
-            if ( !next )
-            {
-                if ( mCurIndex > 0 )
-                {
+            if ( !next ) {
+                if ( mCurIndex > 0 ) {
                     mCurIndex--;
-                }
-                else
-                {
+                } else {
                     mCurIndex = DeviceFileBrowser.playList.size() - 1;
                 }
-            }
-            else
-            {
-                if ( mCurIndex < ( DeviceFileBrowser.playList.size() - 1 ) )
-                {
+            } else {
+                if ( mCurIndex < ( DeviceFileBrowser.playList.size() - 1 ) ) {
                     mCurIndex++;
-                }
-                else
-                {
+                } else {
                     mCurIndex = 0;
                 }
             }
         }
-        
-        private void prev()
-        {
+
+        private void prev() {
             getCurIndex ( false );
             play();
         }
-        
-        private void play()
-        {
+
+        private void play() {
             Map<String, Object> item = ( Map<String, Object> ) DeviceFileBrowser.playList
                                        .get ( mCurIndex );
             Message msg = mHandler.obtainMessage();
@@ -502,68 +407,52 @@ public class ImageFromUrl extends Activity
             msg.obj = ( String ) item.get ( "item_uri" );
             msg.sendToTarget();
         }
-        
+
         @Override
-        protected void onResume()
-        {
+        protected void onResume() {
             super.onResume();
             isShowingForehand = true;
-            onReg();
             mHandler.removeMessages ( STOP_BY_SEVER );
             mHandler.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
-            
-            if ( isBrowserMode )
-            {
+            if ( isBrowserMode ) {
                 mHandler.sendEmptyMessageDelayed ( HIDEPANEL, STOP_SHOW_INTERVAL );
             }
-            
+            onReg();
             /* enable backlight */
             PowerManager pm = ( PowerManager ) getSystemService ( Context.POWER_SERVICE );
             mWakeLock = pm.newWakeLock ( PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG );
             mWakeLock.acquire();
         }
-        
-        private void hideBar ( int timeout )
-        {
+
+        private void hideBar ( int timeout ) {
             mHandler.removeMessages ( HIDEPANEL );
             mHandler.sendEmptyMessageDelayed ( HIDEPANEL, timeout );
         }
-        
-        
+
+
         @Override
-        protected void onPause()
-        {
+        protected void onPause() {
             super.onStop();
-            
-            if ( exitDlg != null )
-            {
+            if ( exitDlg != null ) {
                 exitDlg.dismiss();
                 exitDlg = null;
             }
-            
             isShowingForehand = false;
             hideLoading();
             mSlideShow = SLIDE_STOP;
-            
-            if ( mCurUri != null )
-            {
+            if ( mCurUri != null ) {
                 mCurUri.setUrl ( null );
             }
-            
             unregistRec();
-            
-            if ( mDecodeBitmapTask != null )
-            {
+            if ( mDecodeBitmapTask != null ) {
                 mDecodeBitmapTask.stopThread();
             }
-            
             mDecodeBitmapTask = null;
             mWakeLock.release();
         }
-        
-        
-        class ImageFromUrlReceiver extends BroadcastReceiver
-        {
+
+
+        class ImageFromUrlReceiver extends BroadcastReceiver {
                 /*
                  * (non-Javadoc)
                  *
@@ -572,107 +461,78 @@ public class ImageFromUrl extends Activity
                  * android.content.Intent)
                  */
                 @Override
-                public void onReceive ( Context cxt, Intent intent )
-                {
+                public void onReceive ( Context cxt, Intent intent ) {
                     String action = intent.getAction();
                     String mediaType = intent
                                        .getStringExtra ( AmlogicCP.EXTRA_MEDIA_TYPE );
                     Debug.d ( TAG, "getAction:" + action );
-                    
                     if ( !MediaRendererDevice.TYPE_IMAGE.equals ( mediaType ) )
                     { return; }
-                    
-                    if ( action.equals ( AmlogicCP.UPNP_PLAY_ACTION ) )
-                    {
+                    if ( action.equals ( AmlogicCP.UPNP_PLAY_ACTION ) ) {
                         hideLoading();
                         mHandler.removeMessages ( LOADING_URL_IMAG );
                         String url = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
                         Message msg = new Message();
-                        
                         if ( DeviceFileBrowser.TYPE_DMP.equals ( intent
-                                .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) )
-                        {
+                                .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) ) {
                             mCurIndex = intent.getIntExtra (
                                             DeviceFileBrowser.CURENT_POS, 0 );
                             isBrowserMode = true;
-                        }
-                        else
-                        {
+                        } else {
                             isBrowserMode = false;
                         }
-                        
                         msg.what = LOADING_URL_IMAG;
                         msg.obj = url;
                         mHandler.sendMessage ( msg );
                         return;
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) ) {
                         stopExit();
                         mHandler.sendEmptyMessageDelayed ( SHOW_STOP, STOP_DELAY );
                     }
                 }
         }
-        
-        class DecodeBitmapTask extends Thread
-        {
+
+        class DecodeBitmapTask extends Thread {
                 private DecordUri mUrl;
                 private boolean   stop = false;
-                
-                public DecodeBitmapTask ( DecordUri url )
-                {
+
+                public DecodeBitmapTask ( DecordUri url ) {
                     mUrl = url;
                 }
-                
-                public void stopThread()
-                {
+
+                public void stopThread() {
                     stop = true;
                 }
-                
+
                 @Override
-                public void run()
-                {
+                public void run() {
                     String urlString = null;
                     stop = false;
-                    
-                    while ( !stop )
-                    {
+                    while ( !stop ) {
                         urlString = mUrl.getUrl();
-                        
-                        if ( urlString != null )
-                        {
-                            try
-                            {
+                        if ( urlString != null ) {
+                            try {
                                 URL url = new URL ( urlString );
                                 HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
                                 connection.setDoInput ( true );
                                 connection.connect();
                                 BufferedInputStream input = new BufferedInputStream ( connection.getInputStream() );
-                                
-                                if ( input == null )
-                                {
+                                if ( input == null ) {
                                     Debug.e ( "rot", "***get Bitmap error!" );
                                     throw new RuntimeException ( "stream is null" );
-                                }
-                                else
-                                {
+                                } else {
                                     BitmapFactory.Options bmOptions = new BitmapFactory.Options();
                                     bmOptions.inSampleSize = 1;
                                     bmOptions.inPreferredConfig = Bitmap.Config.RGB_565;
                                     bmOptions.inDither = false;
                                     myBitmap = BitmapFactory.decodeStream ( input, null, bmOptions );
                                     Debug.d ( TAG, "myBitmap==null" + ( myBitmap == null ) );
-                                    
-                                    if ( mHandler != null )
-                                    {
+                                    if ( mHandler != null ) {
                                         mHandler.sendEmptyMessage ( SHOW_BITMAP_URL );
                                     }
-                                    
                                     connection.disconnect();
                                 }
-                            }
-                            catch ( Exception e )
-                            {
+                            } catch ( Exception e ) {
                                 // TODO Auto-generated catch block
                                 Looper.prepare();
                                 Toast.makeText ( getApplicationContext(),
@@ -680,15 +540,10 @@ public class ImageFromUrl extends Activity
                                 e.printStackTrace();
                                 Looper.loop();
                             }
-                        }
-                        else
-                        {
-                            try
-                            {
+                        } else {
+                            try {
                                 sleep ( 1000 );
-                            }
-                            catch ( InterruptedException e )
-                            {
+                            } catch ( InterruptedException e ) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
                             }
@@ -696,248 +551,179 @@ public class ImageFromUrl extends Activity
                     }
                 }
         }
-        
-        private void showLoading()
-        {
-            if ( mLoadingDialog == null )
-            {
+
+        private void showLoading() {
+            if ( mLoadingDialog == null ) {
                 mLoadingDialog = new LoadingDialog ( this,
                                                      LoadingDialog.TYPE_LOADING, this.getResources().getString (
                                                              R.string.loading ) );
                 mLoadingDialog.setCancelable ( true );
                 mLoadingDialog.show();
-            }
-            else
-            {
+            } else {
                 mLoadingDialog.show();
             }
         }
-        
-        private void stopExit()
-        {
+
+        private void stopExit() {
             mHandler.removeMessages ( SHOW_STOP );
-            
-            if ( exitDlg != null )
-            {
+            if ( exitDlg != null ) {
                 exitDlg.dismiss();
                 exitDlg = null;
             }
         }
-        
+
         /**
          * @Description TODO
          */
-        public void wait2Exit()
-        {
+        public void wait2Exit() {
             Debug.d ( TAG, "wait2Exit......" );
-            
-            if ( !isShowingForehand )
-            {
+            if ( !isShowingForehand ) {
                 this.finish();
                 return;
             }
-            
             hideLoading();
-            
-            if ( exitDlg == null )
-            {
+            if ( exitDlg == null ) {
                 exitDlg = new LoadingDialog ( this, LoadingDialog.TYPE_EXIT_TIMER, "" );
                 exitDlg.setCancelable ( true );
-                exitDlg.setOnDismissListener ( new OnDismissListener()
-                {
+                exitDlg.setOnDismissListener ( new OnDismissListener() {
                     @Override
-                    public void onDismiss ( DialogInterface arg0 )
-                    {
+                    public void onDismiss ( DialogInterface arg0 ) {
                         if ( exitDlg != null && ( ImageFromUrl.this.getClass().getName().equals ( exitDlg.getTopActivity ( ImageFromUrl.this ) ) ||
-                                                  exitDlg.getCountNum() == 0 ) )
-                        {
+                        exitDlg.getCountNum() == 0 ) ) {
                             unregistRec();
                             ImageFromUrl.this.finish();
                         }
                     }
                 } );
                 exitDlg.show();
-            }
-            else
-            {
+            } else {
                 exitDlg.setCountNum ( 4 );
                 exitDlg.show();
             }
         }
-        
-        private void hideLoading()
-        {
-            if ( mLoadingDialog != null )
-            {
+
+        private void hideLoading() {
+            if ( mLoadingDialog != null ) {
                 mLoadingDialog.stopAnim();
                 mLoadingDialog.dismiss();
             }
         }
-        
-        class DecordUri
-        {
+
+        class DecordUri {
                 private String mDecodeUrl;
-                
-                public synchronized void setUrl ( String url )
-                {
+
+                public synchronized void setUrl ( String url ) {
                     mDecodeUrl = url;
                 }
-                
-                public synchronized String getUrl()
-                {
+
+                public synchronized String getUrl() {
                     String url = mDecodeUrl;
                     mDecodeUrl = null;
                     return url;
                 }
         }
-        
-        private void showImage()
-        {
-            if ( mSlideShow == SLIDE_STOP )
-            {
+
+        private void showImage() {
+            if ( mSlideShow == SLIDE_STOP ) {
                 hideLoading();
                 return;
             }
-            
-            if ( myBitmap != null )
-            {
+            if ( myBitmap != null ) {
                 zoomCount = 1;
                 int height = myBitmap.getHeight();
                 int width = myBitmap.getWidth();
                 float reSize = 1.0f;
-                
-                if ( width > TOPSIZE || height > TOPSIZE )
-                {
-                    if ( height > width )
-                    {
+                if ( width > TOPSIZE || height > TOPSIZE ) {
+                    if ( height > width ) {
                         reSize = TOPSIZE / height;
-                    }
-                    else
-                    {
+                    } else {
                         reSize = TOPSIZE / width;
                     }
-                    
                     Matrix matrix = new Matrix();
                     matrix.postScale ( reSize, reSize );
                     myBitmap = Bitmap.createBitmap ( myBitmap, 0, 0, width,
                                                      height, matrix, true );
                     mShowView.setImageBitmap ( myBitmap );
-                }
-                else
-                {
+                } else {
                     mShowView.setImageBitmap ( myBitmap );
                 }
-                
                 //myBitmap = null;
-            }
-            else
-            {
+            } else {
                 mShowView.setImageResource ( R.drawable.ic_missing_thumbnail_picture );
                 Toast.makeText ( getApplicationContext(), R.string.disply_err,
                                  Toast.LENGTH_SHORT ).show();
             }
-            
             hideLoading();
-            
-            if ( mSlideShow == SLIDE_START )
-            {
+            if ( mSlideShow == SLIDE_START && null != mHandler ) {
                 mHandler.sendEmptyMessageDelayed ( SLID_SHOW, SLIDE_SHOW_INTERVAL );
             }
         }
-        
-        private void slideShow()
-        {
-            if ( mSlideShow != SLIDE_START )
-            {
+
+        private void slideShow() {
+            if ( mSlideShow != SLIDE_START ) {
                 return;
             }
-            
             next();
         }
-        
-        class DecodeHandler extends Handler
-        {
+
+        class DecodeHandler extends Handler {
                 private DecordUri mUrl;
-                
-                public DecodeHandler ( DecordUri url )
-                {
+
+                public DecodeHandler ( DecordUri url ) {
                     mUrl = url;
                 }
-                
+
                 @Override
-                public void handleMessage ( Message msg )
-                {
-                    switch ( msg.what )
-                    {
+                public void handleMessage ( Message msg ) {
+                    switch ( msg.what ) {
                         case LOADING_URL_IMAG:
                             stopExit();
                             showLoading();
                             Debug.d ( TAG, "(String)msg.obj:" + ( String ) msg.obj );
                             mUrl.setUrl ( ( String ) msg.obj );
-                            
-                            if ( mDecodeBitmapTask == null )
-                            {
+                            if ( mDecodeBitmapTask == null ) {
                                 mDecodeBitmapTask = new DecodeBitmapTask ( mCurUri );
                                 mDecodeBitmapTask.start();
                             }
-                            
                             break;
-                            
                         case SHOW_BITMAP_URL:
                             hideLoading();
                             showImage();
                             break;
-                            
                         case SHOW_STOP:
                             wait2Exit();
                             break;
-                            
                         case SLID_SHOW:
                             slideShow();
                             break;
-                            
                         case SHOWPANEL:
-                            if ( mSlideView != null )
-                            {
-                                if ( btnPlay != null )
-                                {
+                            if ( mSlideView != null ) {
+                                if ( btnPlay != null ) {
                                     btnPlay.requestFocus();
-                                    
-                                    if ( mSlideShow == SLIDE_START )
-                                    {
+                                    if ( mSlideShow == SLIDE_START ) {
                                         //btnPlay.setImageDrawable(ImageFromUrl.this.getResources().getDrawable(R.drawable.suspend_play));
                                         btnPlay.setImageResource ( R.drawable.suspend_play );
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         //btnPlay.setImageDrawable(ImageFromUrl.this.getResources().getDrawable(R.drawable.play_play));
                                         btnPlay.setImageResource ( R.drawable.play_play );
                                     }
                                 }
-                                
                                 mSlideView.setVisibility ( View.VISIBLE );
                             }
-                            
                             return;
-                            
                         case HIDEPANEL:
-                            if ( mSlideView != null )
-                            {
+                            if ( mSlideView != null ) {
                                 mSlideView.setVisibility ( View.INVISIBLE );
                             }
-                            
                             return;
-                            
                         case STOP_BY_SEVER:
-                            if ( !isShowingForehand )
-                            {
+                            if ( !isShowingForehand ) {
                                 ImageFromUrl.this.finish();
+                            } else {
+                                if ( null != mHandler ) {
+                                    mHandler.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
+                                }
                             }
-                            else
-                            {
-                                mHandler.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
-                            }
-                            
                             return;
                     }
                 }

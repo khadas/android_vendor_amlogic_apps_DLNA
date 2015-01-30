@@ -43,8 +43,7 @@ import android.widget.SimpleAdapter;
  * @Author
  * @Version V1.0
  */
-public class FucFragment extends ListFragment
-{
+public class FucFragment extends ListFragment {
         private static final int ITEM_DMPSCAN = 0;
         private static final int ITEM_DMPSERVICE = 1;
         private static final int ITEM_AIRPLAY = 2;
@@ -57,8 +56,7 @@ public class FucFragment extends ListFragment
         private int mCurCheckPosition = 3;
         /*------------------------------------------------------------------------------------*/
         @Override
-        public void onActivityCreated ( Bundle savedInstanceState )
-        {
+        public void onActivityCreated ( Bundle savedInstanceState ) {
             super.onActivityCreated ( savedInstanceState );
             mData = getData();
             SimpleAdapter adapter = new SimpleAdapter ( getActivity(), mData,
@@ -67,62 +65,44 @@ public class FucFragment extends ListFragment
             this.setListAdapter ( adapter );
             View detailsFrame = getActivity().findViewById ( R.id.frag_detail );
             mDualPane = detailsFrame != null && detailsFrame.getVisibility() == View.VISIBLE;
-            
-            if ( savedInstanceState != null )
-            {
+            if ( savedInstanceState != null ) {
                 mCurCheckPosition = savedInstanceState.getInt ( "curChoice", 1 );
             }
-            
-            if ( mDualPane )
-            {
+            if ( mDualPane ) {
                 getListView().setChoiceMode ( ListView.CHOICE_MODE_SINGLE );
                 showDetails ( mCurCheckPosition );
             }
         }
         @Override
-        public void onSaveInstanceState ( Bundle outState )
-        {
+        public void onSaveInstanceState ( Bundle outState ) {
             // TODO Auto-generated method stub
             super.onSaveInstanceState ( outState );
             outState.putInt ( "curChoice", mCurCheckPosition );
         }
-        
+
         /**
          * @Description TODO
          * @param mCurCheckPosition2
          */
-        private void showDetails ( int index )
-        {
+        private void showDetails ( int index ) {
             mCurCheckPosition = index;
-            
-            if ( mDualPane )
-            {
+            if ( mDualPane ) {
                 getListView().setItemChecked ( index, true );
                 Fragment dmpFragment = getFragmentManager().findFragmentById ( R.id.frag_detail );
-                
-                if ( mCurCheckPosition == ITEM_DMPSCAN )
-                {
+                if ( mCurCheckPosition == ITEM_DMPSCAN ) {
                     showDmpScan ( dmpFragment );
-                }
-                else if ( mCurCheckPosition == ITEM_DMPSERVICE )
-                {
+                } else if ( mCurCheckPosition == ITEM_DMPSERVICE ) {
                     showDmpShow ( dmpFragment );
-                }
-                else if ( mCurCheckPosition == ITEM_AIRPLAY )
-                {
+                } else if ( mCurCheckPosition == ITEM_AIRPLAY ) {
                     showAirplay ( dmpFragment );
-                }
-                else if ( mCurCheckPosition == ITEM_ABOUT )
-                {
+                } else if ( mCurCheckPosition == ITEM_ABOUT ) {
                     showAboutFragment ( dmpFragment );
                 }
             }
         }
-        
-        private void showDmpShow ( Fragment fragment )
-        {
-            if ( ( fragment == null ) || ! ( fragment instanceof DmpStartFragment ) )
-            {
+
+        private void showDmpShow ( Fragment fragment ) {
+            if ( ( fragment == null ) || ! ( fragment instanceof DmpStartFragment ) ) {
                 fragment = new DmpStartFragment();
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace ( R.id.frag_detail, fragment );
@@ -130,11 +110,9 @@ public class FucFragment extends ListFragment
                 ft.commit();
             }
         }
-        
-        private void showAirplay ( Fragment fragment )
-        {
-            if ( ( fragment == null ) || ! ( fragment instanceof SettingsPreferences ) )
-            {
+
+        private void showAirplay ( Fragment fragment ) {
+            if ( ( fragment == null ) || ! ( fragment instanceof SettingsPreferences ) ) {
                 fragment = new SettingsPreferences();
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace ( R.id.frag_detail, fragment );
@@ -142,10 +120,8 @@ public class FucFragment extends ListFragment
                 ft.commit();
             }
         }
-        private void showAboutFragment ( Fragment fragment )
-        {
-            if ( ( fragment == null ) || ! ( fragment instanceof SettingsFragment ) )
-            {
+        private void showAboutFragment ( Fragment fragment ) {
+            if ( ( fragment == null ) || ! ( fragment instanceof SettingsFragment ) ) {
                 fragment = new SettingsFragment();
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace ( R.id.frag_detail, fragment );
@@ -153,10 +129,8 @@ public class FucFragment extends ListFragment
                 ft.commit();
             }
         }
-        private void showDmpScan ( Fragment fragment )
-        {
-            if ( ( fragment == null ) || ! ( fragment instanceof DmpFragment ) )
-            {
+        private void showDmpScan ( Fragment fragment ) {
+            if ( ( fragment == null ) || ! ( fragment instanceof DmpFragment ) ) {
                 fragment = new DmpFragment();
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace ( R.id.frag_detail, fragment );
@@ -164,9 +138,8 @@ public class FucFragment extends ListFragment
                 ft.commit();
             }
         }
-        
-        private List<Map<String, Object>> getData()
-        {
+
+        private List<Map<String, Object>> getData() {
             List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
             Map<String, Object>map = new HashMap<String, Object>();
             map.put ( LIST_TITLE, getString ( R.string.dmp_title ) );
@@ -190,10 +163,9 @@ public class FucFragment extends ListFragment
             list.add ( map );
             return list;
         }
-        
+
         @Override
-        public void onListItemClick ( ListView l, View v, int position, long id )
-        {
+        public void onListItemClick ( ListView l, View v, int position, long id ) {
             showDetails ( position );
         }
 }

@@ -56,21 +56,20 @@ import org.cybergarage.util.Debug;
  * </ul>
  * If no appropriate binding can be found, an {@link IllegalStateException} is thrown.
  */
-public class UPNPAdapter extends BaseAdapter implements Filterable
-{
+public class UPNPAdapter extends BaseAdapter implements Filterable {
         private int[] mTo;
         private String[] mFrom;
         private ViewBinder mViewBinder;
-        
+
         private List <? extends Map < String, ? >> mData;
-        
+
         private int mResource;
         private int mDropDownResource;
         private LayoutInflater mInflater;
-        
+
         private SimpleFilter mFilter;
         private ArrayList < Map < String, ? >> mUnfilteredData;
-        
+
         /**
          * Constructor
          *
@@ -87,193 +86,135 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
          *        in the from parameter.
          */
         public UPNPAdapter ( Context context, List <? extends Map < String, ? >> data,
-                             int resource, String[] from, int[] to )
-        {
+                             int resource, String[] from, int[] to ) {
             mData = data;
             mResource = mDropDownResource = resource;
             mFrom = from;
             mTo = to;
             mInflater = ( LayoutInflater ) context.getSystemService ( Context.LAYOUT_INFLATER_SERVICE );
         }
-        
-        
+
+
         /**
          * @see android.widget.Adapter#getCount()
          */
-        public int getCount()
-        {
+        public int getCount() {
             return mData.size();
         }
-        
+
         /**
          * @see android.widget.Adapter#getItem(int)
          */
-        public Object getItem ( int position )
-        {
+        public Object getItem ( int position ) {
             return mData.get ( position );
         }
-        
+
         /**
          * @see android.widget.Adapter#getItemId(int)
          */
-        public long getItemId ( int position )
-        {
+        public long getItemId ( int position ) {
             return position;
         }
-        
+
         /**
          * @see android.widget.Adapter#getView(int, View, ViewGroup)
          */
-        public View getView ( int position, View convertView, ViewGroup parent )
-        {
+        public View getView ( int position, View convertView, ViewGroup parent ) {
             return createViewFromResource ( position, convertView, parent, mResource );
         }
-        
+
         private View createViewFromResource ( int position, View convertView,
-                                              ViewGroup parent, int resource )
-        {
+                                              ViewGroup parent, int resource ) {
             View v;
-            
-            if ( convertView == null )
-            {
+            if ( convertView == null ) {
                 v = mInflater.inflate ( resource, parent, false );
-            }
-            else
-            {
+            } else {
                 v = convertView;
             }
-            
-            try
-            {
+            try {
                 bindView ( position, v );
-            }
-            catch ( Exception e )
-            {
+            } catch ( Exception e ) {
                 Debug.d ( "UPNPAdapter",  ">>>" + e.getMessage() );
             }
-            
             return v;
         }
-        
+
         /**
          * <p>Sets the layout resource to create the drop down views.</p>
          *
          * @param resource the layout resource defining the drop down views
          * @see #getDropDownView(int, android.view.View, android.view.ViewGroup)
          */
-        public void setDropDownViewResource ( int resource )
-        {
+        public void setDropDownViewResource ( int resource ) {
             this.mDropDownResource = resource;
         }
-        
+
         @Override
-        public View getDropDownView ( int position, View convertView, ViewGroup parent )
-        {
+        public View getDropDownView ( int position, View convertView, ViewGroup parent ) {
             return createViewFromResource ( position, convertView, parent, mDropDownResource );
         }
-        
-        private void bindView ( int position, View view )
-        {
+
+        private void bindView ( int position, View view ) {
             final Map dataSet = mData.get ( position );
-            
-            if ( dataSet == null )
-            {
+            if ( dataSet == null ) {
                 return;
             }
-            
             final ViewBinder binder = mViewBinder;
             final String[] from = mFrom;
             final int[] to = mTo;
             final int count = to.length;
-            
-            for ( int i = 0; i < count; i++ )
-            {
+            for ( int i = 0; i < count; i++ ) {
                 final View v = view.findViewById ( to[i] );
-                
-                if ( v != null )
-                {
+                if ( v != null ) {
                     final Object data = dataSet.get ( from[i] );
                     String text = data == null ? "" : data.toString();
-                    
-                    if ( text == null )
-                    {
+                    if ( text == null ) {
                         text = "";
                     }
-                    
                     boolean bound = false;
-                    
-                    if ( binder != null )
-                    {
+                    if ( binder != null ) {
                         bound = binder.setViewValue ( v, data, text );
                     }
-                    
-                    if ( !bound )
-                    {
-                        if ( v instanceof Checkable )
-                        {
-                            if ( data instanceof Boolean )
-                            {
+                    if ( !bound ) {
+                        if ( v instanceof Checkable ) {
+                            if ( data instanceof Boolean ) {
                                 ( ( Checkable ) v ).setChecked ( ( Boolean ) data );
-                            }
-                            else if ( v instanceof TextView )
-                            {
+                            } else if ( v instanceof TextView ) {
                                 // Note: keep the instanceof TextView check at the bottom of these
                                 // ifs since a lot of views are TextViews (e.g. CheckBoxes).
                                 setViewText ( ( TextView ) v, text );
-                            }
-                            else
-                            {
+                            } else {
                                 throw new IllegalStateException ( v.getClass().getName() +
                                                                   " should be bound to a Boolean, not a " +
                                                                   ( data == null ? "<unknown type>" : data.getClass() ) );
                             }
-                        }
-                        else if ( v instanceof TextView )
-                        {
+                        } else if ( v instanceof TextView ) {
                             // Note: keep the instanceof TextView check at the bottom of these
                             // ifs since a lot of views are TextViews (e.g. CheckBoxes).
                             setViewText ( ( TextView ) v, text );
-                        }
-                        else if ( v instanceof MarqueeTextView )
-                        {
+                        } else if ( v instanceof MarqueeTextView ) {
                             // Note: keep the instanceof TextView check at the bottom of these
                             // ifs since a lot of views are TextViews (e.g. CheckBoxes).
                             setViewText ( ( TextView ) v, text );
-                        }
-                        else if ( v instanceof ImageView )
-                        {
-                            if ( data instanceof Integer )
-                            {
+                        } else if ( v instanceof ImageView ) {
+                            if ( data instanceof Integer ) {
                                 setViewImage ( ( ImageView ) v, ( Integer ) data );
-                            }
-                            else
-                            {
+                            } else {
                                 setViewImage ( ( ImageView ) v, text );
                             }
-                        }
-                        else if ( v instanceof UPNPImageView )
-                        {
-                            if ( data instanceof Integer )
-                            {
+                        } else if ( v instanceof UPNPImageView ) {
+                            if ( data instanceof Integer ) {
                                 ( ( UPNPImageView ) v ).setImageResource ( ( Integer ) data );
                                 //setViewImage((UPNPImageView) v, (Integer) data);
-                            }
-                            else
-                            {
-                                try
-                                {
+                            } else {
+                                try {
                                     ( ( UPNPImageView ) v ).setImageResource ( Integer.parseInt ( text ) );
-                                }
-                                catch ( NumberFormatException nfe )
-                                {
+                                } catch ( NumberFormatException nfe ) {
                                     ( ( UPNPImageView ) v ).setImageURI ( Uri.parse ( text ) );
                                 }
-                                
                                 //setViewImage((UPNPImageView) v, text);
                             }
-                        }
-                        else
-                        {
+                        } else {
                             throw new IllegalStateException ( v.getClass().getName() + " is not a " +
                                                               " view that can be bounds by this UPNPAdapter" );
                         }
@@ -281,7 +222,7 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
                 }
             }
         }
-        
+
         /**
          * Returns the {@link ViewBinder} used to bind data to views.
          *
@@ -289,11 +230,10 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
          *
          * @see #setViewBinder(android.widget.UPNPAdapter.ViewBinder)
          */
-        public ViewBinder getViewBinder()
-        {
+        public ViewBinder getViewBinder() {
             return mViewBinder;
         }
-        
+
         /**
          * Sets the binder used to bind data to views.
          *
@@ -302,11 +242,10 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
          *
          * @see #getViewBinder()
          */
-        public void setViewBinder ( ViewBinder viewBinder )
-        {
+        public void setViewBinder ( ViewBinder viewBinder ) {
             mViewBinder = viewBinder;
         }
-        
+
         /**
          * Called by bindView() to set the image for an ImageView but only if
          * there is no existing ViewBinder or if the existing ViewBinder cannot
@@ -320,11 +259,10 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
          *
          * @see #setViewImage(ImageView, String)
          */
-        public void setViewImage ( ImageView v, int value )
-        {
+        public void setViewImage ( ImageView v, int value ) {
             v.setImageResource ( value );
         }
-        
+
         /**
          * Called by bindView() to set the image for an ImageView but only if
          * there is no existing ViewBinder or if the existing ViewBinder cannot
@@ -342,18 +280,14 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
          *
          * @see #setViewImage(ImageView, int)
          */
-        public void setViewImage ( ImageView v, String value )
-        {
-            try
-            {
+        public void setViewImage ( ImageView v, String value ) {
+            try {
                 v.setImageResource ( Integer.parseInt ( value ) );
-            }
-            catch ( NumberFormatException nfe )
-            {
+            } catch ( NumberFormatException nfe ) {
                 v.setImageURI ( Uri.parse ( value ) );
             }
         }
-        
+
         /**
          * Called by bindView() to set the text for a TextView but only if
          * there is no existing ViewBinder or if the existing ViewBinder cannot
@@ -362,21 +296,17 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
          * @param v TextView to receive text
          * @param text the text to be set for the TextView
          */
-        public void setViewText ( TextView v, String text )
-        {
+        public void setViewText ( TextView v, String text ) {
             v.setText ( text );
         }
-        
-        public Filter getFilter()
-        {
-            if ( mFilter == null )
-            {
+
+        public Filter getFilter() {
+            if ( mFilter == null ) {
                 mFilter = new SimpleFilter();
             }
-            
             return mFilter;
         }
-        
+
         /**
          * This class can be used by external clients of UPNPAdapter to bind
          * values to views.
@@ -389,8 +319,7 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
          * @see UPNPAdapter#setViewImage(ImageView, String)
          * @see UPNPAdapter#setViewText(TextView, String)
          */
-        public static interface ViewBinder
-        {
+        public static interface ViewBinder {
             /**
              * Binds the specified data to the specified view.
              *
@@ -408,58 +337,40 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
              */
             boolean setViewValue ( View view, Object data, String textRepresentation );
         }
-        
+
         /**
          * <p>An array filters constrains the content of the array adapter with
          * a prefix. Each item that does not start with the supplied prefix
          * is removed from the list.</p>
          */
-        private class SimpleFilter extends Filter
-        {
-        
+        private class SimpleFilter extends Filter {
+
                 @Override
-                protected FilterResults performFiltering ( CharSequence prefix )
-                {
+                protected FilterResults performFiltering ( CharSequence prefix ) {
                     FilterResults results = new FilterResults();
-                    
-                    if ( mUnfilteredData == null )
-                    {
+                    if ( mUnfilteredData == null ) {
                         mUnfilteredData = new ArrayList < Map < String, ? >> ( mData );
                     }
-                    
-                    if ( prefix == null || prefix.length() == 0 )
-                    {
+                    if ( prefix == null || prefix.length() == 0 ) {
                         ArrayList < Map < String, ? >> list = mUnfilteredData;
                         results.values = list;
                         results.count = list.size();
-                    }
-                    else
-                    {
+                    } else {
                         String prefixString = prefix.toString().toLowerCase();
                         ArrayList < Map < String, ? >> unfilteredValues = mUnfilteredData;
                         int count = unfilteredValues.size();
                         ArrayList < Map < String, ? >> newValues = new ArrayList < Map < String, ? >> ( count );
-                        
-                        for ( int i = 0; i < count; i++ )
-                        {
+                        for ( int i = 0; i < count; i++ ) {
                             Map < String, ? > h = unfilteredValues.get ( i );
-                            
-                            if ( h != null )
-                            {
+                            if ( h != null ) {
                                 int len = mTo.length;
-                                
-                                for ( int j = 0; j < len; j++ )
-                                {
+                                for ( int j = 0; j < len; j++ ) {
                                     String str =  ( String ) h.get ( mFrom[j] );
                                     String[] words = str.split ( " " );
                                     int wordCount = words.length;
-                                    
-                                    for ( int k = 0; k < wordCount; k++ )
-                                    {
+                                    for ( int k = 0; k < wordCount; k++ ) {
                                         String word = words[k];
-                                        
-                                        if ( word.toLowerCase().startsWith ( prefixString ) )
-                                        {
+                                        if ( word.toLowerCase().startsWith ( prefixString ) ) {
                                             newValues.add ( h );
                                             break;
                                         }
@@ -467,26 +378,19 @@ public class UPNPAdapter extends BaseAdapter implements Filterable
                                 }
                             }
                         }
-                        
                         results.values = newValues;
                         results.count = newValues.size();
                     }
-                    
                     return results;
                 }
-                
+
                 @Override
-                protected void publishResults ( CharSequence constraint, FilterResults results )
-                {
+                protected void publishResults ( CharSequence constraint, FilterResults results ) {
                     //noinspection unchecked
                     mData = ( List < Map < String, ? >> ) results.values;
-                    
-                    if ( results.count > 0 )
-                    {
+                    if ( results.count > 0 ) {
                         notifyDataSetChanged();
-                    }
-                    else
-                    {
+                    } else {
                         notifyDataSetInvalidated();
                     }
                 }

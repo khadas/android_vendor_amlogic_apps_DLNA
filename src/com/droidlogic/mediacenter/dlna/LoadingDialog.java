@@ -39,29 +39,25 @@ import org.cybergarage.util.Debug;
  * @Author
  * @Version V1.0
  */
-public class LoadingDialog extends Dialog
-{
+public class LoadingDialog extends Dialog {
         public static final int   TYPE_LOADING    = 0;
         public static final int   TYPE_ERROR      = 1;
         public static final int   TYPE_INIT       = 2;
         public static final int   TYPE_EXIT_TIMER = 3;
         protected static final String TAG = "LoadingDialog";
-        
+
         private static final int COUNT_TIMER = 1;
         private TextView          mTvShow         = null;
         private int mCountTime = 4;
         private AnimationDrawable anim_loading    = null;
         private int type = TYPE_LOADING;
-        public LoadingDialog ( Context context, int type, String mtitle )
-        {
+        public LoadingDialog ( Context context, int type, String mtitle ) {
             super ( context, R.style.theme_dialog_loading );
             WindowManager.LayoutParams params = getWindow().getAttributes();
             params.flags |= LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCHABLE;
             getWindow().setAttributes ( params );
             this.setCanceledOnTouchOutside ( true );
-            
-            if ( type == TYPE_LOADING )
-            {
+            if ( type == TYPE_LOADING ) {
                 setContentView ( R.layout.loading );
                 TextView tx = ( TextView ) findViewById ( R.id.tx );
                 tx.setText ( mtitle );
@@ -69,75 +65,58 @@ public class LoadingDialog extends Dialog
                 anim_loading = ( AnimationDrawable ) img.getDrawable();
                 anim_loading.start();
                 // setCancelable(false);
-            }
-            else if ( type == TYPE_ERROR )
-            {
+            } else if ( type == TYPE_ERROR ) {
                 setContentView ( R.layout.dialog_error );
                 mTvShow = ( TextView ) findViewById ( R.id.tx );
                 mTvShow.setText ( mtitle );
-            }
-            else if ( type == TYPE_EXIT_TIMER )
-            {
+            } else if ( type == TYPE_EXIT_TIMER ) {
                 setContentView ( R.layout.dialog_error );
                 mTvShow = ( TextView ) findViewById ( R.id.tx );
                 mTvShow.setText ( "" + mCountTime );
                 mHandler.sendEmptyMessageDelayed ( COUNT_TIMER, 1000 );
             }
         }
-        private Handler mHandler = new Handler()
-        {
+        private Handler mHandler = new Handler() {
             @Override
-            public void handleMessage ( Message msg )
-            {
-                switch ( msg.what )
-                {
+            public void handleMessage ( Message msg ) {
+                switch ( msg.what ) {
                     case COUNT_TIMER:
                         showTimer();
                 }
             }
         };
-        
-        public String getTopActivity ( Context cxt )
-        {
+
+        public String getTopActivity ( Context cxt ) {
             ActivityManager mactivitymanager = ( ActivityManager ) cxt.getSystemService ( Activity.ACTIVITY_SERVICE );
             ComponentName cn = mactivitymanager.getRunningTasks ( 1 ).get ( 0 ).topActivity;
             return cn.getClassName();
         }
-        
-        public int getCountNum()
-        {
+
+        public int getCountNum() {
             Debug.d ( TAG, "Type:" + type + " mCountTime:" + mCountTime );
             return mCountTime;
         }
-        public void setCountNum ( int num )
-        {
+        public void setCountNum ( int num ) {
             mCountTime = num;
         }
-        private void showTimer()
-        {
-            if ( mCountTime == 0 )
-            {
+        private void showTimer() {
+            if ( mCountTime == 0 ) {
                 LoadingDialog.this.dismiss();
-            }
-            else
-            {
+            } else {
                 mCountTime--;
                 mTvShow.setText ( "" + mCountTime );
                 mHandler.sendEmptyMessageDelayed ( COUNT_TIMER, 1000 );
             }
         }
-        public void stopAnim()
-        {
-            if ( anim_loading != null )
-            {
+        public void stopAnim() {
+            if ( anim_loading != null ) {
                 anim_loading.stop();
             }
         }
-        
+
         @Override
-        protected void onStop()
-        {
+        protected void onStop() {
             super.onStop();
         }
-        
+
 }

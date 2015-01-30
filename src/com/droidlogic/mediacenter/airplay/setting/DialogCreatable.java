@@ -23,8 +23,7 @@ import android.app.Dialog;
  * you want to utilize some capability in {@link SettingsPreferenceFragment} but don't want
  * the class inherit the class itself (See {@link ProxySelector} for example).
  */
-public interface DialogCreatable
-{
+public interface DialogCreatable {
 
     public Dialog onCreateDialog ( int dialogId );
 }

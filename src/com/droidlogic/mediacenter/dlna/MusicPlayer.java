@@ -90,8 +90,7 @@ import org.cybergarage.util.Debug;
 import com.droidlogic.mediacenter.R;
 
 public class MusicPlayer extends Activity implements OnPreparedListener,
-    OnCompletionListener, OnInfoListener
-{
+        OnCompletionListener, OnInfoListener {
         private static final boolean DEBUG_PLAYER = true;
         private static final String TAG                    = "MusicPlayer";
         public static final String  TIME_START             = "00:00:00";
@@ -107,7 +106,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private static final int SHOW_LOADING = 5;
         private static final int HIDE_LOADING = 6;
         private static final int STOP_BY_SEVER = 7;
-        
+
         private LoadingDialog exitDlg;
         private Dialog              dialog_volume;
         private TextView            mFileName;
@@ -157,8 +156,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         //private ViewGroup mShowVisual;
         private List<Map<Integer, Boolean>> modeData;
         private PowerManager.WakeLock mWakeLock;
-        public void onCreate ( Bundle savedInstanceState )
-        {
+        public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             setContentView ( R.layout.music_activity );
             LayoutParams params = getWindow().getAttributes();
@@ -170,7 +168,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             //        params.height = WindowManager.LayoutParams.WRAP_CONTENT;
             params.width = WindowManager.LayoutParams.MATCH_PARENT;
             //params.gravity=Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            getWindow().setAttributes(params);
+            getWindow().setAttributes ( params );
             /*getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
                     WindowManager.LayoutParams.FLAG_BLUR_BEHIND);*/
             getWindow().setGravity ( Gravity.BOTTOM | Gravity.FILL_HORIZONTAL );
@@ -200,36 +198,25 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             cur_uri = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
             file_name = intent.getStringExtra ( AmlogicCP.EXTRA_FILE_NAME );
             String type = intent.getStringExtra ( DeviceFileBrowser.DEV_TYPE );
-            
-            if ( DeviceFileBrowser.TYPE_DMP.equals ( type ) )
-            {
+            if ( DeviceFileBrowser.TYPE_DMP.equals ( type ) ) {
                 mCurIndex = intent.getIntExtra ( DeviceFileBrowser.CURENT_POS, 0 );
                 isBrowserMode = true;
-            }
-            else
-            {
+            } else {
                 isBrowserMode = false;
             }
-            
             mFileName = ( TextView ) findViewById ( R.id.tx_music_name );
-            
-            if ( file_name == null )
-            {
+            if ( file_name == null ) {
                 file_name = cur_uri.substring ( cur_uri.lastIndexOf ( '/' ) + 1, cur_uri.length() );
                 //file_name = getResources().getString(R.string.str_unknown);
             }
-            
             /*mFileName.setText(file_name + "                                 "
                     + file_name + "                                 " + file_name
                     + "                 ");*/
             mFileName.setText ( file_name );
-            
-            if ( !MediaRendererDevice.TYPE_AUDIO.equals ( media_type ) || ( cur_uri == null ) )
-            {
+            if ( !MediaRendererDevice.TYPE_AUDIO.equals ( media_type ) || ( cur_uri == null ) ) {
                 finish();
                 return;
             }
-            
             //mVisualizerRelease = true;
             Debug.d ( TAG, "********onCreat: " + cur_uri );
             mProgressRefresher = new Handler();
@@ -239,45 +226,33 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);*/
             setVolumeControlStream ( AudioManager.STREAM_MUSIC );
             btn_prev.requestFocus();
-            
             // btn_prev.setFocusableInTouchMode(true);
             // btn_prev.requestFocusFromTouch();
-            if ( mProgress instanceof SeekBar )
-            {
+            if ( mProgress instanceof SeekBar ) {
                 SeekBar seeker = ( SeekBar ) mProgress;
                 // seeker.setOnSeekBarChangeListener(mSeekListener);
-                seeker.setOnSeekBarChangeListener ( new OnSeekBarChangeListener()
-                {
+                seeker.setOnSeekBarChangeListener ( new OnSeekBarChangeListener() {
                     private long mLastTime = 0;
-                    public void onStartTrackingTouch ( SeekBar bar )
-                    {
+                    public void onStartTrackingTouch ( SeekBar bar ) {
                         if ( DEBUG_PLAYER )
                         { Debug.d ( TAG, "mProgress:onStartTrackingTouch" ); }
-                        
                         mLastTime = 0;
                         mProgressTouch = true;
                     }
                     public void onProgressChanged ( SeekBar bar, int progress,
-                                                    boolean fromuser )
-                    {
+                    boolean fromuser ) {
                         if ( DEBUG_PLAYER )
                         { Debug.d ( TAG, "mProgress:onProgressChanged=" + progress ); }
-                        
                         if ( !fromuser )
                         { return; }
-                        
                         mLastTime = 0;
                         mProgressTouch = true;
                         long now = SystemClock.elapsedRealtime();
-                        
-                        if ( ( now - mLastTime ) > 250 )
-                        {
+                        if ( ( now - mLastTime ) > 250 ) {
                             mLastTime = now;
-                            
                             // trackball event, allow progress updates
                             if ( mProgressTouch && ( mPlayer != null )
-                                    && ( mTotalDuration > 0 ) )
-                            {
+                            && ( mTotalDuration > 0 ) ) {
                                 Debug.d ( TAG, "***progress=" + progress );
                                 mProgress.setProgress ( progress );
                                 mPlayer.seekTo ( progress );
@@ -290,113 +265,76 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                 //Debug.d(TAG, "######sendBroadcast(seekto)######" + progress + "/" + mTotalDuration);
                             }
                         }
-                        
                         mProgressTouch = false;
                     }
-                    public void onStopTrackingTouch ( SeekBar bar )
-                    {
+                    public void onStopTrackingTouch ( SeekBar bar ) {
                         Debug.d ( TAG, "mProgress:onStopTrackingTouch: " + volume_level );
                         mProgressTouch = false;
                     }
                 } );
             }
-            
             mProgress.setMax ( 1000 );
-            btn_play.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btn_play.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View v ) {
                     Debug.d ( TAG, "btn_play.OnClick" );
-                    
-                    if ( mPlayer == null )
-                    {
+                    if ( mPlayer == null ) {
                         start();
-                    }
-                    else if ( mPlayer.isPlaying() )
-                    {
+                    } else if ( mPlayer.isPlaying() ) {
                         pause();
                         Debug.d ( TAG, ">>>>>>>>>playPauseClicked , pause" );
-                    }
-                    else
-                    {
+                    } else {
                         play();
                         Debug.d ( TAG, ">>>>>>>>>playPauseClicked , playing" );
                     }
                 }
             } );
-            btn_backward.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btn_backward.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View v ) {
                     Debug.d ( TAG, "btn_backward.OnClick" );
-                    
                     if ( mPlayer == null )
                     { return; }
-                    
                     int curPos = mPlayer.getCurrentPosition();
                     curPos -= 5000;
-                    
-                    if ( curPos < 0 )
-                    {
+                    if ( curPos < 0 ) {
                         curPos = 0;
                     }
-                    
                     mPlayer.seekTo ( curPos );
                     mProgress.setProgress ( curPos );
                     mCurTime.setText ( timeFormatToString ( curPos ) );
                 }
             } );
-            btn_forward.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btn_forward.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View v ) {
                     Debug.d ( TAG, "btn_forward.OnClick" );
-                    
                     if ( mPlayer == null )
                     { return; }
-                    
                     int curPos = mPlayer.getCurrentPosition();
                     int duration = mPlayer.getDuration();
                     curPos += 5000;
-                    
-                    if ( curPos > duration )
-                    {
+                    if ( curPos > duration ) {
                         curPos = duration;
                     }
-                    
                     mPlayer.seekTo ( curPos );
                     mProgress.setProgress ( curPos );
                     mCurTime.setText ( timeFormatToString ( curPos ) );
                 }
             } );
-            btn_prev.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btn_prev.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View v ) {
                     Debug.d ( TAG, "btn_prev.OnClick" );
-                    
-                    if ( mode == MODE_RANDOM )
-                    {
+                    if ( mode == MODE_RANDOM ) {
                         random_play();
-                    }
-                    else
-                    {
+                    } else {
                         prev();
                     }
                 }
             } );
-            btn_next.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btn_next.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View v ) {
                     Debug.d ( TAG, "btn_next.OnClick" );
-                    
-                    if ( mode == MODE_RANDOM )
-                    {
+                    if ( mode == MODE_RANDOM ) {
                         random_play();
-                    }
-                    else
-                    {
+                    } else {
                         next();
                     }
                 }
@@ -406,42 +344,29 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
              * onClick(View v) { Debug.d(TAG, "btn_stop.OnClick"); stopPlayback(); }
              * });
              */
-            btn_back.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btn_back.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View v ) {
                     Debug.d ( TAG, "btn_back.OnClick" );
                     sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                     finish();
                 }
             } );
-            btn_volume.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btn_volume.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View v ) {
                     Debug.d ( TAG, "btn_volume.OnClick:" + volume_level );
                     showDialog ( DIALOG_VOLUME_ID );
                 }
             } );
-            
-            if ( mode == MODE_ALL_LOOP )
-            {
+            if ( mode == MODE_ALL_LOOP ) {
                 btn_mode.setImageResource ( R.drawable.order_play );
-            }
-            else if ( mode == MODE_SINGLE_LOOP )
-            {
+            } else if ( mode == MODE_SINGLE_LOOP ) {
                 btn_mode.setImageResource ( R.drawable.single_play );
-            }
-            else
-            {
+            } else {
                 btn_mode.setImageResource ( R.drawable.random_play );
             }
-            
             //mode_dialog = buildDialog(this);
-            btn_mode.setOnClickListener ( new OnClickListener()
-            {
-                public void onClick ( View v )
-                {
+            btn_mode.setOnClickListener ( new OnClickListener() {
+                public void onClick ( View v ) {
                     //mode_dialog.show();
                     album_list_box();
                     //showDialog(DIALOG_MODE_ID);
@@ -450,26 +375,21 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             initDisplayView();
             mUPNPReceiver = new UPNPReceiver();
         }
-        
-        void initDisplayView()
-        {
-            if ( !isBrowserMode )
-            {
+
+        void initDisplayView() {
+            if ( !isBrowserMode ) {
                 btn_prev.setVisibility ( View.GONE );
                 btn_next.setVisibility ( View.GONE );
                 btn_mode.setVisibility ( View.GONE );
             }
-            
             // mMediaThumb.setImageURI(cur_uri);
             mProgress.setProgress ( 0 );
             mCurTime.setText ( TIME_START );
             mTotalTime.setText ( TIME_START );
         }
-        
-        private void showLoading()
-        {
-            if ( progressDialog == null && isShowingForehand )
-            {
+
+        private void showLoading() {
+            if ( progressDialog == null && isShowingForehand ) {
                 playDisable();
                 progressDialog = new LoadingDialog ( this,
                                                      LoadingDialog.TYPE_LOADING, this.getResources().getString (
@@ -477,100 +397,73 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 progressDialog.show();
             }
         }
-        
-        private void hideLoading()
-        {
-            if ( progressDialog != null )
-            {
+
+        private void hideLoading() {
+            if ( progressDialog != null ) {
                 playEnable();
                 progressDialog.stopAnim();
                 progressDialog.dismiss();
                 progressDialog = null;
             }
         }
-        
+
         @Override
-        protected void onPause()
-        {
+        protected void onPause() {
             super.onPause();
             hideLoading();
-            
-            if ( exitDlg != null )
-            {
+            if ( exitDlg != null ) {
                 exitDlg.dismiss();
                 exitDlg = null;
             }
-            
             isShowingForehand = false;
-            
             /*if(mVisualizerView!=null&& mPlayer!=null){
                 mVisualizerView.release();
              }*/
-            if ( mPlayer != null )
-            {
+            if ( mPlayer != null ) {
                 mPlayer.pause();
             }
-            
             mAudioManager.setStreamMute ( AudioManager.STREAM_MUSIC, false );
             unregisterReceiver ( mUPNPReceiver );
             mWakeLock.release();
             // sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_PAUSED);
         }
-        
+
         @Override
-        public void onStop()
-        {
+        public void onStop() {
             super.onStop();
-            
-            if ( mPlayer != null )
-            {
+            if ( mPlayer != null ) {
                 mPlayer.pause();
                 stopPlayback();
             }
-            
             hideLoading();
             Debug.d ( TAG, "##########onStop####################" );
         }
-        
-        public boolean onKeyDown ( int keyCode, KeyEvent event )
-        {
+
+        public boolean onKeyDown ( int keyCode, KeyEvent event ) {
             Debug.d ( TAG, "******keycode=" + keyCode );
-            
-            if ( keyCode == 89 ) // rewind
-            {
+            if ( keyCode == 89 ) { // rewind
                 int progress = mProgress.getProgress() - 10000;
-                
-                if ( getCurrentFocus() == mProgress && ( progress > 0 ) )
-                {
+                if ( getCurrentFocus() == mProgress && ( progress > 0 ) ) {
                     mProgress.setProgress ( progress );
                     mPlayer.seekTo ( progress );
                 }
-                
                 return true;
             }
-            
-            if ( keyCode == KeyEvent.KEYCODE_BACK )
-            {
+            if ( keyCode == KeyEvent.KEYCODE_BACK ) {
                 //stopPlayback();
                 hideLoading();
                 MusicPlayer.this.finish();
                 return true;
             }
-            
-            if ( keyCode == 90 ) // fast_forward
-            {
+            if ( keyCode == 90 ) { // fast_forward
                 int progress = mProgress.getProgress() + 10000;
-                
                 if ( getCurrentFocus() == mProgress
-                        && ( progress < mProgress.getMax() ) )
-                {
+                        && ( progress < mProgress.getMax() ) ) {
                     mProgress.setProgress ( progress );
                     mPlayer.seekTo ( progress );
                 }
-                
                 return true;
             }
-            
             /*if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
                 if (getCurrentFocus() == btn_next || getCurrentFocus() == btn_prev
                         || getCurrentFocus() == btn_play
@@ -583,102 +476,80 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             }*/
             return super.onKeyDown ( keyCode, event );
         }
-        
+
         @Override
-        public Object onRetainNonConfigurationInstance()
-        {
+        public Object onRetainNonConfigurationInstance() {
             PreviewPlayer player = mPlayer;
             mPlayer = null;
             return player;
         }
-        
-        
+
+
         /*@Override
         public void onUserLeaveHint() {
             stopPlayback();
             finish();
             super.onUserLeaveHint();
         }*/
-        
-        public void onPrepared ( MediaPlayer mp )
-        {
+
+        public void onPrepared ( MediaPlayer mp ) {
             Debug.d ( TAG, "##########onPrepared####################" );
-            
             if ( isFinishing() )
             { return; }
-            
             mPlayer = ( PreviewPlayer ) mp;
             mp = null;
             hideLoading();
             play();
             mTotalDuration = mPlayer.getDuration();
-            
-            if ( mTotalDuration > 0 )
-            {
+            if ( mTotalDuration > 0 ) {
                 mProgress.setMax ( mTotalDuration );
                 mProgress.setVisibility ( View.VISIBLE );
                 mTotalTime.setText ( timeFormatToString ( mTotalDuration ) );
             }
-            
             mPlayer.setOnInfoListener ( this );
         }
-        
-        private OnAudioFocusChangeListener mAudioFocusListener = new OnAudioFocusChangeListener()
-        {
+
+        private OnAudioFocusChangeListener mAudioFocusListener = new OnAudioFocusChangeListener() {
             public void onAudioFocusChange (
-                int focusChange )
-            {
+            int focusChange ) {
                 Debug.d ( TAG,
                           "##########onAudioFocusChange####################" );
-                          
-                if ( mPlayer == null )
-                {
+                if ( mPlayer == null ) {
                     mAudioManager
                     .abandonAudioFocus ( this );
                     return;
                 }
-                
-                switch ( focusChange )
-                {
+                switch ( focusChange ) {
                     case AudioManager.AUDIOFOCUS_LOSS:
                         mPausedByTransientLossOfFocus = false;
                         pause();
                         break;
-                        
                     case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                     case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                        if ( mPlayer.isPlaying() )
-                        {
+                        if ( mPlayer.isPlaying() ) {
                             mPausedByTransientLossOfFocus = true;
                             pause();
                         }
-                        
                         break;
-                        
                     case AudioManager.AUDIOFOCUS_GAIN:
-                        if ( mPausedByTransientLossOfFocus )
-                        {
+                        if ( mPausedByTransientLossOfFocus ) {
                             mPausedByTransientLossOfFocus = false;
                             play();
                         }
-                        
                         break;
                 }
-                
                 updatePlayPause();
             }
         };
-        
-        public boolean onError ( MediaPlayer mp, int what, int extra )
-        {
+
+        public boolean onError ( MediaPlayer mp, int what, int extra ) {
             Debug.d ( TAG, "##########onError####################" );
             Toast.makeText ( getApplicationContext(), R.string.error_info, Toast.LENGTH_SHORT ).show();
             next();
             return true;
         }
-        
-        public void onCompletion ( MediaPlayer mp )
-        {
+
+        public void onCompletion ( MediaPlayer mp ) {
             Debug.d ( TAG, "##########onCompletion####################" );
             mProgress.setProgress ( mTotalDuration );
             //mVisualizerView.release();
@@ -686,73 +557,49 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             mProgressRefresher.removeCallbacksAndMessages ( null );
             play_state = STATE_STOP;
             updatePlayPause();
-            
-            if ( isBrowserMode )
-            {
+            if ( isBrowserMode ) {
                 stopExit();
                 handlerUI.removeMessages ( SHOW_STOP );
-                
-                if ( mode == MODE_ALL_LOOP )
-                {
+                if ( mode == MODE_ALL_LOOP ) {
                     next();
-                }
-                else if ( mode == MODE_SINGLE_LOOP )
-                {
+                } else if ( mode == MODE_SINGLE_LOOP ) {
                     change_music();
-                }
-                else
-                {
+                } else {
                     random_play();
                 }
-            }
-            else
-            {
+            } else {
                 handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, 6000 );
             }
         }
-        private void stopExit()
-        {
+        private void stopExit() {
             handlerUI.removeMessages ( SHOW_STOP );
-            
-            if ( exitDlg != null )
-            {
+            if ( exitDlg != null ) {
                 exitDlg.dismiss();
                 exitDlg = null;
             }
         }
-        public void exitNow()
-        {
+        public void exitNow() {
             Debug.d ( TAG, "ExitNow..." + isShowingForehand );
-            
-            if ( !isShowingForehand )
-            {
+            if ( !isShowingForehand ) {
                 MusicPlayer.this.finish();
                 return;
             }
-            
             hideLoading();
-            
-            if ( exitDlg == null )
-            {
+            if ( exitDlg == null ) {
                 exitDlg = new LoadingDialog ( this, LoadingDialog.TYPE_ERROR, MusicPlayer.this.getResources().getString ( R.string.error_exit ) );
                 exitDlg.setCancelable ( true );
-                exitDlg.setOnDismissListener ( new OnDismissListener()
-                {
+                exitDlg.setOnDismissListener ( new OnDismissListener() {
                     @Override
-                    public void onDismiss ( DialogInterface arg0 )
-                    {
+                    public void onDismiss ( DialogInterface arg0 ) {
                         if ( exitDlg != null && ( MusicPlayer.this.getClass().getName().equals ( exitDlg.getTopActivity ( MusicPlayer.this ) ) ||
-                                                  exitDlg.getCountNum() == 0 ) )
-                        {
+                        exitDlg.getCountNum() == 0 ) ) {
                             //mAudioManager.abandonAudioFocus(mAudioFocusListener);
                             MusicPlayer.this.finish();
                         }
                     }
                 } );
                 exitDlg.show();
-            }
-            else
-            {
+            } else {
                 exitDlg.setCountNum ( 2 );
                 MusicPlayer.this.finish();
             }
@@ -760,96 +607,64 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         /**
          * @Description TODO
          */
-        public void wait2Exit()
-        {
+        public void wait2Exit() {
             Debug.d ( TAG, "wait2Exit......" );
-            
-            if ( !isShowingForehand )
-            {
+            if ( !isShowingForehand ) {
                 MusicPlayer.this.finish();
                 return;
             }
-            
             hideLoading();
-            
-            if ( exitDlg == null )
-            {
+            if ( exitDlg == null ) {
                 exitDlg = new LoadingDialog ( this, LoadingDialog.TYPE_EXIT_TIMER, "" );
                 exitDlg.setCancelable ( true );
-                exitDlg.setOnDismissListener ( new OnDismissListener()
-                {
+                exitDlg.setOnDismissListener ( new OnDismissListener() {
                     @Override
-                    public void onDismiss ( DialogInterface arg0 )
-                    {
+                    public void onDismiss ( DialogInterface arg0 ) {
                         if ( exitDlg != null && ( MusicPlayer.this.getClass().getName().equals ( exitDlg.getTopActivity ( MusicPlayer.this ) ) ||
-                                                  exitDlg.getCountNum() == 0 ) )
-                        {
+                        exitDlg.getCountNum() == 0 ) ) {
                             //mAudioManager.abandonAudioFocus(mAudioFocusListener);
                             MusicPlayer.this.finish();
                         }
                     }
                 } );
                 exitDlg.show();
-            }
-            else
-            {
+            } else {
                 exitDlg.setCountNum ( 4 );
                 exitDlg.show();
             }
         }
-        private String timeFormatToString ( int relTime )
-        {
+        private String timeFormatToString ( int relTime ) {
             int time;
             StringBuffer timeBuf = new StringBuffer();
             relTime = ( int ) relTime / 1000;
             time = relTime / 3600;
-            
-            if ( time >= 10 )
-            {
+            if ( time >= 10 ) {
                 timeBuf.append ( time );
-            }
-            else
-            {
+            } else {
                 timeBuf.append ( "0" ).append ( time );
             }
-            
             relTime = relTime % 3600;
             time = relTime / 60;
-            
-            if ( time >= 10 )
-            {
+            if ( time >= 10 ) {
                 timeBuf.append ( ":" ).append ( time );
-            }
-            else
-            {
+            } else {
                 timeBuf.append ( ":0" ).append ( time );
             }
-            
             time = relTime % 60;
-            
-            if ( time >= 10 )
-            {
+            if ( time >= 10 ) {
                 timeBuf.append ( ":" ).append ( time );
-            }
-            else
-            {
+            } else {
                 timeBuf.append ( ":0" ).append ( time );
             }
-            
             return timeBuf.toString();
         }
-        
-        class ProgressRefresher implements Runnable
-        {
-                public void run()
-                {
-                    if ( mPlayer == null )
-                    {
+
+        class ProgressRefresher implements Runnable {
+                public void run() {
+                    if ( mPlayer == null ) {
                         mProgressRefresher.removeCallbacksAndMessages ( null );
                         return;
-                    }
-                    else if ( mTotalDuration > 0 )
-                    {
+                    } else if ( mTotalDuration > 0 ) {
                         int curPos = mPlayer.getCurrentPosition();
                         mProgress.setProgress ( curPos );
                         mCurTime.setText ( timeFormatToString ( curPos ) );
@@ -857,70 +672,52 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         intent.putExtra ( "curPosition", curPos );
                         intent.putExtra ( "totalDuration", mTotalDuration );
                         sendBroadcast ( intent );
-                        
                         if ( DEBUG_PLAYER )
                         { Debug.d ( TAG, "######sendBroadcast(progress)######" + curPos + "/" + mTotalDuration ); }
-                    }
-                    else
-                    {
+                    } else {
                         mTotalDuration = mPlayer.getDuration();
-                        
-                        if ( mTotalDuration > 0 )
-                        {
+                        if ( mTotalDuration > 0 ) {
                             mProgress.setMax ( mTotalDuration );
                             mProgress.setVisibility ( View.VISIBLE );
                             mTotalTime.setText ( timeFormatToString ( mTotalDuration ) );
                         }
-                        
                         if ( DEBUG_PLAYER )
                             Debug.d ( TAG, "****ProgressRefresher: mTotalDuration="
                                       + mTotalDuration + ",   player=" + mPlayer );
                     }
-                    
                     Debug.d ( TAG, "--mPlayer.getDuration()" + mPlayer.getDuration() + "/" + mPlayer.getCurrentPosition() );
-                    
                     /*if (timeFormatToString(mPlayer.getDuration()).equals(timeFormatToString(mPlayer.getCurrentPosition()))){
                         mVisualizerView.release();
                         Debug.d(TAG, "mPlayer.getDuration()"+mPlayer.getDuration() + "/"+ mPlayer.getCurrentPosition());
                     }*/
-                    if ( mVolChanged )
-                    {
+                    if ( mVolChanged ) {
                         Intent intent = new Intent();
                         intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
                         intent.putExtra ( "VOLUME", volume_level );
                         sendBroadcast ( intent );
                         mVolChanged = false;
                     }
-                    
                     mProgressRefresher.removeCallbacksAndMessages ( null );
                     mProgressRefresher.postDelayed ( new ProgressRefresher(), 500 );
                 }
         }
-        
-        
-        private void start()
-        {
+
+
+        private void start() {
             handlerUI.sendEmptyMessage ( SHOW_LOADING );
             handlerUI.removeMessages ( STOP_BY_SEVER );
             handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
             // mPath.setText(file_name==null?cur_uri:file_name);
             PreviewPlayer player = ( PreviewPlayer ) getLastNonConfigurationInstance();
-            
-            if ( player == null )
-            {
+            if ( player == null ) {
                 if ( DEBUG_PLAYER )
                 { Debug.d ( TAG, "*********************not get player" ); }
-                
                 mPlayer = null;
                 mPlayer = new PreviewPlayer();
                 mPlayer.setActivity ( this );
-                
-                try
-                {
+                try {
                     mPlayer.setDataSourceAndPrepare ( Uri.parse ( cur_uri ) );
-                }
-                catch ( Exception ex )
-                {
+                } catch ( Exception ex ) {
                     // catch generic Exception, since we may be called with a media
                     // content URI, another content provider's URI, a file URI,
                     // an http URI, and there are different exceptions associated
@@ -930,31 +727,20 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     exitNow();
                     return;
                 }
-            }
-            else
-            {
+            } else {
                 Debug.d ( TAG, "*********************get player" );
                 mPlayer = player;
-                
-                try
-                {
+                try {
                     //player.release();
                     player = null;
-                }
-                catch ( Exception ex )
-                {
-                } finally
-                
-                {
+                } catch ( Exception ex ) {
+                } finally {
                     mPlayer.setActivity ( this );
-                    
-                    if ( mPlayer.isPrepared() )
-                    {
+
+                    if ( mPlayer.isPrepared() ) {
                         play();
                         mTotalDuration = mPlayer.getDuration();
-                        
-                        if ( mTotalDuration > 0 )
-                        {
+                        if ( mTotalDuration > 0 ) {
                             mProgress.setMax ( mTotalDuration );
                             mProgress.setVisibility ( View.VISIBLE );
                             mTotalTime.setText ( timeFormatToString ( mTotalDuration ) );
@@ -963,9 +749,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 }
             }
         }
-        
-        private void play()
-        {
+
+        private void play() {
             mAudioManager.requestAudioFocus ( mAudioFocusListener,
                                               AudioManager.STREAM_MUSIC,
                                               AudioManager.AUDIOFOCUS_GAIN_TRANSIENT );
@@ -976,9 +761,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             readyForFinish = false;
             updatePlayPause();
         }
-        
-        private void pause()
-        {
+
+        private void pause() {
             mPlayer.pause();
             play_state = STATE_PAUSE;
             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PAUSED );
@@ -986,50 +770,36 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             readyForFinish = false;
             updatePlayPause();
         }
-        
-        private void next()
-        {
-            if ( isBrowserMode )
-            {
-                if ( mCurIndex < ( DeviceFileBrowser.playList.size() - 1 ) )
-                {
+
+        private void next() {
+            if ( isBrowserMode ) {
+                if ( mCurIndex < ( DeviceFileBrowser.playList.size() - 1 ) ) {
                     mCurIndex++;
-                }
-                else
-                {
+                } else {
                     mCurIndex = 0;
                 }
-                
                 change_music();
             }
         }
-        
-        private void prev()
-        {
-            if ( isBrowserMode )
-            {
-                if ( mCurIndex > 0 )
-                {
+
+        private void prev() {
+            if ( isBrowserMode ) {
+                if ( mCurIndex > 0 ) {
                     mCurIndex--;
-                }
-                else
-                {
+                } else {
                     mCurIndex = DeviceFileBrowser.playList.size() - 1;;
                 }
-                
                 change_music();
             }
         }
-        
-        private void random_play()
-        {
+
+        private void random_play() {
             Random random = new Random();
             mCurIndex = Math.abs ( random.nextInt() ) % ( DeviceFileBrowser.playList.size() - 1 );
             change_music();
         }
-        
-        private void change_music()
-        {
+
+        private void change_music() {
             Map<String, Object> item = ( Map<String, Object> ) DeviceFileBrowser.playList.get ( mCurIndex );
             cur_uri = ( String ) item.get ( "item_uri" );
             file_name = ( String ) item.get ( "item_name" );
@@ -1039,64 +809,47 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             handlerUI.sendEmptyMessage ( SHOW_LOADING );
             //showLoading();
         }
-        
-        private void stopPlayback()
-        {
-            if ( mProgressRefresher != null )
-            {
+
+        private void stopPlayback() {
+            if ( mProgressRefresher != null ) {
                 mProgressRefresher.removeCallbacksAndMessages ( null );
             }
-            
             readyForFinish = true;
             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
             updatePlayPause();
             mProgressRefresher.removeCallbacksAndMessages ( null );
             mCurTime.setText ( TIME_START );
             mProgress.setProgress ( 0 );
-            
-            if ( mPlayer != null )
-            {
+            if ( mPlayer != null ) {
                 //mPlayer.pause();
-                try
-                {
+                try {
                     //mPlayer.setDataSource(this,null);
                     play_state = STATE_STOP;
                     mPlayer.release();
-                }
-                catch ( Exception ex ) {}
-                
-                finally
-                {
+                } catch ( Exception ex ) {}
+                finally {
                     mPlayer = null;
                 }
                 mAudioManager.abandonAudioFocus ( mAudioFocusListener );
             }
         }
-        
-        private void updatePlayPause()
-        {
-            if ( btn_play != null )
-            {
-                if ( ( mPlayer != null ) && mPlayer.isPlaying() )
-                {
+
+        private void updatePlayPause() {
+            if ( btn_play != null ) {
+                if ( ( mPlayer != null ) && mPlayer.isPlaying() ) {
                     btn_play.setImageResource ( R.drawable.suspend_play );
-                }
-                else
-                {
+                } else {
                     btn_play.setImageResource ( R.drawable.play_play );
                 }
             }
         }
-        
+
         /** Dialog */
         @Override
-        protected Dialog onCreateDialog ( int id )
-        {
+        protected Dialog onCreateDialog ( int id ) {
             LayoutInflater inflater = ( LayoutInflater ) MusicPlayer.this
                                       .getSystemService ( LAYOUT_INFLATER_SERVICE );
-                                      
-            switch ( id )
-            {
+            switch ( id ) {
                 case DIALOG_VOLUME_ID:
                     View layout_volume = inflater.inflate ( R.layout.volume_dialog,
                                                             ( ViewGroup ) findViewById ( R.id.layout_root_volume ) );
@@ -1106,147 +859,119 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         mode_dialog = new ModeDialog(this);
                         return mode_dialog; */
             }
-            
             return null;
         }
-        
+
         @Override
-        protected void onPrepareDialog ( int id, Dialog dialog )
-        {
+        protected void onPrepareDialog ( int id, Dialog dialog ) {
             WindowManager wm = getWindowManager();
             Display display = wm.getDefaultDisplay();
             LayoutParams lp = dialog.getWindow().getAttributes();
-            
-            switch ( id )
-            {
-                case DIALOG_VOLUME_ID:
-                    {
-                        if ( display.getHeight() > display.getWidth() )
-                        {
-                            lp.width = ( int ) ( display.getWidth() * 1.0 );
-                        }
-                        else
-                        {
-                            lp.width = ( int ) ( display.getWidth() * 0.5 );
-                        }
-                        
-                        dialog.getWindow().setAttributes ( lp );
-                        vol_bar = ( ProgressBar ) dialog_volume.getWindow().findViewById (
-                                      android.R.id.progress );
-                        int mmax = mAudioManager
-                                   .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
-                        int current = mAudioManager
-                                      .getStreamVolume ( AudioManager.STREAM_MUSIC );
-                        volume_level = current * 100 / mmax;
-                        
-                        if ( vol_bar instanceof SeekBar )
-                        {
-                            SeekBar seeker = ( SeekBar ) vol_bar;
-                            seeker.setOnSeekBarChangeListener ( new OnSeekBarChangeListener()
-                            {
-                                private long mLastTime = 0;
-                                public void onStartTrackingTouch ( SeekBar bar )
-                                {
-                                    Debug.d ( TAG, "vol_bar:onStartTrackingTouch" );
-                                    mLastTime = 0;
-                                    mVolTouch = true;
-                                }
-                                public void onProgressChanged ( SeekBar bar,
-                                                                int progress, boolean fromuser )
-                                {
-                                    Debug.d ( TAG, "vol_bar:onProgressChanged=" + progress );
-                                    
-                                    if ( !fromuser )
-                                    { return; }
-                                    
-                                    long now = SystemClock.elapsedRealtime();
-                                    volume_level = progress;
-                                    
-                                    if ( ( now - mLastTime ) > 250 )
-                                    {
-                                        mLastTime = now;
-                                        
-                                        // trackball event, allow progress updates
-                                        if ( mVolTouch )
-                                        {
-                                            Debug.d ( TAG, "***progress=" + progress );
-                                            vol_bar.setProgress ( volume_level );
-                                            int max = mAudioManager
-                                                      .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
-                                            mAudioManager.setStreamVolume (
-                                                AudioManager.STREAM_MUSIC,
-                                                volume_level * max / 100, 0 );
-                                            Intent intent = new Intent();
-                                            intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
-                                            intent.putExtra ( "VOLUME", volume_level );
-                                            sendBroadcast ( intent );
-                                        }
+            switch ( id ) {
+                case DIALOG_VOLUME_ID: {
+                    if ( display.getHeight() > display.getWidth() ) {
+                        lp.width = ( int ) ( display.getWidth() * 1.0 );
+                    } else {
+                        lp.width = ( int ) ( display.getWidth() * 0.5 );
+                    }
+                    dialog.getWindow().setAttributes ( lp );
+                    vol_bar = ( ProgressBar ) dialog_volume.getWindow().findViewById (
+                                  android.R.id.progress );
+                    int mmax = mAudioManager
+                               .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
+                    int current = mAudioManager
+                                  .getStreamVolume ( AudioManager.STREAM_MUSIC );
+                    volume_level = current * 100 / mmax;
+                    if ( vol_bar instanceof SeekBar ) {
+                        SeekBar seeker = ( SeekBar ) vol_bar;
+                        seeker.setOnSeekBarChangeListener ( new OnSeekBarChangeListener() {
+                            private long mLastTime = 0;
+                            public void onStartTrackingTouch ( SeekBar bar ) {
+                                Debug.d ( TAG, "vol_bar:onStartTrackingTouch" );
+                                mLastTime = 0;
+                                mVolTouch = true;
+                            }
+                            public void onProgressChanged ( SeekBar bar,
+                            int progress, boolean fromuser ) {
+                                Debug.d ( TAG, "vol_bar:onProgressChanged=" + progress );
+                                if ( !fromuser )
+                                { return; }
+                                long now = SystemClock.elapsedRealtime();
+                                volume_level = progress;
+                                if ( ( now - mLastTime ) > 250 ) {
+                                    mLastTime = now;
+                                    // trackball event, allow progress updates
+                                    if ( mVolTouch ) {
+                                        Debug.d ( TAG, "***progress=" + progress );
+                                        vol_bar.setProgress ( volume_level );
+                                        int max = mAudioManager
+                                                  .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
+                                        mAudioManager.setStreamVolume (
+                                            AudioManager.STREAM_MUSIC,
+                                            volume_level * max / 100, 0 );
+                                        Intent intent = new Intent();
+                                        intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
+                                        intent.putExtra ( "VOLUME", volume_level );
+                                        sendBroadcast ( intent );
                                     }
                                 }
-                                public void onStopTrackingTouch ( SeekBar bar )
-                                {
-                                    Debug.d ( TAG, "vol_bar:onStopTrackingTouch: "
-                                              + volume_level );
-                                    mVolTouch = false;
-                                    vol_bar.setProgress ( volume_level );
-                                    int max = mAudioManager
-                                              .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
-                                    mAudioManager.setStreamVolume (
-                                        AudioManager.STREAM_MUSIC,
-                                        volume_level * max / 100, 0 );
-                                    Intent intent = new Intent();
-                                    intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
-                                    intent.putExtra ( "VOLUME", volume_level );
-                                    sendBroadcast ( intent );
-                                }
-                            } );
-                        }
-                        
-                        vol_bar.setMax ( 100 );
-                        vol_bar.setProgress ( volume_level );
-                        break;
+                            }
+                            public void onStopTrackingTouch ( SeekBar bar ) {
+                                Debug.d ( TAG, "vol_bar:onStopTrackingTouch: "
+                                          + volume_level );
+                                mVolTouch = false;
+                                vol_bar.setProgress ( volume_level );
+                                int max = mAudioManager
+                                          .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
+                                mAudioManager.setStreamVolume (
+                                    AudioManager.STREAM_MUSIC,
+                                    volume_level * max / 100, 0 );
+                                Intent intent = new Intent();
+                                intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
+                                intent.putExtra ( "VOLUME", volume_level );
+                                sendBroadcast ( intent );
+                            }
+                        } );
                     }
+                    vol_bar.setMax ( 100 );
+                    vol_bar.setProgress ( volume_level );
+                    break;
+                }
             }
         }
-        
+
         /*
          * Wrapper class to help with handing off the MediaPlayer to the next
          * instance of the activity in case of orientation change, without losing
          * any state.
          */
         private static class PreviewPlayer extends MediaPlayer implements
-            OnPreparedListener , OnErrorListener
-        {
+                OnPreparedListener , OnErrorListener {
                 MusicPlayer mActivity;
                 boolean     mIsPrepared = false;
-                
-                public void setActivity ( MusicPlayer activity )
-                {
+
+                public void setActivity ( MusicPlayer activity ) {
                     mActivity = activity;
                     setOnPreparedListener ( this );
                     setOnErrorListener ( this );
                     setOnCompletionListener ( mActivity );
                 }
-                
+
                 public void setDataSourceAndPrepare ( Uri uri )
                 throws IllegalArgumentException, SecurityException,
-                       IllegalStateException, IOException
-                {
+                IllegalStateException, IOException {
                     setDataSource ( mActivity, uri );
                     prepareAsync();
                 }
-                
+
                 @Override
-                public boolean onError ( MediaPlayer mp, int what, int extra )
-                {
-                    if ( mIsPrepared )
-                    {
+                public boolean onError ( MediaPlayer mp, int what, int extra ) {
+                    if ( mIsPrepared ) {
                         mActivity.onError ( mp,  what,  extra );
                     }
-                    
                     return true;
                 }
-                
+
                 /*
                  * (non-Javadoc)
                  *
@@ -1255,75 +980,54 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                  * .MediaPlayer)
                  */
                 @Override
-                public void onPrepared ( MediaPlayer mp )
-                {
+                public void onPrepared ( MediaPlayer mp ) {
                     mIsPrepared = true;
                     mActivity.onPrepared ( mp );
                 }
-                
-                boolean isPrepared()
-                {
+
+                boolean isPrepared() {
                     return mIsPrepared;
                 }
         }
-        
-        public static int parseTimeStringToMSecs ( String time )
-        {
+
+        public static int parseTimeStringToMSecs ( String time ) {
             String[] str = time.split ( ":|\\." );
-            
             if ( str.length < 3 )
             { return 0; }
-            
             int hour = Integer.parseInt ( str[0] );
             int min = Integer.parseInt ( str[1] );
             int sec = Integer.parseInt ( str[2] );
             // Debug.d(TAG, "***********parseTimeStringToInt: "+hour+":"+min+":"+sec);
             return ( hour * 3600 + min * 60 + sec ) * 1000;
         }
-        
-        class UPNPReceiver extends BroadcastReceiver
-        {
-                public void onReceive ( Context context, Intent intent )
-                {
+
+        class UPNPReceiver extends BroadcastReceiver {
+                public void onReceive ( Context context, Intent intent ) {
                     String action = intent.getAction();
-                    
                     if ( action == null )
                     { return; }
-                    
                     Debug.d ( TAG, "#####MusicPlayer.UPNPReceiver: " + action );
                     String mediaType = intent
                                        .getStringExtra ( AmlogicCP.EXTRA_MEDIA_TYPE );
-                                       
                     if ( !MediaRendererDevice.TYPE_AUDIO.equals ( mediaType ) )
                     { return; }
-                    
                     Debug.d ( TAG, "#####MusicPlayer.UPNPReceiver: " + action
                               + ",  mediaType=" + mediaType );
                     readyForFinish = false;
-                    
-                    if ( action.equals ( AmlogicCP.UPNP_PLAY_ACTION ) )
-                    {
+                    if ( action.equals ( AmlogicCP.UPNP_PLAY_ACTION ) ) {
                         stopExit();
                         String uri = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
-                        
-                        if ( !cur_uri.equals ( uri ) )
-                        {
-                            if ( play_state != STATE_STOP )
-                            {
+                        if ( !cur_uri.equals ( uri ) ) {
+                            if ( play_state != STATE_STOP ) {
                                 stopPlayback();
                             }
-                            
                             cur_uri = uri;
                             file_name = intent
                                         .getStringExtra ( AmlogicCP.EXTRA_FILE_NAME );
-                                        
-                            if ( file_name == null )
-                            {
+                            if ( file_name == null ) {
                                 file_name = cur_uri.substring ( cur_uri.lastIndexOf ( '/' ) + 1, cur_uri.length() );
                             }
-                            
-                            if ( mFileName != null )
-                            {
+                            if ( mFileName != null ) {
                                 /*mFileName.setText(file_name
                                         + "                                 "
                                         + file_name
@@ -1331,87 +1035,58 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                         + file_name + "                 ");*/
                                 mFileName.setText ( file_name );
                             }
-                            
-                            if ( DeviceFileBrowser.TYPE_DMP.equals ( intent.getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) )
-                            {
+                            if ( DeviceFileBrowser.TYPE_DMP.equals ( intent.getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) ) {
                                 isBrowserMode = true;
                                 mCurIndex = intent.getIntExtra ( DeviceFileBrowser.CURENT_POS, 0 );
-                            }
-                            else
-                            {
+                            } else {
                                 isBrowserMode = false;
                             }
-                            
-                            if ( !isBrowserMode )
-                            {
+                            if ( !isBrowserMode ) {
                                 btn_prev.setVisibility ( View.GONE );
                                 btn_next.setVisibility ( View.GONE );
                                 btn_mode.setVisibility ( View.GONE );
-                            }
-                            else
-                            {
+                            } else {
                                 btn_prev.setVisibility ( View.VISIBLE );
                                 btn_next.setVisibility ( View.VISIBLE );
                                 btn_mode.setVisibility ( View.VISIBLE );
                             }
-                            
                             start();
-                        }
-                        else if ( ( play_state == STATE_PAUSE ) )
-                        {
+                        } else if ( ( play_state == STATE_PAUSE ) ) {
                             start();
-                        }
-                        else if ( !mPlayer.isPlaying() )
-                        {
+                        } else if ( !mPlayer.isPlaying() ) {
                             play();
                         }
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_PAUSE_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_PAUSE_ACTION ) ) {
                         pause();
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) ) {
                         stopPlayback();
                         stopExit();
                         handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, 6000 );
-                    }
-                    else if ( action.equals ( MediaRendererDevice.PLAY_STATE_SEEK ) )
-                    {
-                        if ( mPlayer != null )
-                        {
+                    } else if ( action.equals ( MediaRendererDevice.PLAY_STATE_SEEK ) ) {
+                        if ( mPlayer != null ) {
                             String time = intent.getStringExtra ( "REL_TIME" );
                             int msecs = parseTimeStringToMSecs ( time );
-                            
                             if ( msecs < 0 )
                             { msecs = 0; }
                             else if ( ( msecs > mTotalDuration ) && ( mTotalDuration > 0 ) )
                             { msecs = mTotalDuration; }
-                            
                             Debug.d ( TAG, "*********seek to: " + time + ",   msecs="
                                       + msecs );
                             mPlayer.seekTo ( msecs );
-                            
                             if ( mTotalDuration > 0 )
                             { mProgress.setProgress ( msecs ); }
-                            
                             mCurTime.setText ( timeFormatToString ( msecs ) );
                         }
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_SETVOLUME_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_SETVOLUME_ACTION ) ) {
                         volume_level = intent.getIntExtra ( "DesiredVolume", 50 );
                         int max = mAudioManager
                                   .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
                         mAudioManager.setStreamVolume ( AudioManager.STREAM_MUSIC,
                                                         volume_level * max / 100, AudioManager.FLAG_SHOW_UI );
                         mVolChanged = true;
-                        
                         if ( vol_bar != null )
                         { vol_bar.setProgress ( volume_level ); }
-                    }
-                    else if ( action.equals ( AmlogicCP.UPNP_SETMUTE_ACTION ) )
-                    {
+                    } else if ( action.equals ( AmlogicCP.UPNP_SETMUTE_ACTION ) ) {
                         Debug.d ( TAG, "*******setMuteAction" );
                         Boolean mute = ( Boolean ) intent.getExtra ( "DesiredMute", false );
                         Debug.d ( "mute", "*******setMuteAction=" + mute );
@@ -1420,77 +1095,61 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     }
                 }
         }
-        
-        private void sendPlayStateChangeBroadcast ( String stat )
-        {
+
+        private void sendPlayStateChangeBroadcast ( String stat ) {
             Intent intent = new Intent();
             intent.setAction ( stat );
             sendBroadcast ( intent );
             Debug.d ( TAG, "########music: sendPlayStateChangeBroadcast:  " + stat );
             return;
         }
-        
-        private void waitForExit ( long delay )
-        {
+
+        private void waitForExit ( long delay ) {
             Debug.d ( TAG, "********waitForExit" );
             handlerUI.removeMessages ( 1 );
             readyForFinish = true;
             handlerUI.sendEmptyMessageDelayed ( 1, delay );
         }
-        
-        private Handler handlerUI = new Handler()
-        {
+
+        private Handler handlerUI = new Handler() {
             @Override
-            public void handleMessage ( Message msg )
-            {
-                switch ( msg.what )
-                {
+            public void handleMessage ( Message msg ) {
+                switch ( msg.what ) {
                     case 1:
                         if ( readyForFinish )
                         { finish(); }
-                        
                         return;
-                        
                     case SHOW_START:
                         start();
                         return;
-                        
                     case SHOW_STOP:
                         wait2Exit();
                         break;
-                        
                     case STOP_AND_START:
                         stopAndStart();
                         break;
-                        
                     case SHOW_LOADING:
                         showLoading();
                         break;
-                        
                     case HIDE_LOADING:
                         hideLoading();
                         break;
-                        
                     case STOP_BY_SEVER:
-                        if ( !isShowingForehand )
-                        {
+                        if ( !isShowingForehand ) {
                             MusicPlayer.this.finish();
-                        }
-                        else
-                        {
+                        } else {
                             handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
                         }
-                        
                         return;
                 }
             }
         };
-        
+
         /*private class MyAdapter extends BaseAdapter {
             private Context                  context;
             private String[]                 music_mode;
             private LayoutInflater           inflater;
-        
+
             public List<Map<Integer,Boolean>> musicList;
             public MyAdapter(Context context) {
                 super();
@@ -1512,17 +1171,17 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 // TODO Auto-generated method stub
                 return music_mode.length;
             }
-        
+
             public Object getItem(int position) {
                 // TODO Auto-generated method stub
                 return musicList.get(position);
             }
-        
+
             public long getItemId(int position) {
                 // TODO Auto-generated method stub
                 return position;
             }
-        
+
             public View getView(int position, View view, ViewGroup parent) {
                 // TODO Auto-generated method stub
                 view = inflater.inflate(R.layout.list_item_spinner, null);
@@ -1542,7 +1201,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 return view;
             }
         }*/
-        
+
         /*private Dialog buildDialog(Context context) {
             mode_dialog = new Dialog(this, R.style.theme_dialog);
             mode_dialog.setContentView(R.layout.music_mode);
@@ -1554,7 +1213,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             final MyAdapter mAdapter = new MyAdapter(this);
             modeData = mAdapter.getData();
             lv.setAdapter(mAdapter);
-        
+
             lv.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View arg1,
@@ -1577,20 +1236,16 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             });
             return mode_dialog;
         }*/
-        
-        private void stopAndStart()
-        {
-            if ( mPlayer != null )
-            {
+
+        private void stopAndStart() {
+            if ( mPlayer != null ) {
                 mPlayer.pause();
                 stopPlayback();
             }
-            
             start();
         }
-        
-        private void album_list_box()
-        {
+
+        private void album_list_box() {
             Dialog dialog = new Dialog ( this, R.style.theme_dialog );
             AlertDialog.Builder builder = new AlertDialog.Builder ( this );
             builder.setTitle ( R.string.change_mode );
@@ -1598,78 +1253,48 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                             R.array.music_mode );
             ListView modeList = new ListView ( this );
             final List<Map<String, Object>> listItem = new ArrayList<Map<String, Object>>();
-            
-            for ( int i = 0; i < music_mode.length; i++ )
-            {
+            for ( int i = 0; i < music_mode.length; i++ ) {
                 HashMap<String, Object> map = new HashMap<String, Object>();
-                
-                if ( i == 0 )
-                {
-                    if ( mode == MODE_ALL_LOOP )
-                    {
+                if ( i == 0 ) {
+                    if ( mode == MODE_ALL_LOOP ) {
                         map.put ( "selected", R.drawable.tick );
                     }
-                    
                     map.put ( "icons", R.drawable.order_play );
-                }
-                else if ( i == 1 )
-                {
-                    if ( mode == MODE_SINGLE_LOOP )
-                    {
+                } else if ( i == 1 ) {
+                    if ( mode == MODE_SINGLE_LOOP ) {
                         map.put ( "selected", R.drawable.tick );
                     }
-                    
                     map.put ( "icons", R.drawable.single_play );
-                }
-                else
-                {
-                    if ( mode == MODE_RANDOM )
-                    {
+                } else {
+                    if ( mode == MODE_RANDOM ) {
                         map.put ( "selected", R.drawable.tick );
                     }
-                    
                     map.put ( "icons", R.drawable.random_play );
                 }
-                
                 map.put ( "mode", music_mode[i] );
                 listItem.add ( map );
             }
-            
             final SimpleAdapter listItemAdapter = new SimpleAdapter ( this, listItem, R.layout.musicmode, new String[] {"icons", "mode", "selected"}, new int[] {R.id.icons, R.id.title, R.id.selected} );
             modeList.setAdapter ( listItemAdapter );
-            modeList.setOnItemClickListener ( new OnItemClickListener()
-            {
+            modeList.setOnItemClickListener ( new OnItemClickListener() {
                 @Override
                 public void onItemClick ( AdapterView<?> arg0, View arg1,
-                                          int position, long arg3 )
-                {
-                    for ( int i = 0; i < music_mode.length; i++ )
-                    {
+                int position, long arg3 ) {
+                    for ( int i = 0; i < music_mode.length; i++ ) {
                         HashMap<String, Object> map = ( HashMap<String, Object> ) listItem.get ( i );
-                        
-                        if ( i == position )
-                        {
+                        if ( i == position ) {
                             map.put ( "selected", R.drawable.tick );
-                        }
-                        else
-                        {
+                        } else {
                             map.put ( "selected", null );
                         }
                     }
-                    
                     listItemAdapter.notifyDataSetChanged();
                     mode = position;
-                    
-                    if ( mode == MODE_ALL_LOOP )
-                    {
+                    if ( mode == MODE_ALL_LOOP ) {
                         btn_mode.setImageResource ( R.drawable.order_play );
-                    }
-                    else if ( mode == MODE_SINGLE_LOOP )
-                    {
+                    } else if ( mode == MODE_SINGLE_LOOP ) {
                         btn_mode.setImageResource ( R.drawable.single_play );
-                    }
-                    else
-                    {
+                    } else {
                         btn_mode.setImageResource ( R.drawable.random_play );
                     }
                 }
@@ -1678,10 +1303,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             dialog = builder.create();
             dialog.show();
         }
-        private class VolumeDialog extends Dialog
-        {
-                VolumeDialog ( Context context )
-                {
+        private class VolumeDialog extends Dialog {
+                VolumeDialog ( Context context ) {
                     super ( context, R.style.theme_dialog );
                     setContentView ( R.layout.volume_dialog );
                     LayoutParams params = getWindow().getAttributes();
@@ -1689,53 +1312,36 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     params.y = -120;
                     getWindow().setAttributes ( params );
                 }
-                
+
                 @Override
-                public boolean onKeyDown ( int keyCode, KeyEvent event )
-                {
+                public boolean onKeyDown ( int keyCode, KeyEvent event ) {
                     Debug.d ( TAG, "******keycode=" + keyCode );
-                    
-                    if ( keyCode == KeyEvent.KEYCODE_BACK )
-                    {
+                    if ( keyCode == KeyEvent.KEYCODE_BACK ) {
                         hideLoading();
                         this.dismiss();
                         return true;
                     }
-                    
                     if ( keyCode == 24 || keyCode == 25
                             || keyCode == KeyEvent.KEYCODE_DPAD_LEFT
-                            || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT )
-                    {
-                        if ( keyCode == 24 || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT )
-                        {
+                            || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ) {
+                        if ( keyCode == 24 || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ) {
                             volume_level = vol_bar.getProgress() + 5;
-                            
-                            if ( volume_level < vol_bar.getMax() )
-                            {
+                            if ( volume_level < vol_bar.getMax() ) {
                                 vol_bar.setProgress ( volume_level );
-                            }
-                            else
-                            {
+                            } else {
                                 volume_level = vol_bar.getMax();
                                 vol_bar.setProgress ( volume_level );
                             }
-                        }
-                        else if ( keyCode == 25
-                                  || keyCode == KeyEvent.KEYCODE_DPAD_LEFT )
-                        {
+                        } else if ( keyCode == 25
+                                    || keyCode == KeyEvent.KEYCODE_DPAD_LEFT ) {
                             volume_level = vol_bar.getProgress() - 5;
-                            
-                            if ( volume_level > 0 )
-                            {
+                            if ( volume_level > 0 ) {
                                 vol_bar.setProgress ( volume_level );
-                            }
-                            else
-                            {
+                            } else {
                                 volume_level = 0;
                                 vol_bar.setProgress ( volume_level );
                             }
                         }
-                        
                         int max = mAudioManager
                                   .getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
                         mAudioManager.setStreamVolume ( AudioManager.STREAM_MUSIC,
@@ -1746,14 +1352,12 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         sendBroadcast ( intent );
                         return true;
                     }
-                    
                     return super.onKeyDown ( keyCode, event );
                 }
         }
-        
+
         @Override
-        protected void onResume()
-        {
+        protected void onResume() {
             super.onResume();
             isShowingForehand = true;
             showLoading();
@@ -1773,17 +1377,13 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             mWakeLock = pm.newWakeLock ( PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG );
             mWakeLock.acquire();
         }
-        
+
         @Override
-        public boolean onInfo ( MediaPlayer mp, int what, int extra )
-        {
-            if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_START )
-            {
+        public boolean onInfo ( MediaPlayer mp, int what, int extra ) {
+            if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_START ) {
                 handlerUI.sendEmptyMessageDelayed ( SHOW_LOADING, 1000 );
                 // showLoading();
-            }
-            else if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_END )
-            {
+            } else if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_END ) {
                 handlerUI.removeMessages ( SHOW_LOADING );
                 handlerUI.sendEmptyMessage ( HIDE_LOADING );
                 // hideLoading();
@@ -1791,38 +1391,29 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 intent.putExtra ( "status", "PLAYING" );
                 sendBroadcast ( intent );
             }
-            
             return false;
         }
-        
-        private void playEnable()
-        {
+
+        private void playEnable() {
             if ( btn_play != null )
             { btn_play.setEnabled ( true ); }
-            
             if ( btn_forward != null )
             { btn_forward.setEnabled ( true ); }
-            
             if ( btn_backward != null )
             { btn_backward.setEnabled ( true ); }
-            
             if ( mProgress != null )
             { mProgress.setEnabled ( true ); }
         }
-        
-        private void playDisable()
-        {
+
+        private void playDisable() {
             if ( btn_play != null )
             { btn_play.setEnabled ( false ); }
-            
             if ( btn_forward != null )
             { btn_forward.setEnabled ( false ); }
-            
             if ( btn_backward != null )
             { btn_backward.setEnabled ( false ); }
-            
             if ( mProgress != null )
             { mProgress.setEnabled ( false ); }
         }
-        
+
 }

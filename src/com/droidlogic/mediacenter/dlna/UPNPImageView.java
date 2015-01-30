@@ -64,8 +64,7 @@ import java.net.HttpURLConnection;
  * @attr ref android.R.styleable#ImageView_cropToPadding
  */
 @RemoteView
-public class UPNPImageView extends View
-{
+public class UPNPImageView extends View {
         // settable by the client
         private Uri mUri;
         private int mResource = 0;
@@ -75,13 +74,13 @@ public class UPNPImageView extends View
         private boolean mAdjustViewBounds = false;
         private int mMaxWidth = Integer.MAX_VALUE;
         private int mMaxHeight = Integer.MAX_VALUE;
-        
+
         // these are applied to the drawable
         private ColorFilter mColorFilter;
         private int mAlpha = 255;
         private int mViewAlphaScale = 256;
         private boolean mColorMod = false;
-        
+
         private Drawable mDrawable = null;
         private int[] mState = null;
         private boolean mMergeState = false;
@@ -93,15 +92,14 @@ public class UPNPImageView extends View
         // Avoid allocations...
         private RectF mTempSrc = new RectF();
         private RectF mTempDst = new RectF();
-        
+
         private boolean mCropToPadding;
-        
+
         private int mBaseline = -1;
         private boolean mBaselineAlignBottom = false;
         //private HandlerThread mRThread;
         //private Handler mHandler;
-        private static final ScaleType[] sScaleTypeArray =
-        {
+        private static final ScaleType[] sScaleTypeArray = {
             ScaleType.MATRIX,
             ScaleType.FIT_XY,
             ScaleType.FIT_START,
@@ -111,34 +109,28 @@ public class UPNPImageView extends View
             ScaleType.CENTER_CROP,
             ScaleType.CENTER_INSIDE
         };
-        
-        public UPNPImageView ( Context context )
-        {
+
+        public UPNPImageView ( Context context ) {
             super ( context );
             mContext = context;
             initImageView();
         }
-        
-        public UPNPImageView ( Context context, AttributeSet attrs )
-        {
+
+        public UPNPImageView ( Context context, AttributeSet attrs ) {
             this ( context, attrs, 0 );
             mContext = context;
         }
-        
-        public UPNPImageView ( Context context, AttributeSet attrs, int defStyle )
-        {
+
+        public UPNPImageView ( Context context, AttributeSet attrs, int defStyle ) {
             super ( context, attrs, defStyle );
             initImageView();
             mContext = context;
             TypedArray a = context.obtainStyledAttributes ( attrs,
                            R.styleable.ImageView, defStyle, 0 );
             Drawable d = a.getDrawable ( com.android.internal.R.styleable.ImageView_src );
-            
-            if ( d != null )
-            {
+            if ( d != null ) {
                 setImageDrawable ( d );
             }
-            
             mBaselineAlignBottom = a.getBoolean (
                                        com.android.internal.R.styleable.ImageView_baselineAlignBottom, false );
             mBaseline = a.getDimensionPixelSize (
@@ -151,60 +143,45 @@ public class UPNPImageView extends View
             setMaxHeight ( a.getDimensionPixelSize (
                                com.android.internal.R.styleable.ImageView_maxHeight, Integer.MAX_VALUE ) );
             int index = a.getInt ( com.android.internal.R.styleable.ImageView_scaleType, -1 );
-            
-            if ( index >= 0 )
-            {
+            if ( index >= 0 ) {
                 setScaleType ( sScaleTypeArray[index] );
             }
-            
             int tint = a.getInt ( com.android.internal.R.styleable.ImageView_tint, 0 );
-            
-            if ( tint != 0 )
-            {
+            if ( tint != 0 ) {
                 setColorFilter ( tint );
             }
-            
             int alpha = a.getInt ( com.android.internal.R.styleable.ImageView_drawableAlpha, 255 );
-            
-            if ( alpha != 255 )
-            {
+            if ( alpha != 255 ) {
                 setAlpha ( alpha );
             }
-            
             mCropToPadding = a.getBoolean (
                                  com.android.internal.R.styleable.ImageView_cropToPadding, false );
             a.recycle();
             //need inflate syntax/reader for matrix
         }
-        
-        private void initImageView()
-        {
+
+        private void initImageView() {
             mMatrix     = new Matrix();
             mScaleType  = ScaleType.FIT_CENTER;
             //mRThread = new HandlerThread("upnpImageThread");
             //mRThread.start();
             //mHandler = new Handler(mRThread.getLooper());
         }
-        
+
         @Override
-        protected boolean verifyDrawable ( Drawable dr )
-        {
+        protected boolean verifyDrawable ( Drawable dr ) {
             return mDrawable == dr || super.verifyDrawable ( dr );
         }
-        
+
         @Override
-        public void jumpDrawablesToCurrentState()
-        {
+        public void jumpDrawablesToCurrentState() {
             super.jumpDrawablesToCurrentState();
-            
             if ( mDrawable != null ) { mDrawable.jumpToCurrentState(); }
         }
-        
+
         @Override
-        public void invalidateDrawable ( Drawable dr )
-        {
-            if ( dr == mDrawable )
-            {
+        public void invalidateDrawable ( Drawable dr ) {
+            if ( dr == mDrawable ) {
                 /* we invalidate the whole view in this case because it's very
                  * hard to know where the drawable actually is. This is made
                  * complicated because of the offsets and transformations that
@@ -213,30 +190,24 @@ public class UPNPImageView extends View
                  * is probably not worth the effort.
                  */
                 invalidate();
-            }
-            else
-            {
+            } else {
                 super.invalidateDrawable ( dr );
             }
         }
-        
-        public boolean hasOverlappingRendering()
-        {
+
+        public boolean hasOverlappingRendering() {
             return ( getBackground() != null );
         }
-        
+
         @Override
-        public void onPopulateAccessibilityEvent ( AccessibilityEvent event )
-        {
+        public void onPopulateAccessibilityEvent ( AccessibilityEvent event ) {
             super.onPopulateAccessibilityEvent ( event );
             CharSequence contentDescription = getContentDescription();
-            
-            if ( !TextUtils.isEmpty ( contentDescription ) )
-            {
+            if ( !TextUtils.isEmpty ( contentDescription ) ) {
                 event.getText().add ( contentDescription );
             }
         }
-        
+
         /**
          * True when ImageView is adjusting its bounds
          * to preserve the aspect ratio of its drawable
@@ -248,11 +219,10 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_adjustViewBounds
          */
-        public boolean getAdjustViewBounds()
-        {
+        public boolean getAdjustViewBounds() {
             return mAdjustViewBounds;
         }
-        
+
         /**
          * Set this to true if you want the ImageView to adjust its bounds
          * to preserve the aspect ratio of its drawable.
@@ -264,16 +234,13 @@ public class UPNPImageView extends View
          * @attr ref android.R.styleable#ImageView_adjustViewBounds
          */
         @android.view.RemotableViewMethod
-        public void setAdjustViewBounds ( boolean adjustViewBounds )
-        {
+        public void setAdjustViewBounds ( boolean adjustViewBounds ) {
             mAdjustViewBounds = adjustViewBounds;
-            
-            if ( adjustViewBounds )
-            {
+            if ( adjustViewBounds ) {
                 setScaleType ( ScaleType.FIT_CENTER );
             }
         }
-        
+
         /**
          * The maximum width of this view.
          *
@@ -283,11 +250,10 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_maxWidth
          */
-        public int getMaxWidth()
-        {
+        public int getMaxWidth() {
             return mMaxWidth;
         }
-        
+
         /**
          * An optional argument to supply a maximum width for this view. Only valid if
          * {@link #setAdjustViewBounds(boolean)} has been set to true. To set an image to be a maximum
@@ -309,11 +275,10 @@ public class UPNPImageView extends View
          * @attr ref android.R.styleable#ImageView_maxWidth
          */
         @android.view.RemotableViewMethod
-        public void setMaxWidth ( int maxWidth )
-        {
+        public void setMaxWidth ( int maxWidth ) {
             mMaxWidth = maxWidth;
         }
-        
+
         /**
          * The maximum height of this view.
          *
@@ -323,11 +288,10 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_maxHeight
          */
-        public int getMaxHeight()
-        {
+        public int getMaxHeight() {
             return mMaxHeight;
         }
-        
+
         /**
          * An optional argument to supply a maximum height for this view. Only valid if
          * {@link #setAdjustViewBounds(boolean)} has been set to true. To set an image to be a
@@ -349,19 +313,17 @@ public class UPNPImageView extends View
          * @attr ref android.R.styleable#ImageView_maxHeight
          */
         @android.view.RemotableViewMethod
-        public void setMaxHeight ( int maxHeight )
-        {
+        public void setMaxHeight ( int maxHeight ) {
             mMaxHeight = maxHeight;
         }
-        
+
         /** Return the view's drawable, or null if no drawable has been
             assigned.
         */
-        public Drawable getDrawable()
-        {
+        public Drawable getDrawable() {
             return mDrawable;
         }
-        
+
         /**
          * Sets a drawable as the content of this UPNPImageView.
          *
@@ -376,26 +338,21 @@ public class UPNPImageView extends View
          * @attr ref android.R.styleable#ImageView_src
          */
         @android.view.RemotableViewMethod
-        public void setImageResource ( int resId )
-        {
-            if ( mUri != null || mResource != resId )
-            {
+        public void setImageResource ( int resId ) {
+            if ( mUri != null || mResource != resId ) {
                 updateDrawable ( null );
                 mResource = resId;
                 mUri = null;
                 final int oldWidth = mDrawableWidth;
                 final int oldHeight = mDrawableHeight;
                 resolveUri();
-                
-                if ( oldWidth != mDrawableWidth || oldHeight != mDrawableHeight )
-                {
+                if ( oldWidth != mDrawableWidth || oldHeight != mDrawableHeight ) {
                     requestLayout();
                 }
-                
                 invalidate();
             }
         }
-        
+
         /**
          * Sets the content of this UPNPImageView to the specified Uri.
          *
@@ -408,84 +365,69 @@ public class UPNPImageView extends View
          * @param uri The Uri of an image
          */
         @android.view.RemotableViewMethod
-        public void setImageURI ( Uri uri )
-        {
+        public void setImageURI ( Uri uri ) {
             if ( mResource != 0 ||
                     ( mUri != uri &&
-                      ( uri == null || mUri == null || !uri.equals ( mUri ) ) ) )
-            {
+                      ( uri == null || mUri == null || !uri.equals ( mUri ) ) ) ) {
                 updateDrawable ( null );
                 mResource = 0;
                 mUri = uri;
                 final int oldWidth = mDrawableWidth;
                 final int oldHeight = mDrawableHeight;
                 resolveUri();
-                
-                if ( oldWidth != mDrawableWidth || oldHeight != mDrawableHeight )
-                {
+                if ( oldWidth != mDrawableWidth || oldHeight != mDrawableHeight ) {
                     requestLayout();
                 }
-                
                 invalidate();
             }
         }
-        
+
         /**
          * Sets a drawable as the content of this UPNPImageView.
          *
          * @param drawable The drawable to set
          */
-        public void setImageDrawable ( Drawable drawable )
-        {
-            if ( mDrawable != drawable )
-            {
+        public void setImageDrawable ( Drawable drawable ) {
+            if ( mDrawable != drawable ) {
                 mResource = 0;
                 mUri = null;
                 final int oldWidth = mDrawableWidth;
                 final int oldHeight = mDrawableHeight;
                 updateDrawable ( drawable );
-                
-                if ( oldWidth != mDrawableWidth || oldHeight != mDrawableHeight )
-                {
+                if ( oldWidth != mDrawableWidth || oldHeight != mDrawableHeight ) {
                     requestLayout();
                 }
-                
                 invalidate();
             }
         }
-        
+
         /**
          * Sets a Bitmap as the content of this UPNPImageView.
          *
          * @param bm The bitmap to set
          */
         @android.view.RemotableViewMethod
-        public void setImageBitmap ( Bitmap bm )
-        {
+        public void setImageBitmap ( Bitmap bm ) {
             // if this is used frequently, may handle bitmaps explicitly
             // to reduce the intermediate drawable object
             setImageDrawable ( new BitmapDrawable ( mContext.getResources(), bm ) );
         }
-        
-        public void setImageState ( int[] state, boolean merge )
-        {
+
+        public void setImageState ( int[] state, boolean merge ) {
             mState = state;
             mMergeState = merge;
-            
-            if ( mDrawable != null )
-            {
+            if ( mDrawable != null ) {
                 refreshDrawableState();
                 resizeFromDrawable();
             }
         }
-        
+
         @Override
-        public void setSelected ( boolean selected )
-        {
+        public void setSelected ( boolean selected ) {
             super.setSelected ( selected );
             resizeFromDrawable();
         }
-        
+
         /**
          * Sets the image level, when it is constructed from a
          * {@link android.graphics.drawable.LevelListDrawable}.
@@ -493,22 +435,18 @@ public class UPNPImageView extends View
          * @param level The new level for the image.
          */
         @android.view.RemotableViewMethod
-        public void setImageLevel ( int level )
-        {
+        public void setImageLevel ( int level ) {
             mLevel = level;
-            
-            if ( mDrawable != null )
-            {
+            if ( mDrawable != null ) {
                 mDrawable.setLevel ( level );
                 resizeFromDrawable();
             }
         }
-        
+
         /**
          * Options for scaling the bounds of an image to the bounds of this view.
          */
-        public enum ScaleType
-        {
+        public enum ScaleType {
             /**
              * Scale using the image matrix when drawing. The image matrix can be set using
              * {@link UPNPImageView#setImageMatrix(Matrix)}. From XML, use this syntax:
@@ -557,14 +495,13 @@ public class UPNPImageView extends View
              * From XML, use this syntax: <code>android:scaleType="centerInside"</code>.
              */
             CENTER_INSIDE ( 7 );
-            
-            ScaleType ( int ni )
-        {
+
+        ScaleType ( int ni ) {
             nativeInt = ni;
         }
         final int nativeInt;
         }
-        
+
         /**
          * Controls how the image should be resized or moved to match the size
          * of this UPNPImageView.
@@ -573,22 +510,18 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_scaleType
          */
-        public void setScaleType ( ScaleType scaleType )
-        {
-            if ( scaleType == null )
-            {
+        public void setScaleType ( ScaleType scaleType ) {
+            if ( scaleType == null ) {
                 throw new NullPointerException();
             }
-            
-            if ( mScaleType != scaleType )
-            {
+            if ( mScaleType != scaleType ) {
                 mScaleType = scaleType;
                 setWillNotCacheDrawing ( mScaleType == ScaleType.CENTER );
                 requestLayout();
                 invalidate();
             }
         }
-        
+
         /**
          * Return the current scale type in use by this UPNPImageView.
          *
@@ -596,61 +529,47 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_scaleType
          */
-        public ScaleType getScaleType()
-        {
+        public ScaleType getScaleType() {
             return mScaleType;
         }
-        
+
         /** Return the view's optional matrix. This is applied to the
             view's drawable when it is drawn. If there is not matrix,
             this method will return null.
             Do not change this matrix in place. If you want a different matrix
             applied to the drawable, be sure to call setImageMatrix().
         */
-        public Matrix getImageMatrix()
-        {
+        public Matrix getImageMatrix() {
             return mMatrix;
         }
-        
-        public void setImageMatrix ( Matrix matrix )
-        {
+
+        public void setImageMatrix ( Matrix matrix ) {
             // collaps null and identity to just null
-            if ( matrix != null && matrix.isIdentity() )
-            {
+            if ( matrix != null && matrix.isIdentity() ) {
                 matrix = null;
             }
-            
             // don't invalidate unless we're actually changing our matrix
             if ( matrix == null && !mMatrix.isIdentity() ||
-                    matrix != null && !mMatrix.equals ( matrix ) )
-            {
+                    matrix != null && !mMatrix.equals ( matrix ) ) {
                 mMatrix.set ( matrix );
                 configureBounds();
                 invalidate();
             }
         }
-        
-        private Drawable createDrawableFromNet ( String path )
-        {
-            if ( path == null )
-            {
+
+        private Drawable createDrawableFromNet ( String path ) {
+            if ( path == null ) {
                 return null;
             }
-            
-            try
-            {
+            try {
                 URL url = new URL ( path );
                 HttpURLConnection connection = ( HttpURLConnection ) url.openConnection();
                 connection.setDoInput ( true );
                 connection.connect();
                 InputStream input = connection.getInputStream();
-                
-                if ( input == null )
-                {
+                if ( input == null ) {
                     throw new RuntimeException ( "stream is null" );
-                }
-                else
-                {
+                } else {
                     Bitmap myBitmap = null; // = BitmapFactory.decodeStream(input);
                     /*byte[] data = readStream(input);
                           if (data != null) {
@@ -664,14 +583,12 @@ public class UPNPImageView extends View
                     return new BitmapDrawable ( null, myBitmap );
                     // drawableFromBitmap(null, myBitmap, null, null, pathName);
                 }
-            }
-            catch ( Exception e )
-            {
+            } catch ( Exception e ) {
                 e.printStackTrace();
                 return null;
             }
         }
-        
+
         /*public static byte[] readStream(InputStream inStream) throws Exception {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
@@ -683,7 +600,7 @@ public class UPNPImageView extends View
         inStream.close();
         return outStream.toByteArray();
         }*/
-        
+
         /**
          * Return whether this ImageView crops to padding.
          *
@@ -693,11 +610,10 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_cropToPadding
          */
-        public boolean getCropToPadding()
-        {
+        public boolean getCropToPadding() {
             return mCropToPadding;
         }
-        
+
         /**
          * Sets whether this ImageView will crop to padding.
          *
@@ -707,150 +623,100 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_cropToPadding
          */
-        public void setCropToPadding ( boolean cropToPadding )
-        {
-            if ( mCropToPadding != cropToPadding )
-            {
+        public void setCropToPadding ( boolean cropToPadding ) {
+            if ( mCropToPadding != cropToPadding ) {
                 mCropToPadding = cropToPadding;
                 requestLayout();
                 invalidate();
             }
         }
-        class ImageRunnableUrl extends Thread
-        {
-        
+        class ImageRunnableUrl extends Thread {
+
                 @Override
-                public void run()
-                {
-                    if ( mDrawable != null )
-                    {
+                public void run() {
+                    if ( mDrawable != null ) {
                         return;
                     }
-                    
                     Resources rsrc = getResources();
-                    
-                    if ( rsrc == null )
-                    {
+                    if ( rsrc == null ) {
                         return;
                     }
-                    
                     Drawable d = null;
-                    
-                    if ( mResource != 0 )
-                    {
-                        try
-                        {
+                    if ( mResource != 0 ) {
+                        try {
                             d = rsrc.getDrawable ( mResource );
-                        }
-                        catch ( Exception e )
-                        {
+                        } catch ( Exception e ) {
                             Debug.e ( "UPNPImageView", "Unable to find resource: " + mResource, e );
                             // Don't try again.
                             mUri = null;
                         }
-                    }
-                    else if ( mUri != null )
-                    {
+                    } else if ( mUri != null ) {
                         String scheme = mUri.getScheme();
-                        
-                        if ( ContentResolver.SCHEME_ANDROID_RESOURCE.equals ( scheme ) )
-                        {
-                            try
-                            {
+                        if ( ContentResolver.SCHEME_ANDROID_RESOURCE.equals ( scheme ) ) {
+                            try {
                                 // Load drawable through Resources, to get the source density information
                                 ContentResolver.OpenResourceIdResult r =
                                     mContext.getContentResolver().getResourceId ( mUri );
                                 d = r.r.getDrawable ( r.id );
-                            }
-                            catch ( Exception e )
-                            {
+                            } catch ( Exception e ) {
                                 Debug.e ( "UPNPImageView", "Unable to open content: " + mUri, e );
                             }
-                        }
-                        else if ( ContentResolver.SCHEME_CONTENT.equals ( scheme )
-                                  || ContentResolver.SCHEME_FILE.equals ( scheme ) )
-                        {
-                            try
-                            {
+                        } else if ( ContentResolver.SCHEME_CONTENT.equals ( scheme )
+                                    || ContentResolver.SCHEME_FILE.equals ( scheme ) ) {
+                            try {
                                 d = Drawable.createFromStream (
                                         mContext.getContentResolver().openInputStream ( mUri ),
                                         null );
-                            }
-                            catch ( Exception e )
-                            {
+                            } catch ( Exception e ) {
                                 Debug.e ( "UPNPImageView", "Unable to open content: " + mUri, e );
                             }
-                        }
-                        else if ( "http".equals ( scheme ) )
-                        {
+                        } else if ( "http".equals ( scheme ) ) {
                             Debug.d ( "UPNPImageView", "*****open net image" );
                             d = createDrawableFromNet ( mUri.toString() );
-                        }
-                        else
-                        {
+                        } else {
                             d = Drawable.createFromPath ( mUri.toString() );
                         }
-                        
-                        if ( d == null )
-                        {
+                        if ( d == null ) {
                             Debug.d ( "UPNPImageView", "resolveUri failed on bad bitmap uri: "
                                       + mUri );
                             // Don't try again.
                             mUri = null;
                         }
-                    }
-                    else
-                    {
+                    } else {
                         return;
                     }
-                    
                     updateDrawable ( d );
                 }
         };
-        
-        private void resolveUri()
-        {
+
+        private void resolveUri() {
             new ImageRunnableUrl().start();
             //mHandler.post(new ImageRunnableUrl());
         }
-        
+
         @Override
-        public int[] onCreateDrawableState ( int extraSpace )
-        {
-            if ( mState == null )
-            {
+        public int[] onCreateDrawableState ( int extraSpace ) {
+            if ( mState == null ) {
                 return super.onCreateDrawableState ( extraSpace );
-            }
-            else if ( !mMergeState )
-            {
+            } else if ( !mMergeState ) {
                 return mState;
-            }
-            else
-            {
+            } else {
                 return mergeDrawableStates (
                            super.onCreateDrawableState ( extraSpace + mState.length ), mState );
             }
         }
-        
-        private void updateDrawable ( Drawable d )
-        {
-            if ( mDrawable != null )
-            {
+
+        private void updateDrawable ( Drawable d ) {
+            if ( mDrawable != null ) {
                 mDrawable.setCallback ( null );
                 unscheduleDrawable ( mDrawable );
             }
-            
             mDrawable = d;
-            
-            if ( d != null )
-            {
+            if ( d != null ) {
                 d.setCallback ( this );
-                
-                if ( d.isStateful() )
-                {
+                if ( d.isStateful() ) {
                     d.setState ( getDrawableState() );
                 }
-                
                 d.setLevel ( mLevel );
                 /*if (Utils.getSDKVersion() >= 17) {
                     d.setLayoutDirection(getLayoutDirection());
@@ -859,53 +725,40 @@ public class UPNPImageView extends View
                 mDrawableHeight = d.getIntrinsicHeight();
                 applyColorMod();
                 configureBounds();
-            }
-            else
-            {
+            } else {
                 mDrawableWidth = mDrawableHeight = -1;
             }
         }
-        
-        private void resizeFromDrawable()
-        {
+
+        private void resizeFromDrawable() {
             Drawable d = mDrawable;
-            
-            if ( d != null )
-            {
+            if ( d != null ) {
                 int w = d.getIntrinsicWidth();
-                
                 if ( w < 0 ) { w = mDrawableWidth; }
-                
                 int h = d.getIntrinsicHeight();
-                
                 if ( h < 0 ) { h = mDrawableHeight; }
-                
-                if ( w != mDrawableWidth || h != mDrawableHeight )
-                {
+                if ( w != mDrawableWidth || h != mDrawableHeight ) {
                     mDrawableWidth = w;
                     mDrawableHeight = h;
                     requestLayout();
                 }
             }
         }
-        
-        private static final Matrix.ScaleToFit[] sS2FArray =
-        {
+
+        private static final Matrix.ScaleToFit[] sS2FArray = {
             Matrix.ScaleToFit.FILL,
             Matrix.ScaleToFit.START,
             Matrix.ScaleToFit.CENTER,
             Matrix.ScaleToFit.END
         };
-        
-        private static Matrix.ScaleToFit scaleTypeToScaleToFit ( ScaleType st )
-        {
+
+        private static Matrix.ScaleToFit scaleTypeToScaleToFit ( ScaleType st ) {
             // ScaleToFit enum to their corresponding Matrix.ScaleToFit values
             return sS2FArray[st.nativeInt - 1];
         }
-        
+
         @Override
-        protected void onMeasure ( int widthMeasureSpec, int heightMeasureSpec )
-        {
+        protected void onMeasure ( int widthMeasureSpec, int heightMeasureSpec ) {
             resolveUri();
             int w;
             int h;
@@ -917,42 +770,31 @@ public class UPNPImageView extends View
             boolean resizeHeight = false;
             final int widthSpecMode = MeasureSpec.getMode ( widthMeasureSpec );
             final int heightSpecMode = MeasureSpec.getMode ( heightMeasureSpec );
-            
-            if ( mDrawable == null )
-            {
+            if ( mDrawable == null ) {
                 // If no drawable, its intrinsic size is 0.
                 mDrawableWidth = -1;
                 mDrawableHeight = -1;
                 w = h = 0;
-            }
-            else
-            {
+            } else {
                 w = mDrawableWidth;
                 h = mDrawableHeight;
-                
                 if ( w <= 0 ) { w = 1; }
-                
                 if ( h <= 0 ) { h = 1; }
-                
                 // We are supposed to adjust view bounds to match the aspect
                 // ratio of our drawable. See if that is possible.
-                if ( mAdjustViewBounds )
-                {
+                if ( mAdjustViewBounds ) {
                     resizeWidth = widthSpecMode != MeasureSpec.EXACTLY;
                     resizeHeight = heightSpecMode != MeasureSpec.EXACTLY;
                     desiredAspect = ( float ) w / ( float ) h;
                 }
             }
-            
             int pleft = mPaddingLeft;
             int pright = mPaddingRight;
             int ptop = mPaddingTop;
             int pbottom = mPaddingBottom;
             int widthSize;
             int heightSize;
-            
-            if ( resizeWidth || resizeHeight )
-            {
+            if ( resizeWidth || resizeHeight ) {
                 /* If we get here, it means we want to resize to match the
                     drawables aspect ratio, and we have the freedom to change at
                     least one dimension.
@@ -961,46 +803,32 @@ public class UPNPImageView extends View
                 widthSize = resolveAdjustedSize ( w + pleft + pright, mMaxWidth, widthMeasureSpec );
                 // Get the max possible height given our constraints
                 heightSize = resolveAdjustedSize ( h + ptop + pbottom, mMaxHeight, heightMeasureSpec );
-                
-                if ( desiredAspect != 0.0f )
-                {
+                if ( desiredAspect != 0.0f ) {
                     // See what our actual aspect ratio is
                     float actualAspect = ( float ) ( widthSize - pleft - pright ) /
                                          ( heightSize - ptop - pbottom );
-                                         
-                    if ( Math.abs ( actualAspect - desiredAspect ) > 0.0000001 )
-                    {
+                    if ( Math.abs ( actualAspect - desiredAspect ) > 0.0000001 ) {
                         boolean done = false;
-                        
                         // Try adjusting width to be proportional to height
-                        if ( resizeWidth )
-                        {
+                        if ( resizeWidth ) {
                             int newWidth = ( int ) ( desiredAspect * ( heightSize - ptop - pbottom ) ) +
                                            pleft + pright;
-                                           
-                            if ( newWidth <= widthSize )
-                            {
+                            if ( newWidth <= widthSize ) {
                                 widthSize = newWidth;
                                 done = true;
                             }
                         }
-                        
                         // Try adjusting height to be proportional to width
-                        if ( !done && resizeHeight )
-                        {
+                        if ( !done && resizeHeight ) {
                             int newHeight = ( int ) ( ( widthSize - pleft - pright ) / desiredAspect ) +
                                             ptop + pbottom;
-                                            
-                            if ( newHeight <= heightSize )
-                            {
+                            if ( newHeight <= heightSize ) {
                                 heightSize = newHeight;
                             }
                         }
                     }
                 }
-            }
-            else
-            {
+            } else {
                 /* We are either don't want to preserve the drawables aspect ratio,
                    or we are not allowed to change view dimensions. Just measure in
                    the normal way.
@@ -1012,147 +840,107 @@ public class UPNPImageView extends View
                 widthSize = resolveSizeAndState ( w, widthMeasureSpec, 0 );
                 heightSize = resolveSizeAndState ( h, heightMeasureSpec, 0 );
             }
-            
             setMeasuredDimension ( widthSize, heightSize );
         }
-        
+
         private int resolveAdjustedSize ( int desiredSize, int maxSize,
-                                          int measureSpec )
-        {
+                                          int measureSpec ) {
             int result = desiredSize;
             int specMode = MeasureSpec.getMode ( measureSpec );
             int specSize =  MeasureSpec.getSize ( measureSpec );
-            
-            switch ( specMode )
-            {
+            switch ( specMode ) {
                 case MeasureSpec.UNSPECIFIED:
                     /* Parent says we can be as big as we want. Just don't be larger
                        than max size imposed on ourselves.
                     */
                     result = Math.min ( desiredSize, maxSize );
                     break;
-                    
                 case MeasureSpec.AT_MOST:
                     // Parent says we can be as big as we want, up to specSize.
                     // Don't be larger than specSize, and don't be larger than
                     // the max size imposed on ourselves.
                     result = Math.min ( Math.min ( desiredSize, specSize ), maxSize );
                     break;
-                    
                 case MeasureSpec.EXACTLY:
                     // No choice. Do what we are told.
                     result = specSize;
                     break;
             }
-            
             return result;
         }
-        
+
         @Override
-        protected boolean setFrame ( int l, int t, int r, int b )
-        {
+        protected boolean setFrame ( int l, int t, int r, int b ) {
             boolean changed = super.setFrame ( l, t, r, b );
             mHaveFrame = true;
             configureBounds();
             return changed;
         }
-        
-        private void configureBounds()
-        {
-            if ( mDrawable == null || !mHaveFrame )
-            {
+
+        private void configureBounds() {
+            if ( mDrawable == null || !mHaveFrame ) {
                 return;
             }
-            
             int dwidth = mDrawableWidth;
             int dheight = mDrawableHeight;
             int vwidth = getWidth() - mPaddingLeft - mPaddingRight;
             int vheight = getHeight() - mPaddingTop - mPaddingBottom;
             boolean fits = ( dwidth < 0 || vwidth == dwidth ) &&
                            ( dheight < 0 || vheight == dheight );
-                           
-            if ( dwidth <= 0 || dheight <= 0 || ScaleType.FIT_XY == mScaleType )
-            {
+            if ( dwidth <= 0 || dheight <= 0 || ScaleType.FIT_XY == mScaleType ) {
                 /* If the drawable has no intrinsic size, or we're told to
                     scaletofit, then we just fill our entire view.
                 */
                 mDrawable.setBounds ( 0, 0, vwidth, vheight );
                 mDrawMatrix = null;
-            }
-            else
-            {
+            } else {
                 // We need to do the scaling ourself, so have the drawable
                 // use its native size.
                 mDrawable.setBounds ( 0, 0, dwidth, dheight );
-                
-                if ( ScaleType.MATRIX == mScaleType )
-                {
+                if ( ScaleType.MATRIX == mScaleType ) {
                     // Use the specified matrix as-is.
-                    if ( mMatrix.isIdentity() )
-                    {
+                    if ( mMatrix.isIdentity() ) {
                         mDrawMatrix = null;
-                    }
-                    else
-                    {
+                    } else {
                         mDrawMatrix = mMatrix;
                     }
-                }
-                else if ( fits )
-                {
+                } else if ( fits ) {
                     // The bitmap fits exactly, no transform needed.
                     mDrawMatrix = null;
-                }
-                else if ( ScaleType.CENTER == mScaleType )
-                {
+                } else if ( ScaleType.CENTER == mScaleType ) {
                     // Center bitmap in view, no scaling.
                     mDrawMatrix = mMatrix;
                     mDrawMatrix.setTranslate ( ( int ) ( ( vwidth - dwidth ) * 0.5f + 0.5f ),
                                                ( int ) ( ( vheight - dheight ) * 0.5f + 0.5f ) );
-                }
-                else if ( ScaleType.CENTER_CROP == mScaleType )
-                {
+                } else if ( ScaleType.CENTER_CROP == mScaleType ) {
                     mDrawMatrix = mMatrix;
                     float scale;
                     float dx = 0, dy = 0;
-                    
-                    if ( dwidth * vheight > vwidth * dheight )
-                    {
+                    if ( dwidth * vheight > vwidth * dheight ) {
                         scale = ( float ) vheight / ( float ) dheight;
                         dx = ( vwidth - dwidth * scale ) * 0.5f;
-                    }
-                    else
-                    {
+                    } else {
                         scale = ( float ) vwidth / ( float ) dwidth;
                         dy = ( vheight - dheight * scale ) * 0.5f;
                     }
-                    
                     mDrawMatrix.setScale ( scale, scale );
                     mDrawMatrix.postTranslate ( ( int ) ( dx + 0.5f ), ( int ) ( dy + 0.5f ) );
-                }
-                else if ( ScaleType.CENTER_INSIDE == mScaleType )
-                {
+                } else if ( ScaleType.CENTER_INSIDE == mScaleType ) {
                     mDrawMatrix = mMatrix;
                     float scale;
                     float dx;
                     float dy;
-                    
-                    if ( dwidth <= vwidth && dheight <= vheight )
-                    {
+                    if ( dwidth <= vwidth && dheight <= vheight ) {
                         scale = 1.0f;
-                    }
-                    else
-                    {
+                    } else {
                         scale = Math.min ( ( float ) vwidth / ( float ) dwidth,
                                            ( float ) vheight / ( float ) dheight );
                     }
-                    
                     dx = ( int ) ( ( vwidth - dwidth * scale ) * 0.5f + 0.5f );
                     dy = ( int ) ( ( vheight - dheight * scale ) * 0.5f + 0.5f );
                     mDrawMatrix.setScale ( scale, scale );
                     mDrawMatrix.postTranslate ( dx, dy );
-                }
-                else
-                {
+                } else {
                     // Generate the required transform.
                     mTempSrc.set ( 0, 0, dwidth, dheight );
                     mTempDst.set ( 0, 0, vwidth, vheight );
@@ -1161,64 +949,46 @@ public class UPNPImageView extends View
                 }
             }
         }
-        
+
         @Override
-        protected void drawableStateChanged()
-        {
+        protected void drawableStateChanged() {
             super.drawableStateChanged();
             Drawable d = mDrawable;
-            
-            if ( d != null && d.isStateful() )
-            {
+            if ( d != null && d.isStateful() ) {
                 d.setState ( getDrawableState() );
             }
         }
-        
+
         @Override
-        protected void onDraw ( Canvas canvas )
-        {
+        protected void onDraw ( Canvas canvas ) {
             super.onDraw ( canvas );
-            
-            if ( mDrawable == null )
-            {
+            if ( mDrawable == null ) {
                 return; // couldn't resolve the URI
             }
-            
-            if ( mDrawableWidth == 0 || mDrawableHeight == 0 )
-            {
+            if ( mDrawableWidth == 0 || mDrawableHeight == 0 ) {
                 return;     // nothing to draw (empty bounds)
             }
-            
-            if ( mDrawMatrix == null && mPaddingTop == 0 && mPaddingLeft == 0 )
-            {
+            if ( mDrawMatrix == null && mPaddingTop == 0 && mPaddingLeft == 0 ) {
                 mDrawable.draw ( canvas );
-            }
-            else
-            {
+            } else {
                 int saveCount = canvas.getSaveCount();
                 canvas.save();
-                
-                if ( mCropToPadding )
-                {
+                if ( mCropToPadding ) {
                     final int scrollX = mScrollX;
                     final int scrollY = mScrollY;
                     canvas.clipRect ( scrollX + mPaddingLeft, scrollY + mPaddingTop,
                                       scrollX + mRight - mLeft - mPaddingRight,
                                       scrollY + mBottom - mTop - mPaddingBottom );
                 }
-                
                 canvas.translate ( mPaddingLeft, mPaddingTop );
-                
-                if ( mDrawMatrix != null )
-                {
+                if ( mDrawMatrix != null ) {
                     canvas.concat ( mDrawMatrix );
                 }
-                
                 mDrawable.draw ( canvas );
                 canvas.restoreToCount ( saveCount );
             }
         }
-        
+
         /**
          * <p>Return the offset of the widget's text baseline from the widget's top
          * boundary. </p>
@@ -1228,18 +998,14 @@ public class UPNPImageView extends View
          */
         @Override
         @ViewDebug.ExportedProperty ( category = "layout" )
-        public int getBaseline()
-        {
-            if ( mBaselineAlignBottom )
-            {
+        public int getBaseline() {
+            if ( mBaselineAlignBottom ) {
                 return getMeasuredHeight();
-            }
-            else
-            {
+            } else {
                 return mBaseline;
             }
         }
-        
+
         /**
          * <p>Set the offset of the widget's text baseline from the widget's top
          * boundary.  This value is overridden by the {@link #setBaselineAlignBottom(boolean)}
@@ -1250,15 +1016,13 @@ public class UPNPImageView extends View
          * @see #setBaseline(int)
          * @attr ref android.R.styleable#ImageView_baseline
          */
-        public void setBaseline ( int baseline )
-        {
-            if ( mBaseline != baseline )
-            {
+        public void setBaseline ( int baseline ) {
+            if ( mBaseline != baseline ) {
                 mBaseline = baseline;
                 requestLayout();
             }
         }
-        
+
         /**
          * Set whether to set the baseline of this view to the bottom of the view.
          * Setting this value overrides any calls to setBaseline.
@@ -1268,25 +1032,22 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_baselineAlignBottom
          */
-        public void setBaselineAlignBottom ( boolean aligned )
-        {
-            if ( mBaselineAlignBottom != aligned )
-            {
+        public void setBaselineAlignBottom ( boolean aligned ) {
+            if ( mBaselineAlignBottom != aligned ) {
                 mBaselineAlignBottom = aligned;
                 requestLayout();
             }
         }
-        
+
         /**
          * Return whether this view's baseline will be considered the bottom of the view.
          *
          * @see #setBaselineAlignBottom(boolean)
          */
-        public boolean getBaselineAlignBottom()
-        {
+        public boolean getBaselineAlignBottom() {
             return mBaselineAlignBottom;
         }
-        
+
         /**
          * Set a tinting option for the image.
          *
@@ -1296,11 +1057,10 @@ public class UPNPImageView extends View
          *
          * @attr ref android.R.styleable#ImageView_tint
          */
-        public final void setColorFilter ( int color, PorterDuff.Mode mode )
-        {
+        public final void setColorFilter ( int color, PorterDuff.Mode mode ) {
             setColorFilter ( new PorterDuffColorFilter ( color, mode ) );
         }
-        
+
         /**
          * Set a tinting option for the image. Assumes
          * {@link PorterDuff.Mode#SRC_ATOP} blending mode.
@@ -1309,16 +1069,14 @@ public class UPNPImageView extends View
          * @attr ref android.R.styleable#ImageView_tint
          */
         @RemotableViewMethod
-        public final void setColorFilter ( int color )
-        {
+        public final void setColorFilter ( int color ) {
             setColorFilter ( color, PorterDuff.Mode.SRC_ATOP );
         }
-        
-        public final void clearColorFilter()
-        {
+
+        public final void clearColorFilter() {
             setColorFilter ( null );
         }
-        
+
         /**
          * Returns the active color filter for this ImageView.
          *
@@ -1326,11 +1084,10 @@ public class UPNPImageView extends View
          *
          * @see #setColorFilter(android.graphics.ColorFilter)
          */
-        public ColorFilter getColorFilter()
-        {
+        public ColorFilter getColorFilter() {
             return mColorFilter;
         }
-        
+
         /**
          * Apply an arbitrary colorfilter to the image.
          *
@@ -1338,17 +1095,15 @@ public class UPNPImageView extends View
          *
          * @see #getColorFilter()
          */
-        public void setColorFilter ( ColorFilter cf )
-        {
-            if ( mColorFilter != cf )
-            {
+        public void setColorFilter ( ColorFilter cf ) {
+            if ( mColorFilter != cf ) {
                 mColorFilter = cf;
                 mColorMod = true;
                 applyColorMod();
                 invalidate();
             }
         }
-        
+
         /**
          * Returns the alpha that will be applied to the drawable of this ImageView.
          *
@@ -1356,11 +1111,10 @@ public class UPNPImageView extends View
          *
          * @see #setImageAlpha(int)
          */
-        public int getImageAlpha()
-        {
+        public int getImageAlpha() {
             return mAlpha;
         }
-        
+
         /**
          * Sets the alpha value that should be applied to the image.
          *
@@ -1369,11 +1123,10 @@ public class UPNPImageView extends View
          * @see #getImageAlpha()
          */
         @RemotableViewMethod
-        public void setImageAlpha ( int alpha )
-        {
+        public void setImageAlpha ( int alpha ) {
             setAlpha ( alpha );
         }
-        
+
         /**
          * Sets the alpha value that should be applied to the image.
          *
@@ -1383,76 +1136,60 @@ public class UPNPImageView extends View
          */
         @Deprecated
         @RemotableViewMethod
-        public void setAlpha ( int alpha )
-        {
+        public void setAlpha ( int alpha ) {
             alpha &= 0xFF;          // keep it legal
-            
-            if ( mAlpha != alpha )
-            {
+            if ( mAlpha != alpha ) {
                 mAlpha = alpha;
                 mColorMod = true;
                 applyColorMod();
                 invalidate();
             }
         }
-        
-        private void applyColorMod()
-        {
+
+        private void applyColorMod() {
             // Only mutate and apply when modifications have occurred. This should
             // not reset the mColorMod flag, since these filters need to be
             // re-applied if the Drawable is changed.
-            if ( mDrawable != null && mColorMod )
-            {
+            if ( mDrawable != null && mColorMod ) {
                 mDrawable = mDrawable.mutate();
                 mDrawable.setColorFilter ( mColorFilter );
                 mDrawable.setAlpha ( mAlpha * mViewAlphaScale >> 8 );
             }
         }
-        
+
         @RemotableViewMethod
         @Override
-        public void setVisibility ( int visibility )
-        {
+        public void setVisibility ( int visibility ) {
             super.setVisibility ( visibility );
-            
-            if ( mDrawable != null )
-            {
+            if ( mDrawable != null ) {
                 mDrawable.setVisible ( visibility == VISIBLE, false );
             }
         }
-        
+
         @Override
-        protected void onAttachedToWindow()
-        {
+        protected void onAttachedToWindow() {
             super.onAttachedToWindow();
-            
-            if ( mDrawable != null )
-            {
+            if ( mDrawable != null ) {
                 mDrawable.setVisible ( getVisibility() == VISIBLE, false );
             }
         }
-        
+
         @Override
-        protected void onDetachedFromWindow()
-        {
+        protected void onDetachedFromWindow() {
             super.onDetachedFromWindow();
-            
-            if ( mDrawable != null )
-            {
+            if ( mDrawable != null ) {
                 mDrawable.setVisible ( false, false );
             }
         }
-        
+
         @Override
-        public void onInitializeAccessibilityEvent ( AccessibilityEvent event )
-        {
+        public void onInitializeAccessibilityEvent ( AccessibilityEvent event ) {
             super.onInitializeAccessibilityEvent ( event );
             event.setClassName ( UPNPImageView.class.getName() );
         }
-        
+
         @Override
-        public void onInitializeAccessibilityNodeInfo ( AccessibilityNodeInfo info )
-        {
+        public void onInitializeAccessibilityNodeInfo ( AccessibilityNodeInfo info ) {
             super.onInitializeAccessibilityNodeInfo ( info );
             info.setClassName ( UPNPImageView.class.getName() );
         }
