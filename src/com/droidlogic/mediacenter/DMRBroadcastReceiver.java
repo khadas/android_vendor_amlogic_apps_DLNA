@@ -107,13 +107,11 @@ public class DMRBroadcastReceiver extends BroadcastReceiver {
                         editor.commit();*/
                     mAirplayProxy = AirplayProxy.getInstance ( cxt );
                     mAirplayProxy.startAirReceiver();
-                }/*
+                }
 
-            else
-            {
-                editor.putBoolean(SettingsPreferences.KEY_START_ALREADY, false);
-                editor.commit();
-            }*/
+                if ( mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false ) ) {
+                    cxt.startService ( new Intent ( cxt, MediaCenterService.class ) );
+                }
             }
         }
 }

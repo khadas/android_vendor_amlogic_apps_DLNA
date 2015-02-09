@@ -5,6 +5,7 @@ import com.droidlogic.mediacenter.airplay.setting.SettingsPreferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -35,11 +36,8 @@ public class Utils {
             return false;
         }
 
-        public static final String SHARED_PREFS_NAME = "com.amlogic.mediacenter_preferences";
-
         public static SharedPreferences getSharedPreferences ( Context context ) {
-            return context.getSharedPreferences ( SHARED_PREFS_NAME,
-                                                  Context.MODE_PRIVATE );
+            return PreferenceManager.getDefaultSharedPreferences(context);
         }
 
         public static String getSavedDeviceName ( Context context ) {

@@ -15,7 +15,7 @@ import com.droidlogic.mediacenter.airplay.util.Utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.Preference;
-
+import android.preference.PreferenceManager;
 /**
  * @ClassName PrefUtils
  * @Description TODO
@@ -36,7 +36,7 @@ public class PrefUtils {
         public static final String SERVICE_NAME = "saved_device_name";
         public PrefUtils ( Context cxt ) {
             mContent = cxt;
-            mPrefs = mContent.getSharedPreferences ( Utils.SHARED_PREFS_NAME, Context.MODE_PRIVATE );
+            mPrefs = PreferenceManager.getDefaultSharedPreferences(cxt);
         }
 
         public void setString ( String key, String Str ) {
