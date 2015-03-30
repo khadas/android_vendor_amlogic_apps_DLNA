@@ -368,7 +368,7 @@ public class main extends Activity {
                 mDevs[devCnt] = dir.toString();
             }
             dir = new File (SD_PATH);
-            if (dir.exists() && dir.isDirectory()) {
+            if (Environment.getExternalStorageState(dir).equals(Environment.MEDIA_MOUNTED)) {
                 devCnt++;
                 mDevs[devCnt] = dir.toString();
             }
