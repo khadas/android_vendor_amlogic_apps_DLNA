@@ -74,7 +74,8 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
         private static final int SHOW_LOADING        = 6;
         private static final int HIDE_LOADING        = 7;
         private static final int FORE_VIDEO          = 8;
-        private static final int STOP_BY_SEVER = 9;
+        private static final int STOP_BY_SEVER       = 9;
+        private static final int VOLUME_HIDE         = 10;
         public static final int  STATE_PLAY          = 0;
         public static final int  STATE_PAUSE         = 1;
         public static final int  STATE_STOP          = 2;
@@ -615,10 +616,13 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                     case STOP_BY_SEVER:
                         if ( !running ) {
                             VideoPlayer.this.finish();
-                        } else {
+                          } else {
                             handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
                         }
-                        return;
+                        break;
+                    case VOLUME_HIDE:
+                        dialog_volume.dismiss();
+                        break;
                 }
             }
         };
@@ -655,6 +659,11 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                     View layout_volume = inflater.inflate ( R.layout.volume_dialog,
                                                             ( ViewGroup ) findViewById ( R.id.layout_root_volume ) );
                     dialog_volume = new VolumeDialog ( this );
+                    dialog_volume.setOnShowListener( new DialogInterface.OnShowListener() {
+                        public void onShow( DialogInterface dialog ) {
+                            handlerUI.sendEmptyMessageDelayed(VOLUME_HIDE, 8000);
+                        }
+                    });
                     return dialog_volume;
                 case DIALOG_EXIT_ID:
                     Dialog errDlg = new AlertDialog.Builder ( VideoPlayer.this )
@@ -894,7 +903,6 @@ public class VideoPlayer extends Activity implements OnInfoListener, VideoContro
                 flag |= View.STATUS_BAR_HIDDEN | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             }
-            android.util.Log.d ( "tt", "==============================" );
             mVideoView.setSystemUiVisibility ( flag );
         }
 

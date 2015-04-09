@@ -43,6 +43,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
+import android.os.Process;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -118,7 +119,6 @@ public class ImageFromUrl extends Activity {
             mHandler = new DecodeHandler ( mCurUri );
             mDecodeBitmapTask.start();
             ViewGroup mainView = ( ViewGroup ) findViewById ( R.id.image_control );
-            android.util.Log.d ( TAG, "On Create" );
             mainView.setOnClickListener ( new View.OnClickListener() {
                 @Override
                 public void onClick ( View v ) {
@@ -508,6 +508,8 @@ public class ImageFromUrl extends Activity {
                 public void run() {
                     String urlString = null;
                     stop = false;
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY );
+                    Debug.d(TAG,"startTime:"+System.currentTimeMillis());
                     while ( !stop ) {
                         urlString = mUrl.getUrl();
                         if ( urlString != null ) {
@@ -518,18 +520,20 @@ public class ImageFromUrl extends Activity {
                                 connection.connect();
                                 BufferedInputStream input = new BufferedInputStream ( connection.getInputStream() );
                                 if ( input == null ) {
-                                    Debug.e ( "rot", "***get Bitmap error!" );
+                                    Debug.e ( TAG, "***get Bitmap error!" );
                                     throw new RuntimeException ( "stream is null" );
                                 } else {
                                     BitmapFactory.Options bmOptions = new BitmapFactory.Options();
                                     bmOptions.inSampleSize = 1;
                                     bmOptions.inPreferredConfig = Bitmap.Config.RGB_565;
                                     bmOptions.inDither = false;
+                                    Debug.d(TAG,"before decode:"+System.currentTimeMillis());
                                     myBitmap = BitmapFactory.decodeStream ( input, null, bmOptions );
                                     Debug.d ( TAG, "myBitmap==null" + ( myBitmap == null ) );
                                     if ( mHandler != null ) {
                                         mHandler.sendEmptyMessage ( SHOW_BITMAP_URL );
                                     }
+                                    Debug.d(TAG,"before showMap:"+System.currentTimeMillis());
                                     connection.disconnect();
                                 }
                             } catch ( Exception e ) {
@@ -628,6 +632,7 @@ public class ImageFromUrl extends Activity {
                 hideLoading();
                 return;
             }
+            Debug.d(TAG,"showImage showMap:"+System.currentTimeMillis());
             if ( myBitmap != null ) {
                 zoomCount = 1;
                 int height = myBitmap.getHeight();

@@ -92,7 +92,7 @@ public class DmpService extends Service {
             ActivityManager am = ( ActivityManager ) getSystemService ( ACTIVITY_SERVICE );
             ComponentName cn = am.getRunningTasks ( 1 ).get ( 0 ).topActivity;
             String packageName = cn.getPackageName();
-            if ( packageName.equals ( "com.amlogic.mediacenter" ) ) {
+            if ( this.getClass().getPackage().getName().contains(packageName) ) {
                 Intent mIntent = new Intent();
                 mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
                 mIntent.setClass ( DmpService.this, DMRError.class );

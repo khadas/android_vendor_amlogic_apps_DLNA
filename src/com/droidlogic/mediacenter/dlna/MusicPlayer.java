@@ -99,13 +99,16 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         public static final int     STATE_PAUSE            = 1;
         public static final int     STATE_STOP             = 2;
         private static final int    DIALOG_VOLUME_ID       = 2;
-        private static final int    DIALOG_MODE_ID = 3;
-        private static final int SHOW_STOP = 3;
-        private static final int SHOW_START = 2;
-        private static final int STOP_AND_START = 4;
-        private static final int SHOW_LOADING = 5;
-        private static final int HIDE_LOADING = 6;
-        private static final int STOP_BY_SEVER = 7;
+        private static final int    DIALOG_MODE_ID         = 3;
+
+
+        private static final int    SHOW_START             = 2;
+        private static final int    SHOW_STOP              = 3;
+        private static final int    STOP_AND_START         = 4;
+        private static final int    SHOW_LOADING           = 5;
+        private static final int    HIDE_LOADING           = 6;
+        private static final int    STOP_BY_SEVER          = 7;
+        private static final int    VOLUME_HIDE            = 8;
 
         private LoadingDialog exitDlg;
         private Dialog              dialog_volume;
@@ -854,6 +857,11 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     View layout_volume = inflater.inflate ( R.layout.volume_dialog,
                                                             ( ViewGroup ) findViewById ( R.id.layout_root_volume ) );
                     dialog_volume = new VolumeDialog ( this );
+                    dialog_volume.setOnShowListener( new DialogInterface.OnShowListener( ) {
+                        public void onShow( DialogInterface dialog ) {
+                            handlerUI.sendEmptyMessageDelayed(VOLUME_HIDE, 8000);
+                        }
+                    });
                     return dialog_volume;
                     /*case DIALOG_MODE_ID:
                         mode_dialog = new ModeDialog(this);
@@ -1140,7 +1148,10 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         } else {
                             handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
                         }
-                        return;
+                        break;
+                    case VOLUME_HIDE:
+                        dialog_volume.dismiss();
+                        break;
                 }
             }
         };

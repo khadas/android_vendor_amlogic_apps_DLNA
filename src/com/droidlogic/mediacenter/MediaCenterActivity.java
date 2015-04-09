@@ -214,28 +214,25 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             NetworkInfo ethInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_ETHERNET );
             NetworkInfo mobileInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_MOBILE );
             if ( ethInfo == null && ethInfo == null && mobileInfo == null ) {
-                android.util.Log.d ( "tt", "NetWork is null" );
-                if ( MediaCenterService.getAndroidOSVersion() > 19 ) {
+                    Intent mIntent = new Intent();
+                    mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
+                    mIntent.setClass ( this, DMRError.class );
+                    startActivity ( mIntent );
+                return;
+            }
+            if ( ( ethInfo != null && ethInfo.isConnectedOrConnecting() ) ||
+                    ( wifiInfo != null && wifiInfo.isConnectedOrConnecting() ) ||
+                    ( mobileInfo != null && mobileInfo.isConnectedOrConnecting() ) ) {
                     startMediaCenterService();
                     startDmpService();
                     startAirplay();
-                } else {
+                }else {
                     Intent mIntent = new Intent();
                     mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
                     mIntent.setClass ( this, DMRError.class );
                     startActivity ( mIntent );
                 }
-                return;
             }
-            if ( ( ethInfo != null && ethInfo.isConnectedOrConnecting() ) ||
-                    ( wifiInfo != null && wifiInfo.isConnectedOrConnecting() ) ||
-            ( mobileInfo != null && mobileInfo.isConnectedOrConnecting() ) ) {
-                android.util.Log.d ( "tt", "startService" );
-                startMediaCenterService();
-                startDmpService();
-                startAirplay();
-            }
-        }
 
         public interface Callbacks {
             public void onBackPressedCallback();
