@@ -213,7 +213,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             NetworkInfo wifiInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_WIFI );
             NetworkInfo ethInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_ETHERNET );
             NetworkInfo mobileInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_MOBILE );
-            if ( ethInfo == null && ethInfo == null && mobileInfo == null ) {
+            if ( ethInfo == null && wifiInfo == null && mobileInfo == null ) {
                     Intent mIntent = new Intent();
                     mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
                     mIntent.setClass ( this, DMRError.class );

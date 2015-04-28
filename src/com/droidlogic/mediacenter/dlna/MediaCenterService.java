@@ -22,7 +22,7 @@ import org.amlogic.upnp.MediaRendererDevice;
 import org.cybergarage.net.HostInterface;
 import org.cybergarage.upnp.device.InvalidDescriptionException;
 import org.cybergarage.util.Debug;
-
+import org.cybergarage.upnp.UPnP;
 import com.droidlogic.mediacenter.R;
 
 import android.app.ActivityManager;
@@ -87,6 +87,7 @@ public class MediaCenterService extends Service {
 
 
         private void initDMR() {
+            UPnP.setEnable( UPnP.USE_ONLY_IPV4_ADDR );
             String mAbsPath = getFilesDir().getAbsolutePath();
             if ( mPref.getBooleanVal ( PrefUtils.FISAT_START, true ) ) {
                 // showStartImage
@@ -121,6 +122,7 @@ public class MediaCenterService extends Service {
          * @return
          */
         private String getNetWorkMac() {
+            HostInterface.resetInterface();
             ConnectivityManager connectivityManager = ( ConnectivityManager ) this
                     .getSystemService ( Context.CONNECTIVITY_SERVICE );
             NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
@@ -152,7 +154,6 @@ public class MediaCenterService extends Service {
             if ( mac == null ) {
                 mac = SystemProperties.get ( "ubootenv.var.ethaddr", "UNKNOWN" );
             }
-            HostInterface.resetInterface();
             return mac;
         }
 
