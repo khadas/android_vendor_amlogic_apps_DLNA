@@ -525,9 +525,10 @@ public class ImageFromUrl extends Activity {
                                 } else {
                                     BitmapFactory.Options bmOptions = new BitmapFactory.Options();
                                     bmOptions.inSampleSize = 1;
+                                    bmOptions.inPurgeable = true;
                                     bmOptions.inPreferredConfig = Bitmap.Config.RGB_565;
                                     bmOptions.inDither = false;
-                                    Debug.d(TAG,"before decode:"+System.currentTimeMillis());
+                                    Debug.d(TAG, "before decode:"+System.currentTimeMillis());
                                     myBitmap = BitmapFactory.decodeStream ( input, null, bmOptions );
                                     Debug.d ( TAG, "myBitmap==null" + ( myBitmap == null ) );
                                     if ( mHandler != null ) {
