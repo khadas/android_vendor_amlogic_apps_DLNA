@@ -21,7 +21,6 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceScreen;
 
-import com.droidlogic.mediacenter.airplay.proxy.AirplayProxy;
 import com.droidlogic.mediacenter.airplay.setting.NameSetDialog;
 import com.droidlogic.mediacenter.airplay.setting.SettingsPreferenceFragment;
 import com.droidlogic.mediacenter.airplay.util.Utils;
@@ -47,7 +46,7 @@ public class SettingsFragment extends SettingsPreferenceFragment implements
         private static final int DIALOG_NAME_SETTINGS = 1;
         private NameSetDialog mDialog;
         private String mDeviceName;
-        private AirplayProxy mAirplayProxy;
+        //private AirplayProxy mAirplayProxy;
         /* (non-Javadoc)
          * @see android.preference.Preference.OnPreferenceChangeListener#onPreferenceChange(android.preference.Preference, java.lang.Object)
          */
@@ -69,7 +68,7 @@ public class SettingsFragment extends SettingsPreferenceFragment implements
             addPreferencesFromResource ( R.xml.about_preferences );
             mVersionPref = ( Preference ) findPreference ( KEY_VERSION );
             mDeviceNamePref = ( Preference ) findPreference ( KEY_NAME );
-            mAirplayProxy = AirplayProxy.getInstance ( getActivity() );
+            //mAirplayProxy = AirplayProxy.getInstance(getActivity());
         }
         @Override
         public void onResume() {
@@ -113,7 +112,6 @@ public class SettingsFragment extends SettingsPreferenceFragment implements
                 mDeviceNamePref
                 .setSummary ( prefs.getString ( KEY_DEVICE_NAME,
                                                 getActivity().getString ( R.string.config_default_name ) ) );
-                mAirplayProxy.onDeviceNameChanged();
                 send2DLNAServer ( name );
             }
         }

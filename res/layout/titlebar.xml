@@ -1,8 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
-    <ImageView 
+    android:layout_height="wrap_content">
+    <ImageView
         android:id="@+id/icon"
         android:src="@drawable/ic_launcher_mini"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
         android:layout_toRightOf="@id/icon"
         android:layout_marginLeft="20dp"
         />
-    <ImageButton 
+    <ImageButton
         android:id="@+id/fresh"
         android:background="@drawable/fresh_list"
         android:visibility="gone"

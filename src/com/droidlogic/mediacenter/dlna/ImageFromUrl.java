@@ -189,24 +189,7 @@ public class ImageFromUrl extends Activity {
                 }
             } );
             mSlideView = ( ViewGroup ) findViewById ( R.id.split_layout );
-            /*mSlideView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    mHandler.removeMessages(HIDEPANEL);
-                    mHandler.sendEmptyMessageDelayed(HIDEPANEL, STOP_SHOW_INTERVAL);
-                    return false;
-                }
-            });
-            mSlideView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    Log.d(TAG,"image View:"+hasFocus + "isBrowserMode:"+isBrowserMode);
-                    if(hasFocus && isBrowserMode){
-                        mHandler.removeMessages(HIDEPANEL);
-                        mHandler.sendEmptyMessageDelayed(HIDEPANEL, STOP_SHOW_INTERVAL);
-                    }
-                }
-            });*/
+
             OnFocusChangeListener listener = new View.OnFocusChangeListener() {
                 @Override
                 public void onFocusChange ( View v, boolean hasFocus ) {

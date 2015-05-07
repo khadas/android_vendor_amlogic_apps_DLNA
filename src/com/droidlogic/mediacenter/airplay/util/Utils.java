@@ -37,7 +37,7 @@ public class Utils {
         }
 
         public static SharedPreferences getSharedPreferences ( Context context ) {
-            return PreferenceManager.getDefaultSharedPreferences(context);
+            return PreferenceManager.getDefaultSharedPreferences ( context );
         }
 
         public static String getSavedDeviceName ( Context context ) {

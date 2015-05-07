@@ -22,7 +22,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.text.TextUtils;
-import com.amlogic.util.Debug;
 import android.view.MenuItem;
 
 import java.util.Locale;
@@ -122,7 +121,6 @@ public class HelpUtils {
                 } catch ( NameNotFoundException e ) {
                     // Cannot find the package name, so don't add in the version parameter
                     // This shouldn't happen.
-                    Debug.wtf ( TAG, "Invalid package name for context", e );
                 }
             } else {
                 builder.appendQueryParameter ( PARAM_VERSION, sCachedVersionCode );

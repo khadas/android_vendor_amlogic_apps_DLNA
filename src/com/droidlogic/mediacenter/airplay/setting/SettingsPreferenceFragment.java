@@ -22,18 +22,18 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.text.TextUtils;
-import com.amlogic.util.Debug;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Button;
-
+import android.util.Log;
 /**
  * Base class for Settings fragments, with some helper functions and dialog management.
  */
@@ -134,7 +134,7 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
 
         protected void showDialog ( int dialogId ) {
             if ( mDialogFragment != null ) {
-                Debug.e ( TAG, "Old dialog fragment not null!" );
+                Log.e ( TAG, "Old dialog fragment not null!" );
             }
             mDialogFragment = new SettingsDialogFragment ( this, dialogId );
             mDialogFragment.show ( getActivity().getFragmentManager(), Integer.toString ( dialogId ) );
@@ -296,9 +296,9 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
                         R.string.lock_settings_picker_title, null, caller, requestCode );
                 return true;
             } else {
-                Debug.w ( TAG, "Parent isn't PreferenceActivity, thus there's no way to launch the "
-                          + "given Fragment (name: " + fragmentClass + ", requestCode: " + requestCode
-                          + ")" );
+                Log.w ( TAG, "Parent isn't PreferenceActivity, thus there's no way to launch the "
+                        + "given Fragment (name: " + fragmentClass + ", requestCode: " + requestCode
+                        + ")" );
                 return false;
             }
         }

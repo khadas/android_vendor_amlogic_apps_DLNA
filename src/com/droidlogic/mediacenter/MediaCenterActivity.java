@@ -5,9 +5,6 @@ import java.util.Map;
 
 import org.cybergarage.util.Debug;
 
-import com.droidlogic.mediacenter.airplay.proxy.AirplayProxy;
-import com.droidlogic.mediacenter.airplay.service.AirReceiverService;
-import com.droidlogic.mediacenter.airplay.setting.SettingsPreferences;
 import com.droidlogic.mediacenter.dlna.DMRError;
 import com.droidlogic.mediacenter.dlna.DmpFragment;
 import com.droidlogic.mediacenter.dlna.DmpService;
@@ -16,7 +13,8 @@ import com.droidlogic.mediacenter.dlna.MediaCenterService;
 import com.droidlogic.mediacenter.dlna.PrefUtils;
 import com.droidlogic.mediacenter.dlna.DmpFragment.FreshListener;
 import com.droidlogic.mediacenter.dlna.DmpService.DmpBinder;
-
+import com.droidlogic.mediacenter.airplay.AirPlayService;
+import com.droidlogic.mediacenter.airplay.setting.SettingsPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
@@ -46,11 +44,10 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
         private ServiceConnection mConn = null;
         private TextView mDeviceName = null;
         private Fragment mCallbacks;
-        private AirplayProxy mAirplayProxy;
+
         @Override
         protected void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
-            mAirplayProxy = AirplayProxy.getInstance ( this );
             setContentView ( R.layout.activity_main );
             mPrefUtils = new PrefUtils ( this );
             animation = ( AnimationSet ) AnimationUtils.loadAnimation ( this, R.anim.refresh_btn );
@@ -78,15 +75,18 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
         private void startAirplay() {
             if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
                 Log.d ( TAG, "onStartAirProxy" );
-                mAirplayProxy.startAirReceiver();
+                Intent intent = new Intent();
+                intent.setClass ( this, AirPlayService.class );
+                startService ( intent );
             }
         }
 
         private void stopAirplay() {
             if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) && !mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
                 Log.d ( TAG, "onStartAirProxy" );
-                mAirplayProxy.stopAirReceiver();
-                stopService ( new Intent ( this, AirReceiverService.class ) );
+                Intent intent = new Intent();
+                intent.setClass ( this, AirPlayService.class );
+                stopService ( intent );
             }
         }
 
@@ -214,25 +214,25 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             NetworkInfo ethInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_ETHERNET );
             NetworkInfo mobileInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_MOBILE );
             if ( ethInfo == null && wifiInfo == null && mobileInfo == null ) {
-                    Intent mIntent = new Intent();
-                    mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
-                    mIntent.setClass ( this, DMRError.class );
-                    startActivity ( mIntent );
+                Intent mIntent = new Intent();
+                mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
+                mIntent.setClass ( this, DMRError.class );
+                startActivity ( mIntent );
                 return;
             }
             if ( ( ethInfo != null && ethInfo.isConnectedOrConnecting() ) ||
                     ( wifiInfo != null && wifiInfo.isConnectedOrConnecting() ) ||
-                    ( mobileInfo != null && mobileInfo.isConnectedOrConnecting() ) ) {
-                    startMediaCenterService();
-                    startDmpService();
-                    startAirplay();
-                }else {
-                    Intent mIntent = new Intent();
-                    mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
-                    mIntent.setClass ( this, DMRError.class );
-                    startActivity ( mIntent );
-                }
+            ( mobileInfo != null && mobileInfo.isConnectedOrConnecting() ) ) {
+                startMediaCenterService();
+                startDmpService();
+                startAirplay();
+            } else {
+                Intent mIntent = new Intent();
+                mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
+                mIntent.setClass ( this, DMRError.class );
+                startActivity ( mIntent );
             }
+        }
 
         public interface Callbacks {
             public void onBackPressedCallback();
@@ -243,11 +243,6 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
                 org.cybergarage.util.Debug.off(); //LOG OFF
             } else {
                 org.cybergarage.util.Debug.on();  //LOG ON
-            }
-            if ( !SystemProperties.getBoolean ( "rw.app.airplay.debug", false ) ) {
-                com.amlogic.util.Debug.Off(); // LOG OFF
-            } else {
-                com.amlogic.util.Debug.On(); // LOG ON
             }
         }
 }

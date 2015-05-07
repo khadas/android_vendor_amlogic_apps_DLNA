@@ -1,26 +1,16 @@
-/**
- * @Package com.droidlogic.mediacenter
- * @Description Copyright (c) Inspur Group Co., Ltd. Unpublished Inspur Group
- *              Co., Ltd. Proprietary & Confidential This source code and the
- *              algorithms implemented therein constitute confidential
- *              information and may comprise trade secrets of Inspur or its
- *              associates, and any use thereof is subject to the terms and
- *              conditions of the Non-Disclosure Agreement pursuant to which
- *              this source code was originally received.
- */
-package com.droidlogic.mediacenter.dlna;
+package com.droidlogic.mediacenter.airplay;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
-
-import org.cybergarage.util.Debug;
-
-import com.droidlogic.mediacenter.R;
-
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -29,23 +19,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.FrameLayout;
-import android.widget.SeekBar;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
+//import com.android.internal.policy.PolicyManager;
+
+import java.lang.reflect.Method;
 import java.util.Formatter;
 import java.util.Locale;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Method;
-
-import android.os.SystemProperties;
+import com.droidlogic.mediacenter.R;
 
 /**
  * A view containing controls for a MediaPlayer. Typically contains the buttons
@@ -53,78 +40,73 @@ import android.os.SystemProperties;
  * care of synchronizing the controls with the state of the MediaPlayer.
  * <p>
  * The way to use this class is to instantiate it programatically. The
- * VideoController will create a default set of controls and put them in a
+ * MediaController will create a default set of controls and put them in a
  * window floating above your application. Specifically, the controls will float
  * above the view specified with setAnchorView(). The window will disappear if
  * left idle for three seconds and reappear when the user touches the anchor
  * view.
  * <p>
- * Functions like show() and hide() have no effect when VideoController is
- * created in an xml layout. VideoController will hide and show the buttons
- * according to these rules:
+ * Functions like show() and hide() have no effect when MediaController is
+ * created in an xml layout.
+ *
+ * MediaController will hide and show the buttons according to these rules:
  * <ul>
  * <li>The "previous" and "next" buttons are hidden until setPrevNextListeners()
  * has been called
  * <li>The "previous" and "next" buttons are visible but disabled if
  * setPrevNextListeners() was called with null listeners
  * <li>The "rewind" and "fastforward" buttons are shown unless requested
- * otherwise by using the VideoController(Context, boolean) constructor with the
+ * otherwise by using the MediaController(Context, boolean) constructor with the
  * boolean set to false
  * </ul>
  */
-public class VideoController extends FrameLayout {
-        private static final String        TAG                      = "VideoController";
-        private MediaPlayerControl         mPlayer;
-        private Context                    mContext;
-        private View                       mAnchor;
-        private View                       mRoot;
-        private WindowManager              mWindowManager;
-        private Window                     mWindow;
-        private View                       mDecor;
+public class MediaController extends FrameLayout {
+
+        private MediaPlayerControl mPlayer;
+        private Context mContext;
+        private View mAnchor;
+        private View mRoot;
+        private WindowManager mWindowManager;
+        private Window mWindow;
+        private View mDecor;
         private WindowManager.LayoutParams mDecorLayoutParams;
-        private static final String        POLICYMANAGER_CLASS_NAME = "com.android.internal.policy.PolicyManager";
-        private ProgressBar                mProgress;
-        private TextView                   mEndTime, mCurrentTime;
-        private boolean                    mShowing;
-        private boolean                    mDragging;
-        private static final int           sDefaultTimeout          = 3000;
-        private static final int           FADE_OUT                 = 1;
-        private static final int           SHOW_PROGRESS            = 2;
-        private boolean                    mUseFastForward;
-        private boolean                    mFromXml;
-        private boolean                    mListenersSet;
-        private View.OnClickListener       mNextListener, mPrevListener;
-        private View.OnClickListener       mExitListener;
-        private View.OnClickListener       mVolumeListener;
-        StringBuilder                      mFormatBuilder;
-        Formatter                          mFormatter;
-        private ImageButton                mPauseButton;
-        private ImageButton                mFfwdButton;
-        private ImageButton                mRewButton;
-        private ImageButton                mNextButton;
-        private ImageButton                mPrevButton;
-        private ImageButton                mExitButton;
-        private ImageButton                mVolumeButton;
-        private Context                    con                      = null;
-        private ControllerShowListener mContextShow;
-        public VideoController ( Context context, AttributeSet attrs ) {
+        // private ProgressBar mProgress;
+        private SeekBar mProgress;
+        private TextView mEndTime, mCurrentTime;
+        private boolean mShowing;
+        private boolean mDragging;
+        private static final int sDefaultTimeout = 5000;
+        private static final int FADE_OUT = 1;
+        private static final int SHOW_PROGRESS = 2;
+        private boolean mUseFastForward;
+        private boolean mFromXml;
+        private boolean mListenersSet;
+        private View.OnClickListener mNextListener, mPrevListener, mExitListener, mVolumeListener;
+        StringBuilder mFormatBuilder;
+        Formatter mFormatter;
+        private ImageButton mPauseButton;
+        private ImageButton mFfwdButton;
+        private ImageButton mRewButton;
+        private ImageButton mNextButton;
+        private ImageButton mPrevButton;
+        private ImageButton mExitButton;
+        private ImageButton mVolumeButton;
+        public MediaController ( Context context, AttributeSet attrs ) {
             super ( context, attrs );
             mRoot = this;
             mContext = context;
             mUseFastForward = true;
             mFromXml = true;
         }
-        public void setControllerListener ( ControllerShowListener listener ) {
-            mContextShow = listener;
-        }
 
         @Override
         public void onFinishInflate() {
-            if ( mRoot != null )
-            { initControllerView ( mRoot ); }
+            if ( mRoot != null ) {
+                initControllerView ( mRoot );
+            }
         }
 
-        public VideoController ( Context context, boolean useFastForward ) {
+        public MediaController ( Context context, boolean useFastForward ) {
             super ( context );
             mContext = context;
             mUseFastForward = useFastForward;
@@ -132,29 +114,38 @@ public class VideoController extends FrameLayout {
             initFloatingWindow();
         }
 
-        public VideoController ( Context context ) {
+        public MediaController ( Context context ) {
             this ( context, true );
-            con = context;
+        }
+
+        public void setVolumeListener ( View.OnClickListener volume ) {
+            mVolumeListener = volume;
+            Log.d ( "tt", "mVolumeButton != null?" + ( mVolumeButton != null ) );
+            if ( mVolumeButton != null ) {
+                mVolumeButton.setOnClickListener ( mVolumeListener );
+            }
         }
 
         private void initFloatingWindow() {
             mWindowManager = ( WindowManager ) mContext
                              .getSystemService ( Context.WINDOW_SERVICE );
-            // mWindow = PolicyManager.makeNewWindow(mContext);
             try {
                 Class policyClass;
-                policyClass = Class.forName ( POLICYMANAGER_CLASS_NAME );
+                policyClass = Class
+                              .forName ( "com.android.internal.policy.PolicyManager" );
                 Method meths[] = policyClass.getMethods();
                 Method makenewwindow = null;
                 // Method makenewwindow = policyClass.getMethod("makeNewWindow");
                 for ( int i = 0; i < meths.length; i++ ) {
-                    if ( meths[i].getName().endsWith ( "makeNewWindow" ) )
-                    { makenewwindow = meths[i]; }
+                    if ( meths[i].getName().endsWith ( "makeNewWindow" ) ) {
+                        makenewwindow = meths[i];
+                    }
                 }
                 mWindow = ( Window ) makenewwindow.invoke ( null, mContext );
             } catch ( Exception e ) {
                 e.printStackTrace();
             }
+            // mWindow = PolicyManager.makeNewWindow(mContext);
             mWindow.setWindowManager ( mWindowManager, null, null );
             mWindow.requestFeature ( Window.FEATURE_NO_TITLE );
             mDecor = mWindow.getDecorView();
@@ -174,6 +165,7 @@ public class VideoController extends FrameLayout {
         // also call updateFloatingWindowLayout() to fill in the dynamic parts
         // (y and width) before mDecorLayoutParams can be used.
         private void initFloatingWindowLayout() {
+            Log.d ( "tt", "initFloatingWindowLayout...................." );
             mDecorLayoutParams = new WindowManager.LayoutParams();
             WindowManager.LayoutParams p = mDecorLayoutParams;
             p.gravity = Gravity.TOP;
@@ -188,26 +180,6 @@ public class VideoController extends FrameLayout {
             p.windowAnimations = 0; // android.R.style.DropDownAnimationDown;
         }
 
-        private static final String DISPLAY_MODE_PATH = "/sys/class/display/mode";
-
-        private static String getCurDisplayMode() {
-            String modeStr;
-            try {
-                BufferedReader reader = new BufferedReader ( new FileReader (
-                            DISPLAY_MODE_PATH ), 32 );
-                try {
-                    modeStr = reader.readLine();
-                } finally {
-                    reader.close();
-                }
-                return ( modeStr == null ) ? "panel" : modeStr;
-            } catch ( IOException e ) {
-                Debug.e ( "VideoController", "IO Exception when read: "
-                          + DISPLAY_MODE_PATH, e );
-                return "panel";
-            }
-        }
-
         // Update the dynamic parts of mDecorLayoutParams
         // Must be called with mAnchor != NULL.
         private void updateFloatingWindowLayout() {
@@ -216,54 +188,22 @@ public class VideoController extends FrameLayout {
             WindowManager.LayoutParams p = mDecorLayoutParams;
             p.width = mAnchor.getWidth();
             p.y = anchorPos[1] + mAnchor.getHeight();
-            int m1080scale = SystemProperties
-                             .getInt ( "ro.platform.has.1080scale", 0 );
-            /*if (m1080scale != 2) {
-                if (getCurDisplayMode().equals("480p") && mAnchor.getHeight() > 480) {
-                    p.gravity = Gravity.TOP | Gravity.LEFT;
-                    if (p.width > 720)
-                        p.width = 720;
-                    p.y -= (mAnchor.getHeight() - 480) + 100;
-                } else if (getCurDisplayMode().equals("720p")
-                        && mAnchor.getHeight() > 720) {
-                    p.gravity = Gravity.TOP | Gravity.LEFT;
-                    if (p.width > 1280)
-                        p.width = 1280;
-                    p.y -= (mAnchor.getHeight() - 720) + 100;
-                }
-            }
-            Log.d(TAG, "****updateFloatingWindowLayout: p.x=" + p.x
-                    + ", p.y=" + p.y + ", p.width=" + p.width + ", p.height="
-                    + p.height + ", scale=" + m1080scale);*/
         }
 
         // This is called whenever mAnchor's layout bound changes
         private OnLayoutChangeListener mLayoutChangeListener = new OnLayoutChangeListener() {
-            public void onLayoutChange (
-                View v,
-                int left,
-                int top,
-                int right,
-                int bottom,
-                int oldLeft,
-                int oldTop,
-                int oldRight,
-            int oldBottom ) {
+            public void onLayoutChange ( View v, int left, int top, int right,
+            int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom ) {
                 updateFloatingWindowLayout();
                 if ( mShowing ) {
-                    mWindowManager
-                    .updateViewLayout (
-                        mDecor,
-                        mDecorLayoutParams );
+                    mWindowManager.updateViewLayout ( mDecor, mDecorLayoutParams );
                 }
             }
         };
-        private OnTouchListener        mTouchListener        = new OnTouchListener() {
-            public boolean onTouch (
-                View v,
-            MotionEvent event ) {
-                if ( event
-                .getAction() == MotionEvent.ACTION_DOWN ) {
+
+        private OnTouchListener mTouchListener = new OnTouchListener() {
+            public boolean onTouch ( View v, MotionEvent event ) {
+                if ( event.getAction() == MotionEvent.ACTION_DOWN ) {
                     if ( mShowing ) {
                         hide();
                     }
@@ -276,7 +216,14 @@ public class VideoController extends FrameLayout {
             mPlayer = player;
             updatePausePlay();
         }
-
+        public void setExitListener ( View.OnClickListener listen ) {
+            mExitListener = listen;
+            if ( ( mExitButton != null ) && ( listen != null ) ) {
+                mExitButton.setOnClickListener ( listen );
+                mExitButton.setVisibility ( View.VISIBLE );
+                mExitButton.setEnabled ( true );
+            }
+        }
         /**
          * Set the view that acts as the anchor for the control view. This can for
          * example be a VideoView, or your Activity's main view.
@@ -310,27 +257,20 @@ public class VideoController extends FrameLayout {
         protected View makeControllerView() {
             LayoutInflater inflate = ( LayoutInflater ) mContext
                                      .getSystemService ( Context.LAYOUT_INFLATER_SERVICE );
-            mRoot = inflate.inflate ( R.layout.video_controller, null );
+            mRoot = inflate.inflate ( R.layout.media_controller, null );
+            Log.d ( "tt", "makeControllerView...................." );
             initControllerView ( mRoot );
             return mRoot;
         }
 
         private void initControllerView ( View v ) {
-            mPauseButton = ( ImageButton ) v.findViewById ( R.id.PlayBtn );
+            Log.d ( "tt", "initControllerView" );
+            mPauseButton = ( ImageButton ) v.findViewById ( R.id.pause );
             if ( mPauseButton != null ) {
                 mPauseButton.requestFocus();
                 mPauseButton.setOnClickListener ( mPauseListener );
             }
-            mExitButton = ( ImageButton ) v.findViewById ( R.id.back );
-            if ( mExitButton != null ) {
-                mExitButton.setEnabled ( false );
-                if ( mExitListener != null ) {
-                    mExitButton.setOnClickListener ( mExitListener );
-                    mExitButton.setVisibility ( View.VISIBLE );
-                    mExitButton.setEnabled ( true );
-                }
-            }
-            mFfwdButton = ( ImageButton ) v.findViewById ( R.id.FastForward );
+            mFfwdButton = ( ImageButton ) v.findViewById ( R.id.ffwd );
             if ( mFfwdButton != null ) {
                 mFfwdButton.setOnClickListener ( mFfwdListener );
                 if ( !mFromXml ) {
@@ -338,7 +278,7 @@ public class VideoController extends FrameLayout {
                                                 : View.GONE );
                 }
             }
-            mRewButton = ( ImageButton ) v.findViewById ( R.id.FastReverse );
+            mRewButton = ( ImageButton ) v.findViewById ( R.id.rew );
             if ( mRewButton != null ) {
                 mRewButton.setOnClickListener ( mRewListener );
                 if ( !mFromXml ) {
@@ -348,35 +288,31 @@ public class VideoController extends FrameLayout {
             }
             // By default these are hidden. They will be enabled when
             // setPrevNextListeners() is called
-            mNextButton = ( ImageButton ) v.findViewById ( R.id.NextBtn );
+            mNextButton = ( ImageButton ) v.findViewById ( R.id.next );
             if ( mNextButton != null && !mFromXml && !mListenersSet ) {
                 mNextButton.setVisibility ( View.GONE );
             }
-            mPrevButton = ( ImageButton ) v.findViewById ( R.id.PreBtn );
+            mPrevButton = ( ImageButton ) v.findViewById ( R.id.prev );
             if ( mPrevButton != null && !mFromXml && !mListenersSet ) {
                 mPrevButton.setVisibility ( View.GONE );
             }
-            mVolumeButton = ( ImageButton ) v.findViewById ( R.id.VolumeBtn );
-            if ( mVolumeButton != null ) {
-                mVolumeButton.setEnabled ( false );
-                if ( mVolumeListener != null ) {
-                    mVolumeButton.setOnClickListener ( mVolumeListener );
-                    mVolumeButton.setVisibility ( View.VISIBLE );
-                    mVolumeButton.setEnabled ( true );
-                }
-            }
-            mProgress = ( ProgressBar ) v.findViewById ( R.id.progressbar );
+            mProgress = ( SeekBar ) v.findViewById ( R.id.mediacontroller_progress );
             if ( mProgress != null ) {
-                if ( mProgress instanceof SeekBar ) {
-                    SeekBar seeker = ( SeekBar ) mProgress;
-                    seeker.setOnSeekBarChangeListener ( mSeekListener );
-                }
+                mProgress.setOnSeekBarChangeListener ( mSeekListener );
                 mProgress.setMax ( 1000 );
             }
             mEndTime = ( TextView ) v.findViewById ( R.id.totalTime );
             mCurrentTime = ( TextView ) v.findViewById ( R.id.curTime );
             mFormatBuilder = new StringBuilder();
             mFormatter = new Formatter ( mFormatBuilder, Locale.getDefault() );
+            mExitButton = ( ImageButton ) v.findViewById ( R.id.back );
+            mVolumeButton = ( ImageButton ) v.findViewById ( R.id.VolumeBtn );
+            if ( mExitButton != null ) {
+                mExitButton.setOnClickListener ( mExitListener );
+            }
+            if ( mVolumeButton != null ) {
+                mVolumeButton.setOnClickListener ( mVolumeListener );
+            }
             installPrevNextListeners();
         }
 
@@ -421,9 +357,6 @@ public class VideoController extends FrameLayout {
          *            until hide() is called.
          */
         public void show ( int timeout ) {
-            if ( mContextShow != null ) {
-                mContextShow.onShowController();
-            }
             if ( !mShowing && mAnchor != null ) {
                 setProgress();
                 if ( mPauseButton != null ) {
@@ -454,14 +387,15 @@ public class VideoController extends FrameLayout {
          * Remove the controller from the screen.
          */
         public void hide() {
-            if ( mAnchor == null )
-            { return; }
+            if ( mAnchor == null ) {
+                return;
+            }
             if ( mShowing ) {
                 try {
                     mHandler.removeMessages ( SHOW_PROGRESS );
                     mWindowManager.removeView ( mDecor );
                 } catch ( IllegalArgumentException ex ) {
-                    Debug.d ( "VideoController", "already removed" );
+                    Log.i ( "MediaController", "already removed" );
                 }
                 mShowing = false;
             }
@@ -477,41 +411,55 @@ public class VideoController extends FrameLayout {
                         break;
                     case SHOW_PROGRESS:
                         pos = setProgress();
-                        if ( !mDragging && mShowing
-                        && mPlayer.isPlaying() ) {
+                        if ( !mDragging && mShowing && mPlayer.isPlaying() ) {
                             msg = obtainMessage ( SHOW_PROGRESS );
-                            sendMessageDelayed ( msg,
-                                                 1000 - ( pos % 1000 ) );
+                            sendMessageDelayed ( msg, 1000 - ( pos % 1000 ) );
                         }
                         break;
                 }
             }
         };
 
-        public void hidePreNextBtn ( boolean hide ) {
-            mNextListener = null;
-            mPrevListener = null;
-            /*if (!hide) {
-                mNextButton.setVisibility(View.GONE);
-                mPrevButton.setVisibility(View.GONE);
-            } else {
-                mNextButton.setVisibility(View.VISIBLE);
-                mPrevButton.setVisibility(View.VISIBLE);
-            }*/
-        }
-
-        private String stringForTime ( int timeMs ) {
-            int totalSeconds = timeMs / 1000;
-            int seconds = totalSeconds % 60;
-            int minutes = ( totalSeconds / 60 ) % 60;
-            int hours = totalSeconds / 3600;
-            mFormatBuilder.setLength ( 0 );
-            if ( hours > 0 ) {
-                return mFormatter.format ( "%d:%02d:%02d", hours, minutes, seconds )
-                       .toString();
-            } else {
-                return mFormatter.format ( "%02d:%02d", minutes, seconds ).toString();
+        /*
+         * private String stringForTime(int timeMs) { int totalSeconds = timeMs /
+         * 1000;
+         *
+         * int seconds = totalSeconds % 60; int minutes = (totalSeconds / 60) % 60;
+         * int hours = totalSeconds / 3600;
+         *
+         * mFormatBuilder.setLength(0); if (hours > 0) { return hours + ":" +
+         * minutes + ":" +seconds; //return mFormatter.format("%d:%02d:%02d", hours,
+         * minutes, seconds).toString(); } else { // return
+         * mFormatter.format("%02d:%02d", minutes, seconds).toString(); return
+         * minutes + ":" +seconds; } }
+         */
+        private String stringForTime ( int tt ) {
+            int t = tt / 1000;
+            StringBuffer sb = new StringBuffer();
+            int hour = t / 3600;
+            int min = ( t / 60 ) % 60;
+            int sec = t % 60;
+            // sb.delete( 0, sb.length() );
+            if ( hour > 0 ) {
+                if ( hour >= 10 ) {
+                    sb.append ( String.valueOf ( hour ) );
+                } else {
+                    sb.append ( "0" + String.valueOf ( hour ) );
+                }
+                sb.append ( ":" );
             }
+            if ( min >= 10 ) {
+                sb.append ( String.valueOf ( min ) );
+            } else {
+                sb.append ( "0" + String.valueOf ( min ) );
+            }
+            sb.append ( ":" );
+            if ( sec >= 10 ) {
+                sb.append ( String.valueOf ( sec ) );
+            } else {
+                sb.append ( "0" + String.valueOf ( sec ) );
+            }
+            return sb.toString();
         }
 
         private int setProgress() {
@@ -529,10 +477,16 @@ public class VideoController extends FrameLayout {
                 int percent = mPlayer.getBufferPercentage();
                 mProgress.setSecondaryProgress ( percent * 10 );
             }
-            if ( mEndTime != null )
-            { mEndTime.setText ( stringForTime ( duration ) ); }
-            if ( mCurrentTime != null )
-            { mCurrentTime.setText ( stringForTime ( position ) ); }
+            if ( mEndTime != null ) {
+                if ( duration == 0 ) {
+                    mEndTime.setText ( "--:--" );
+                } else {
+                    mEndTime.setText ( stringForTime ( duration ) );
+                }
+            }
+            if ( mCurrentTime != null ) {
+                mCurrentTime.setText ( stringForTime ( position ) );
+            }
             return position;
         }
 
@@ -551,8 +505,8 @@ public class VideoController extends FrameLayout {
         @Override
         public boolean dispatchKeyEvent ( KeyEvent event ) {
             int keyCode = event.getKeyCode();
-            final boolean uniqueDown = ( event.getRepeatCount() == 0 && event
-                                         .getAction() == KeyEvent.ACTION_DOWN );
+            final boolean uniqueDown = event.getRepeatCount() == 0
+                                       && event.getAction() == KeyEvent.ACTION_DOWN;
             if ( keyCode == KeyEvent.KEYCODE_HEADSETHOOK
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
                     || keyCode == KeyEvent.KEYCODE_SPACE ) {
@@ -564,28 +518,31 @@ public class VideoController extends FrameLayout {
                     }
                 }
                 return true;
-            } else if ( keyCode == KeyEvent.KEYCODE_MEDIA_PLAY ) {
+            }/* else if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            if (uniqueDown && !mPlayer.isPlaying()) {
+                mPlayer.start();
+                updatePausePlay();
+                show(sDefaultTimeout);
+            } else if (uniqueDown && mPlayer.isPlaying()) {
+                mPlayer.pause();
+                updatePausePlay();
+                show(sDefaultTimeout);
+            }
+            return true;
+        } */else if ( keyCode == KeyEvent.KEYCODE_MEDIA_PLAY ) {
                 if ( uniqueDown && !mPlayer.isPlaying() ) {
+                    // Intent i = new Intent(mainConst.PLAY);
+                    // mContext.sendBroadcast(i);
                     mPlayer.start();
-                    updatePausePlay();
-                    // show(sDefaultTimeout);
-                }
-                return true;
-            } else if ( keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE ) {
-                if ( uniqueDown && ( mPlayer != null ) && mPlayer.isPlaying() ) {
-                    mPlayer.pause();
                     updatePausePlay();
                     show ( sDefaultTimeout );
                 }
                 return true;
-            } else if ( keyCode == KeyEvent.KEYCODE_MEDIA_STOP ) {
-                if ( uniqueDown && mPlayer.isInPlaybackState() ) {
-                    mPlayer.seekTo ( 0 );
-                    setProgress();
-                    if ( mPlayer.isPlaying() ) {
-                        mPlayer.pause();
-                        updatePausePlay();
-                    }
+            } else if ( keyCode == KeyEvent.KEYCODE_MEDIA_STOP
+                        || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE ) {
+                if ( uniqueDown && mPlayer.isPlaying() ) {
+                    mPlayer.pause();
+                    updatePausePlay();
                     show ( sDefaultTimeout );
                 }
                 return true;
@@ -600,21 +557,41 @@ public class VideoController extends FrameLayout {
                     hide();
                 }
                 return true;
-            }
+            } /*else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            int pos = mPlayer.getCurrentPosition();
+            pos += 5000; // milliseconds
+            mPlayer.seekTo(pos);
+            setProgress();
+
+            show(sDefaultTimeout);
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            int pos = mPlayer.getCurrentPosition();
+            pos -= 5000; // milliseconds
+            if (pos < 0)
+                pos = 0;
+            mPlayer.seekTo(pos);
+            setProgress();
+
+            show(sDefaultTimeout);
+            return true;
+        }*/
             show ( sDefaultTimeout );
             return super.dispatchKeyEvent ( event );
         }
 
         private View.OnClickListener mPauseListener = new View.OnClickListener() {
             public void onClick ( View v ) {
+                Log.d ( "tt", "clicked pauseListener" );
                 doPauseResume();
                 show ( sDefaultTimeout );
             }
         };
 
         private void updatePausePlay() {
-            if ( mRoot == null || mPauseButton == null )
-            { return; }
+            if ( mRoot == null || mPauseButton == null ) {
+                return;
+            }
             if ( mPlayer.isPlaying() ) {
                 mPauseButton.setImageResource ( R.drawable.suspend_play );
             } else {
@@ -647,69 +624,38 @@ public class VideoController extends FrameLayout {
         // we will simply apply the updated position without suspending regular
         // updates.
         private OnSeekBarChangeListener mSeekListener = new OnSeekBarChangeListener() {
-            public void onStartTrackingTouch (
-            SeekBar bar ) {
+            public void onStartTrackingTouch ( SeekBar bar ) {
                 show ( 3600000 );
                 mDragging = true;
-                // By removing these
-                // pending progress
-                // messages we make
-                // sure
-                // that a) we won't
-                // update the progress
-                // while the user
-                // adjusts
-                // the seekbar and b)
-                // once the user is
-                // done dragging the
-                // thumb
-                // we will post one of
-                // these messages to
-                // the queue again and
-                // this ensures that
-                // there will be
-                // exactly one message
-                // queued up.
+                // By removing these pending progress messages we make sure
+                // that a) we won't update the progress while the user adjusts
+                // the seekbar and b) once the user is done dragging the thumb
+                // we will post one of these messages to the queue again and
+                // this ensures that there will be exactly one message queued up.
                 mHandler.removeMessages ( SHOW_PROGRESS );
             }
-            public void onProgressChanged (
-                SeekBar bar,
-                int progress,
+            public void onProgressChanged ( SeekBar bar, int progress,
             boolean fromuser ) {
                 if ( !fromuser ) {
-                    // We're not
-                    // interested in
-                    // programmatically
-                    // generated
-                    // changes to
-                    // the progress
-                    // bar's position.
+                    // We're not interested in programmatically generated changes to
+                    // the progress bar's position.
                     return;
                 }
-                long duration = mPlayer
-                                .getDuration();
+                long duration = mPlayer.getDuration();
                 long newposition = ( duration * progress ) / 1000L;
                 mPlayer.seekTo ( ( int ) newposition );
-                if ( mCurrentTime != null )
-                    mCurrentTime
-                    .setText ( stringForTime ( ( int ) newposition ) );
+                if ( mCurrentTime != null ) {
+                    mCurrentTime.setText ( stringForTime ( ( int ) newposition ) );
+                }
             }
-            public void onStopTrackingTouch (
-            SeekBar bar ) {
+            public void onStopTrackingTouch ( SeekBar bar ) {
                 mDragging = false;
                 setProgress();
                 updatePausePlay();
                 show ( sDefaultTimeout );
-                // Ensure that
-                // progress is
-                // properly updated in
-                // the future,
-                // the call to show()
-                // does not guarantee
-                // this because it is
-                // a
-                // no-op if we are
-                // already showing.
+                // Ensure that progress is properly updated in the future,
+                // the call to show() does not guarantee this because it is a
+                // no-op if we are already showing.
                 mHandler.sendEmptyMessage ( SHOW_PROGRESS );
             }
         };
@@ -734,37 +680,32 @@ public class VideoController extends FrameLayout {
             if ( mProgress != null ) {
                 mProgress.setEnabled ( enabled );
             }
-            if ( mVolumeButton != null ) {
-                mVolumeButton.setEnabled ( enabled );
-            }
             disableUnsupportedButtons();
             super.setEnabled ( enabled );
         }
 
-        private View.OnClickListener mRewListener  = new View.OnClickListener() {
+        private View.OnClickListener mRewListener = new View.OnClickListener() {
             public void onClick ( View v ) {
-                int pos = mPlayer
-                          .getCurrentPosition();
-                pos -= 5000; // milliseconds
+                int pos = mPlayer.getCurrentPosition();
+                pos -= 15000; // milliseconds
+                if ( pos < 0 ) {
+                    pos = 0;
+                }
                 mPlayer.seekTo ( pos );
                 setProgress();
                 show ( sDefaultTimeout );
             }
         };
+
         private View.OnClickListener mFfwdListener = new View.OnClickListener() {
             public void onClick ( View v ) {
-                int pos = mPlayer
-                          .getCurrentPosition();
+                int pos = mPlayer.getCurrentPosition();
                 pos += 15000; // milliseconds
                 mPlayer.seekTo ( pos );
                 setProgress();
                 show ( sDefaultTimeout );
             }
         };
-
-        public void setVolumeListener ( View.OnClickListener volume ) {
-            mVolumeListener = volume;
-        }
 
         private void installPrevNextListeners() {
             if ( mNextButton != null ) {
@@ -793,18 +734,6 @@ public class VideoController extends FrameLayout {
             }
         }
 
-        public void setExitListener ( View.OnClickListener listen ) {
-            mExitListener = listen;
-            if ( ( mExitButton != null ) && ( listen != null ) ) {
-                mExitButton.setOnClickListener ( listen );
-                mExitButton.setVisibility ( View.VISIBLE );
-                mExitButton.setEnabled ( true );
-            }
-        }
-        public interface ControllerShowListener {
-            public void onShowController();
-            public void onHideController();
-        }
         public interface MediaPlayerControl {
             void start();
 
@@ -817,8 +746,6 @@ public class VideoController extends FrameLayout {
             void seekTo ( int pos );
 
             boolean isPlaying();
-
-            boolean isInPlaybackState();
 
             int getBufferPercentage();
 

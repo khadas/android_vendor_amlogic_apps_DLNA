@@ -41,17 +41,5 @@ public class MarqueeTextView extends TextView {
             super ( context, attrs, defStyle );
         }
 
-        /*@Override
-        public boolean isFocused() {
-            return true;
-        }
-
-
-        @Override
-        protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
-            if (focused){
-                super.onFocusChanged(focused,direction,previouslyFocusedRect);
-            }
-        }*/
 }
 

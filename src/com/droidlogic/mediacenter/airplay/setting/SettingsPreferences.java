@@ -1,5 +1,6 @@
 package com.droidlogic.mediacenter.airplay.setting;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -8,7 +9,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.SwitchPreference;
 import android.util.Log;
 
-import com.droidlogic.mediacenter.airplay.proxy.AirplayProxy;
+import com.droidlogic.mediacenter.airplay.AirPlayService;
 import com.droidlogic.mediacenter.R;
 
 public class SettingsPreferences extends SettingsPreferenceFragment implements
@@ -18,7 +19,7 @@ public class SettingsPreferences extends SettingsPreferenceFragment implements
         public static final String  KEY_BOOT_CFG      = "boot_airplay";
         private SwitchPreference    mStartServicePref;
         private SwitchPreference    mBootCfgPref;
-        private AirplayProxy        mAirplayProxy;
+        // private AirplayProxy        mAirplayProxy;
 
         @Override
         public void onCreate ( Bundle icicle ) {
@@ -26,7 +27,7 @@ public class SettingsPreferences extends SettingsPreferenceFragment implements
             addPreferencesFromResource ( R.xml.settings_airplay );
             mStartServicePref = ( SwitchPreference ) findPreference ( KEY_START_SERVICE );
             mBootCfgPref = ( SwitchPreference ) findPreference ( KEY_BOOT_CFG );
-            mAirplayProxy = AirplayProxy.getInstance ( getActivity() );
+            //mAirplayProxy = AirplayProxy.getInstance(getActivity());
         }
 
         @Override
@@ -64,12 +65,24 @@ public class SettingsPreferences extends SettingsPreferenceFragment implements
         @Override
         public void onSharedPreferenceChanged ( SharedPreferences sharedPreferences,
                                                 String key ) {
-            Log.d ( TAG, "start_or_stop airplay service" );
             if ( key.equals ( KEY_START_SERVICE ) ) {
-                if ( mStartServicePref.isChecked() || mBootCfgPref.isChecked() ) {
-                    mAirplayProxy.startAirReceiver();
+                if ( mStartServicePref.isChecked() ) {
+                    Log.d ( TAG, "start airplay service" );
+                    Intent intent = new Intent();
+                    intent.setClass ( getActivity(), AirPlayService.class );
+                    getActivity().startService ( intent );
                 } else {
-                    mAirplayProxy.stopAirReceiver();
+                    Log.d ( TAG, "stop airplay service" );
+                    Intent intent = new Intent();
+                    intent.setClass ( getActivity(), AirPlayService.class );
+                    getActivity().stopService ( intent );
+                }
+            } else if ( key.equals ( KEY_BOOT_CFG ) ) {
+                if ( mBootCfgPref.isChecked() ) {
+                    Log.d ( TAG, "start airplay service=======" );
+                    Intent intent = new Intent();
+                    intent.setClass ( getActivity(), AirPlayService.class );
+                    getActivity().startService ( intent );
                 }
             }
         }

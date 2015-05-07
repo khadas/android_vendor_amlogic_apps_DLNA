@@ -116,38 +116,7 @@ public class DmpService extends Service {
             Debug.d ( TAG, "getDeviceIcon()" );
             return mControlPoint.getDeviceIcon ( path );
         }
-        /*    public List<Map<String, Object>> getFullList(){
-            ArrayList<String> deviceList = mControlPoint.getMediaServerNameList();
-            Log.d(TAG,"deviceList:"+(deviceList!=null));
-            if(deviceList!=null)
-                Log.d(TAG,"deviceList size:"+deviceList.size());
-            List<Map<String, Object>> list = new ArrayList<Map<String,Object>>();
-            HashMap<String, Object> map;
-            if(deviceList!=null && deviceList.size()>0){
-                try {
-                    for(int i=0; i<deviceList.size(); i++) {
-                        map = new HashMap<String, Object>();
-                        String path = deviceList.get(i);
-                        map.put("item_name", path);
-                        map.put("item_sel", R.drawable.item_img_unsel);
-                        String icon_type = mControlPoint.getDeviceIcon(path);
-                        if(icon_type == null)
-                            map.put("item_type", R.drawable.cloud);
-                        else {
-                            map.put("item_type", icon_type);
-                        };
-                        list.add(map);
-                    }
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }else{
-                return null;
-            }
-            Log.d(TAG,"list:"+list.size());
-            return list;
-          }*/
+
         public void restartDmp() {
             mHandler.sendEmptyMessage ( START_DMP );
         }
