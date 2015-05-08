@@ -379,7 +379,8 @@ public class main extends Activity {
                         if (file.isDirectory()) {
                             String devname = null;
                             String path = file.getAbsolutePath();
-                            if ( (path.startsWith (USB_PATH + "/sd") || path.startsWith (USB_PATH + "/sr")) && !path.equals (SD_PATH)) {
+                            if ( ((path.startsWith (USB_PATH + "/sd") || path.startsWith (USB_PATH + "/sr")) && !path.equals (SD_PATH))
+                                && Environment.getExternalStorageState(file).equals(Environment.MEDIA_MOUNTED)) {
                                 devCnt++;
                                 mDevs[devCnt] = file.toString();
                             }
