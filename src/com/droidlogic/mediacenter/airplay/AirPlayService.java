@@ -210,7 +210,7 @@ public class AirPlayService extends Service {
 
         @Override
         public void onDestroy() {
-            Log.d ( "tt", "onDestroy////////////////////////////" + mServiceName + Log.getStackTraceString ( new Throwable() ) );
+            Log.d ( TAG, "onDestroy////////////////////////////" + mServiceName + Log.getStackTraceString ( new Throwable() ) );
             // mCheckDaemon.removeMessages ( 0 );
             super.onDestroy();
             if ( isRegistReceiver ) {
@@ -223,7 +223,11 @@ public class AirPlayService extends Service {
 
         @Override
         public int onStartCommand ( Intent intent, int flags, int startId ) {
-            Log.d ( "tt", "onStartCommand////////////////////////////" + intent.getAction() );
+            if ( intent == null ) {
+                Log.d ( TAG, "onStartCommand////////////////////////////intent is null.");
+            } else {
+                Log.d ( TAG, "onStartCommand////////////////////////////" + intent.getAction() );
+            }
             if ( !isRegistReceiver ) {
                 IntentFilter f = new IntentFilter();
                 f.addAction ( MediaCenterService.SERVICE_NAME_CHANGE );
@@ -259,7 +263,7 @@ public class AirPlayService extends Service {
 
         private boolean startAirplayService() {
             boolean isstart = true;
-            Log.d ( "tt", "mApp.isDaemonRun()" + mApp.isDaemonRun() + "mAllCast.isAirPlayRuning()" + mAllCast.isAirPlayRuning() );
+            Log.d ( TAG, "mApp.isDaemonRun()" + mApp.isDaemonRun() + "mAllCast.isAirPlayRuning()" + mAllCast.isAirPlayRuning() );
             if ( !mApp.isDaemonRun() ) {
                 mApp.startDaemon ( mAllCast );
                 STATEDFLAG = true;
@@ -267,7 +271,7 @@ public class AirPlayService extends Service {
             if ( !mAllCast.isAirPlayRuning() ) {
                 isstart = mAllCast.startAirPlayService();
             }
-            Log.d ( "tt", "mAllCast.startAirPlayService() return" + isstart + "running?" + mAllCast.isAirPlayRuning() );
+            Log.d ( TAG, "mAllCast.startAirPlayService() return" + isstart + "running?" + mAllCast.isAirPlayRuning() );
             if ( !isstart || !mAllCast.isAirPlayRuning() ) {
                 mHandler.sendEmptyMessageDelayed ( 0, 3000 );
             }

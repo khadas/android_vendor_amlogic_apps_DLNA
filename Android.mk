@@ -20,7 +20,7 @@ include $(BUILD_PACKAGE)
 include $(CLEAR_VARS)
 LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := libmid:libs/mid-sdk-2.10.jar \
                                         libmta:libs/mta-sdk-2.0.0.jar \
-                                        liblebo:libs/LEBO-SDK-1.1.0.7r.jar \
+                                        liblebo:libs/LEBO-SDK-1.1.0.8r.jar \
                                         libandroid-support-v4:libs/android-support-v4.jar \
                                         libdlna:libs/dlna.jar
 

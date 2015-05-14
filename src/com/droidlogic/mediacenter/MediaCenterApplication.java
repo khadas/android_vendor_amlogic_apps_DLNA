@@ -38,7 +38,7 @@ public class MediaCenterApplication extends Application {
             if ( mCast == null ) {
                 mCast = cast;
             }
-            mCast.startDaemonService();
+            mCast.stopDaemonService();
             mIsDaemonRun = false;
         }
 
