@@ -8,6 +8,8 @@ import org.amlogic.upnp.MediaRendererDevice;
 import com.droidlogic.mediacenter.R;
 import com.droidlogic.mediacenter.dlna.LoadingDialog;
 
+import com.droidlogic.app.SystemControlManager;
+
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
@@ -383,6 +385,9 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             Log.i ( TAG, "played" );
             mPlaybackInfoHandler.removeMessages ( SHOW_LOADING );
             mPlaybackInfoHandler.sendEmptyMessage ( HIDE_LOADING );
+            SystemControlManager scm = new SystemControlManager(this);
+            scm.writeSysFs("/sys/class/video/disable_video", "2");
+
             try {
                 mVideoView.start();
             } catch ( IllegalStateException ise ) {
