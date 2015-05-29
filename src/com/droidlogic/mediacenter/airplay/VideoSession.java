@@ -10,6 +10,7 @@ public class VideoSession {
         public int mStartPosition = 0;
         public Uri mUri = null;
         public boolean isPlaying = false;
+        public boolean isActive = false;
         public static VideoSession getInstance() {
             if ( sInstance == null ) {
                 sInstance = new VideoSession();

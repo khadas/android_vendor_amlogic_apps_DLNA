@@ -7,6 +7,7 @@ import org.amlogic.upnp.MediaRendererDevice;
 
 import com.droidlogic.mediacenter.R;
 import com.droidlogic.mediacenter.dlna.LoadingDialog;
+import com.droidlogic.mediacenter.MediaCenterApplication;
 
 import com.droidlogic.app.SystemControlManager;
 
@@ -77,12 +78,13 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         // private boolean mCanSeek = true;
         private float mStartPosition = 0;
         private MediaController mMediaController;
-        private IntentFilter mFilter = null;
         // private String mClientName = "";
         // apple session id
         private String mAppleSessionID = "";
         // source is airplay or dlna
         private String mType = "AIRPLAY";
+        private boolean isend = false;
+        private boolean lastpauseplay = false;
         private PlaybackReceiver sReceiver = new PlaybackReceiver();
         private VideoSession mVideoSession = VideoSession.getInstance();
         private Dialog dialog_volume;
@@ -129,7 +131,6 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             setContentView ( R.layout.nativeplayer );
             mAudioManager = ( AudioManager ) getSystemService ( AUDIO_SERVICE );
             mVideoView = ( VideoView ) findViewById ( R.id.HappyPlayvideoview );
-            mFilter = new IntentFilter();
             mVideoWidth = 0;
             mVideoHeight = 0;
             setupView();
@@ -142,7 +143,8 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         }
 
         private void registerReceivers() {
-            mFilter = new IntentFilter();
+            IntentFilter mFilter = new IntentFilter();
+            mFilter.addAction ( "ready" );
             mFilter.addAction ( "seek" );
             mFilter.addAction ( "stop" );
             mFilter.addAction ( "pause" );
@@ -170,12 +172,12 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             public void handleMessage ( Message msg ) {
                 switch ( msg.what ) {
                     case UPDATE_POS:
+                        if ( isend )
+                            break;
                         try {
                             mVideoSession.isPlaying = mVideoView.isPlaying();
-                            mVideoSession.mCurrentDuration = mVideoView.getDuration(); // unit:
-                            // ms
-                            mVideoSession.mCurrentPosition = mVideoView
-                                                             .getCurrentPosition(); // unit: ms
+                            mVideoSession.mCurrentDuration = mVideoView.getDuration(); // unit: ms
+                            mVideoSession.mCurrentPosition = mVideoView.getCurrentPosition(); // unit: ms
                         } catch ( IllegalStateException ise ) {
                         }
                         sendEmptyMessageDelayed ( 0, 1000 );
@@ -197,28 +199,31 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         protected void onDestroy() {
             hideLoading();
             super.onDestroy();
+            mVideoSession.isActive = false;
             Log.i ( TAG, "onDestroy" );
             // mPlaybackService.mHasVideoSession = false;
         }
 
         @Override
         protected void onPause() {
-            while ( mPlaybackInfoHandler.hasMessages ( SHOW_LOADING ) ) {
-                mPlaybackInfoHandler.removeMessages ( SHOW_LOADING );
-            }
             if ( running == true ) {
                 running = false;
             }
             super.onPause();
-            unRegisterReceivers();
             Log.i ( TAG, "onPause" );
-            while ( mPlaybackInfoHandler.hasMessages ( UPDATE_POS ) ) {
-                mPlaybackInfoHandler.removeMessages ( UPDATE_POS );
+            if ( null != mPlaybackInfoHandler ) {
+                unRegisterReceivers();
+                while ( mPlaybackInfoHandler.hasMessages ( SHOW_LOADING ) ) {
+                    mPlaybackInfoHandler.removeMessages ( SHOW_LOADING );
+                }
+                while ( mPlaybackInfoHandler.hasMessages ( UPDATE_POS ) ) {
+                    mPlaybackInfoHandler.removeMessages ( UPDATE_POS );
+                }
+                mPlaybackInfoHandler.removeMessages ( SHOW_STOP );
+                mPlaybackInfoHandler = null;
             }
-            mPlaybackInfoHandler.removeMessages ( SHOW_STOP );
-            mPlaybackInfoHandler.removeMessages ( SHOW_LOADING );
             hideLoading();
-            mPlaybackInfoHandler = null;
+            MediaCenterApplication.setPlayer ( false );
             stop();
             SystemProperties.set ( "media.amplayer.displast_frame", "false" );
         }
@@ -226,9 +231,15 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         @Override
         protected void onResume() {
             super.onResume();
+            if ( mPlaybackInfoHandler == null ) {
+                Log.i ( TAG, "handler is null" );
+                finish();
+                return;
+            }
             running = true;
             mPlaybackInfoHandler.sendEmptyMessage ( SHOW_LOADING );
             registerReceivers();
+            MediaCenterApplication.setPlayer ( true );
             Log.i ( TAG, "onResume" );
             SystemProperties.set ( "media.amplayer.displast_frame", "true" );
         }
@@ -267,6 +278,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             Log.i ( TAG, mAction );
             if ( mAction.equals ( "stop" ) ) {
                 Log.d ( TAG, "stop" );
+                mVideoSession.isPlaying = false;
                 stop();
                 finish();
             } else if ( mAction.equals ( "pause" ) ) {
@@ -274,6 +286,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
                     return;
                 }
                 try {
+                    lastpauseplay = false;
                     mVideoView.pause();
                 } catch ( IllegalStateException ise ) {
                     ise.printStackTrace();
@@ -287,6 +300,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
                 } catch (IllegalStateException ise) {
                     ise.printStackTrace();
                 }*/
+                lastpauseplay = true;
                 play();
             } else if ( mAction.equals ( "seek" ) ) {
                 if ( mVideoView == null ) {
@@ -299,9 +313,26 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
                 int seekto = bundle.getInt ( "seekTo", 0 );
                 Log.d ( "tt", "processExtraData=======" + seekto );
                 try {
-                    mVideoView.seekTo ( seekto );
+                    if ( seekto > 300 ) {
+                        mVideoView.seekTo ( seekto );
+                    }
                 } catch ( IllegalStateException ise ) {
                     ise.printStackTrace();
+                }
+            } else if ( mAction.equals ( "ready" ) ) {
+                Bundle bundle = intent.getExtras();
+                if ( bundle != null )
+                {
+                    mType = bundle.getString ( "TYPE", "AIRPLAY" );
+                    mAppleSessionID = bundle.getString ( "SESSIONID", "" );
+                    mUrl = bundle.getString ( "URL","" );
+                    mUri = Uri.parse ( mUrl );
+                    mStartPosition = bundle.getFloat ( "SP",0 );
+                    //
+                    mVideoSession.mCurrentSessionID = mAppleSessionID;
+                    mVideoSession.mUri = mUri;
+                    stop();
+                    load();
                 }
             }
         }
@@ -425,21 +456,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         *
         */
         private void stop() {
-            // //////////////////////////////////////////////////
-            // should add followed message
-            // /////////////////////////////////////////////////
-            /*Intent intent;
-            if ( mType.equals ( "AIRPLAY" ) ) {
-                intent = new Intent ( "com.hpplaysdk.happyplay.QUERY_AIRPLAY_STATUS" );
-            } else {
-                intent = new Intent ( "com.hpplaysdk.happyplay.QUERY_DLNA_STATUS" );
-            }
-            Bundle bundle = new Bundle();
-            bundle.putString ( "STATUS", "stopped" );
-            bundle.putString ( "REASON", "ended" );
-            bundle.putString ( "SESSIONID", mAppleSessionID );
-            intent.putExtras ( bundle );
-            Log.i ( TAG, "stopped" );*/
+            Log.i(TAG, "stopped");
             release();
         }
 
@@ -506,14 +523,16 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
 
         @Override
         public void onBufferingUpdate ( MediaPlayer arg0, int percent ) {
-            Log.i ( TAG, "onBufferingUpdate percent:" + percent );
+            //Log.i(TAG, "onBufferingUpdate percent:" + percent);
         }
 
         @Override
         public void onCompletion ( MediaPlayer arg0 ) {
             Log.i ( TAG, "onCompletion called" );
-            //stopExit();
-            mPlaybackInfoHandler.sendEmptyMessage ( SHOW_STOP );
+            isend = true;
+            while ( mPlaybackInfoHandler.hasMessages( UPDATE_POS ) ) {
+                mPlaybackInfoHandler.removeMessages( UPDATE_POS );
+            }
             // //////////////////////////////////////////////////
             // should add followed message
             // /////////////////////////////////////////////////
@@ -530,6 +549,8 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             intent.putExtras ( bundle );
             sendBroadcast ( intent );
             // //////////////////////////////////////////////////
+            mVideoSession.mCurrentPosition = mVideoSession.mCurrentDuration;
+            mVideoSession.isPlaying = false;
             stop();
             VideoPlayer.this.finish();
         }
@@ -565,7 +586,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         private void hideLoading() {
             if ( progressDialog != null ) {
                 progressDialog.stopAnim();
-                progressDialog.hide();
+                progressDialog.dismiss();
                 progressDialog = null;
             }
         }
@@ -739,6 +760,15 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         public void onSeekComplete ( MediaPlayer mp ) {
             mPlaybackInfoHandler.sendEmptyMessage ( HIDE_LOADING );
             Log.i ( TAG, "seekComplete called" );
+
+            try {
+                if ( lastpauseplay ) {
+                    mp.start();
+                } else {
+                    mp.pause();
+                }
+            } catch ( IllegalStateException ise ) {
+            }
         }
 
         // if video resulotion is big,then buffering and pause to wait for 2s for
@@ -780,8 +810,12 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         @Override
         public boolean onError ( MediaPlayer mp, int arg1, int arg2 ) {
             Log.i ( TAG, "OnError arg1= " + arg1 + " arg2= " + arg2 );
+            isend = true;
+            mVideoSession.isPlaying = false;
             // /////////////////////////////////////////////////
-            //
+            while ( mPlaybackInfoHandler.hasMessages( UPDATE_POS ) ) {
+                mPlaybackInfoHandler.removeMessages( UPDATE_POS );
+            }
             // ////////////////////////////////////////////////
             Intent intent;
             if ( mType.equals ( "AIRPLAY" ) ) {

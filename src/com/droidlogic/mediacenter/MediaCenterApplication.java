@@ -8,6 +8,8 @@ import android.app.Application;
 public class MediaCenterApplication extends Application {
         public AllCast mCast;
         public static boolean mIsDaemonRun = false;
+        public static boolean mIsPhoto = false;
+        public static boolean mIsPlayer = false;
 
         @Override
         public void onCreate() {
@@ -29,6 +31,21 @@ public class MediaCenterApplication extends Application {
                 mCast = new AllCast ( this, ic );
             }
             return mCast;
+        }
+
+        public static void setPhoto(boolean isrun) {
+            mIsPhoto = isrun;
+        }
+
+        public static boolean getPhoto() {
+            return mIsPhoto;
+        }
+        public static void setPlayer(boolean isrun) {
+            mIsPlayer = isrun;
+        }
+
+        public static boolean getPlayer() {
+            return mIsPlayer;
         }
 
         public boolean isDaemonRun() {

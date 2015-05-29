@@ -49,6 +49,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 import android.util.Log;
+import com.droidlogic.mediacenter.MediaCenterApplication;
 import com.droidlogic.mediacenter.dlna.LoadingDialog;
 import com.droidlogic.mediacenter.R;
 import android.graphics.Matrix;
@@ -307,12 +308,14 @@ public class Photo extends Activity {
             super.onPause();
             hideLoading();
             unRegisterReceivers();
+            MediaCenterApplication.setPhoto ( false );
             finish();
         }
 
         @Override
         protected void onResume() {
             super.onResume();
+            MediaCenterApplication.setPhoto ( true );
             registerReceivers();
         }
 
