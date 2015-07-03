@@ -59,15 +59,15 @@ public class DMRBroadcastReceiver extends BroadcastReceiver {
                     cxt.sendBroadcast ( mNetIntent );
                     //cxt.stopService(new Intent(cxt,MediaCenterService.class));
                     Debug.d ( TAG , ">>>>>onReceive :network disconnected" );
-                    if ( AirPlayService.STATEDFLAG &&  ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) ) ) {
+                    if ( AirPlayService.STATEDFLAG && mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
                         cxt.stopService ( new Intent ( cxt, AirPlayService.class ) );
                     }
                 } if ( ( netInfo != null ) && ( netInfo.getDetailedState() == NetworkInfo.DetailedState.CONNECTED ) ) {
                     cxt.stopService ( new Intent ( cxt, MediaCenterService.class ) );
-                    if ( mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false ) || mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_START_SERVICE, false ) ) {
+                    if ( mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false ) ) {
                         cxt.startService ( new Intent ( cxt, MediaCenterService.class ) );
                     }
-                    if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) ) {
+                    if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
                         cxt.startService ( new Intent ( cxt, AirPlayService.class ) );
                     }
                     Debug.d ( TAG , ">>>>>onReceive :network connected" );
@@ -75,12 +75,12 @@ public class DMRBroadcastReceiver extends BroadcastReceiver {
             }
             if ( ( WifiManager.WIFI_AP_STATE_CHANGED_ACTION ).equals ( intent.getAction() ) ) {
                 int wifi_AP_State =  intent.getIntExtra ( WifiManager.EXTRA_WIFI_AP_STATE, WifiManager.WIFI_AP_STATE_FAILED );
-                if ( WifiManager.WIFI_STATE_ENABLED == wifi_AP_State ) {
+                if ( WifiManager.WIFI_AP_STATE_ENABLED == wifi_AP_State ) {
                     cxt.stopService ( new Intent ( cxt, MediaCenterService.class ) );
-                    if ( mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false ) || mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_START_SERVICE, false ) ) {
+                    if ( mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false ) ) {
                         cxt.startService ( new Intent ( cxt, MediaCenterService.class ) );
                     }
-                    if ( AirPlayService.STATEDFLAG &&  mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) ) {
+                    if ( AirPlayService.STATEDFLAG &&  mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
                         cxt.startService ( new Intent ( cxt, AirPlayService.class ) );
                     }
                 } else {
