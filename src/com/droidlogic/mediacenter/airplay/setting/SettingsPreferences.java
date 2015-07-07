@@ -65,24 +65,22 @@ public class SettingsPreferences extends SettingsPreferenceFragment implements
         @Override
         public void onSharedPreferenceChanged ( SharedPreferences sharedPreferences,
                                                 String key ) {
+            Intent intent = new Intent ( getActivity(), AirPlayService.class );
             if ( key.equals ( KEY_START_SERVICE ) ) {
                 if ( mStartServicePref.isChecked() ) {
                     Log.d ( TAG, "start airplay service" );
-                    Intent intent = new Intent();
-                    intent.setClass ( getActivity(), AirPlayService.class );
                     getActivity().startService ( intent );
-                } else {
+                } else if ( !mBootCfgPref.isChecked() ) {
                     Log.d ( TAG, "stop airplay service" );
-                    Intent intent = new Intent();
-                    intent.setClass ( getActivity(), AirPlayService.class );
                     getActivity().stopService ( intent );
                 }
             } else if ( key.equals ( KEY_BOOT_CFG ) ) {
                 if ( mBootCfgPref.isChecked() ) {
                     Log.d ( TAG, "start airplay service=======" );
-                    Intent intent = new Intent();
-                    intent.setClass ( getActivity(), AirPlayService.class );
                     getActivity().startService ( intent );
+                } else if ( !mStartServicePref.isChecked() ) {
+                    Log.d ( TAG, "stop airplay service=======" );
+                    getActivity().stopService ( intent );
                 }
             }
         }
