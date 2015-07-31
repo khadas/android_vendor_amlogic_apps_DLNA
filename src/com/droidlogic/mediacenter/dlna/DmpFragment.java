@@ -59,9 +59,9 @@ public class DmpFragment extends ListFragment {
         private static final int          SEARCH_DEV         = 2;
         private static final int          SHOW_LOADING = 5;
         private static final int          HIDE_LOADING = 6;
-        private static final int UPDATE_DATA = 3;
-        private static final int DEVICE_VIEW = 4;
-        private static final int          SEARCH_TIMEOUT     = 4000;
+        private static final int          UPDATE_DATA = 3;
+        private static final int          DEVICE_VIEW = 4;
+        private static final int          SEARCH_TIMEOUT     = 10000;
         private List<Map<String, Object>> mDevList;
         private FreshListener             mFreshListener;
         private HandlerThread RemoteHandler;
