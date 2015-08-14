@@ -9,8 +9,6 @@ import com.droidlogic.mediacenter.R;
 import com.droidlogic.mediacenter.dlna.LoadingDialog;
 import com.droidlogic.mediacenter.MediaCenterApplication;
 
-import com.droidlogic.app.SystemControlManager;
-
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
@@ -225,7 +223,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             hideLoading();
             MediaCenterApplication.setPlayer ( false );
             stop();
-            SystemProperties.set ( "media.amplayer.displast_frame", "false" );
+            //SystemProperties.set ( "media.amplayer.displast_frame", "false" );
         }
 
         @Override
@@ -241,7 +239,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             registerReceivers();
             MediaCenterApplication.setPlayer ( true );
             Log.i ( TAG, "onResume" );
-            SystemProperties.set ( "media.amplayer.displast_frame", "true" );
+            //SystemProperties.set ( "media.amplayer.displast_frame", "true" );
         }
 
         @Override
@@ -416,8 +414,6 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             Log.i ( TAG, "played" );
             mPlaybackInfoHandler.removeMessages ( SHOW_LOADING );
             mPlaybackInfoHandler.sendEmptyMessage ( HIDE_LOADING );
-            SystemControlManager scm = new SystemControlManager(this);
-            scm.writeSysFs("/sys/class/video/disable_video", "2");
 
             try {
                 mVideoView.start();

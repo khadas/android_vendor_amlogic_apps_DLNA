@@ -13,8 +13,8 @@ LOCAL_PRIVILEGED_MODULE := true
 LOCAL_REQUIRED_MODULES := libhpplayaudio.so \
                           libhpplaysmdns.so \
                           libhpplaymdns.so \
-                          libhpplayvideo \
-                          libhpplayvideo19
+                          libhpplayvideo.so \
+                          libhpplayvideo19.so
 
 #LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 include $(BUILD_PACKAGE)
