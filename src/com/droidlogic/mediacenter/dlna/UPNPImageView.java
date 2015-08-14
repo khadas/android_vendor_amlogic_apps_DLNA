@@ -671,7 +671,7 @@ public class UPNPImageView extends View {
                                 Debug.e ( "UPNPImageView", "Unable to open content: " + mUri, e );
                             }
                         } else if ( "http".equals ( scheme ) ) {
-                            Debug.d ( "UPNPImageView", "*****open net image" );
+                           // Debug.d ( "UPNPImageView", "*****open net image" );
                             d = createDrawableFromNet ( mUri.toString() );
                         } else {
                             d = Drawable.createFromPath ( mUri.toString() );

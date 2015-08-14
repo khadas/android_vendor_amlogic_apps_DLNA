@@ -43,8 +43,8 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
-
-
+import java.util.*;
+import android.media.MediaMetadataRetriever;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -109,7 +109,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private static final int    HIDE_LOADING           = 6;
         private static final int    STOP_BY_SEVER          = 7;
         private static final int    VOLUME_HIDE            = 8;
-
+        private static final int    STOP_DEVICE               = 9;
         private LoadingDialog exitDlg;
         private Dialog              dialog_volume;
         private TextView            mFileName;
@@ -159,6 +159,11 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         //private ViewGroup mShowVisual;
         private List<Map<Integer, Boolean>> modeData;
         private PowerManager.WakeLock mWakeLock;
+
+        private static final int DIALOG_SHOW_DELAY = 5000;
+        private static final int PROGRESS_TIME_DELAY = 2000;
+        private static final int BUFFER_INTERVAL = 1000;
+
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             setContentView ( R.layout.music_activity );
@@ -554,9 +559,12 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
 
         public void onCompletion ( MediaPlayer mp ) {
             Debug.d ( TAG, "##########onCompletion####################" );
+            Intent intent = new Intent (AmlogicCP.PLAY_POSTION_REFRESH );
+            intent.putExtra ( "curPosition", mTotalDuration );
+            intent.putExtra ( "totalDuration", mTotalDuration );
+            sendBroadcast ( intent );
             mProgress.setProgress ( mTotalDuration );
             //mVisualizerView.release();
-            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
             mProgressRefresher.removeCallbacksAndMessages ( null );
             play_state = STATE_STOP;
             updatePlayPause();
@@ -573,6 +581,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             } else {
                 handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, 6000 );
             }
+            handlerUI.sendEmptyMessageDelayed ( STOP_DEVICE, 6000 );
         }
         private void stopExit() {
             handlerUI.removeMessages ( SHOW_STOP );
@@ -701,7 +710,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         mVolChanged = false;
                     }
                     mProgressRefresher.removeCallbacksAndMessages ( null );
-                    mProgressRefresher.postDelayed ( new ProgressRefresher(), 500 );
+                    mProgressRefresher.postDelayed ( new ProgressRefresher(), PROGRESS_TIME_DELAY );
                 }
         }
 
@@ -709,12 +718,12 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private void start() {
             handlerUI.sendEmptyMessage ( SHOW_LOADING );
             handlerUI.removeMessages ( STOP_BY_SEVER );
-            handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
+            handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, DIALOG_SHOW_DELAY );
             // mPath.setText(file_name==null?cur_uri:file_name);
             PreviewPlayer player = ( PreviewPlayer ) getLastNonConfigurationInstance();
             if ( player == null ) {
                 if ( DEBUG_PLAYER )
-                { Debug.d ( TAG, "*********************not get player" ); }
+                { Debug.d ( TAG, "*********************not get player" +cur_uri); }
                 mPlayer = null;
                 mPlayer = new PreviewPlayer();
                 mPlayer.setActivity ( this );
@@ -760,7 +769,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             mPlayer.start();
             play_state = STATE_PLAY;
             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
-            mProgressRefresher.postDelayed ( new ProgressRefresher(), 500 );
+            mProgressRefresher.postDelayed ( new ProgressRefresher(), PROGRESS_TIME_DELAY );
             readyForFinish = false;
             updatePlayPause();
         }
@@ -808,7 +817,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             file_name = ( String ) item.get ( "item_name" );
             //mFileName.setText(file_name +"                                 " + file_name +"                                 " + file_name +"                 ");
             mFileName.setText ( file_name );
-            handlerUI.sendEmptyMessageDelayed ( STOP_AND_START, 2000 );
+            handlerUI.sendEmptyMessageDelayed ( STOP_AND_START, PROGRESS_TIME_DELAY );
             handlerUI.sendEmptyMessage ( SHOW_LOADING );
             //showLoading();
         }
@@ -818,7 +827,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 mProgressRefresher.removeCallbacksAndMessages ( null );
             }
             readyForFinish = true;
-            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
+            //sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
             updatePlayPause();
             mProgressRefresher.removeCallbacksAndMessages ( null );
             mCurTime.setText ( TIME_START );
@@ -859,7 +868,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     dialog_volume = new VolumeDialog ( this );
                     dialog_volume.setOnShowListener( new DialogInterface.OnShowListener( ) {
                         public void onShow( DialogInterface dialog ) {
-                            handlerUI.sendEmptyMessageDelayed(VOLUME_HIDE, 8000);
+                            handlerUI.sendEmptyMessageDelayed(VOLUME_HIDE, DIALOG_SHOW_DELAY);
                         }
                     });
                     return dialog_volume;
@@ -1059,9 +1068,9 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                 btn_mode.setVisibility ( View.VISIBLE );
                             }
                             start();
-                        } else if ( ( play_state == STATE_PAUSE ) ) {
+                        }  else if ( mPlayer == null || play_state == STATE_STOP ) {
                             start();
-                        } else if ( !mPlayer.isPlaying() ) {
+                        }else {
                             play();
                         }
                     } else if ( action.equals ( AmlogicCP.UPNP_PAUSE_ACTION ) ) {
@@ -1069,7 +1078,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     } else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) ) {
                         stopPlayback();
                         stopExit();
-                        handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, 6000 );
+                        handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, DIALOG_SHOW_DELAY );
                     } else if ( action.equals ( MediaRendererDevice.PLAY_STATE_SEEK ) ) {
                         if ( mPlayer != null ) {
                             String time = intent.getStringExtra ( "REL_TIME" );
@@ -1151,6 +1160,9 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         break;
                     case VOLUME_HIDE:
                         dialog_volume.dismiss();
+                        break;
+                    case STOP_DEVICE:
+                       // sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                         break;
                 }
             }
@@ -1382,7 +1394,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             registerReceiver ( mUPNPReceiver, filter );
             /*start*/
             handlerUI.removeMessages ( SHOW_START );
-            handlerUI.sendEmptyMessageDelayed ( SHOW_START, 1000 );
+            handlerUI.sendEmptyMessageDelayed ( SHOW_START, BUFFER_INTERVAL );
             /* enable backlight */
             PowerManager pm = ( PowerManager ) getSystemService ( Context.POWER_SERVICE );
             mWakeLock = pm.newWakeLock ( PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, TAG );
@@ -1392,15 +1404,15 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         @Override
         public boolean onInfo ( MediaPlayer mp, int what, int extra ) {
             if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_START ) {
-                handlerUI.sendEmptyMessageDelayed ( SHOW_LOADING, 1000 );
+                handlerUI.sendEmptyMessageDelayed ( SHOW_LOADING, BUFFER_INTERVAL );
                 // showLoading();
             } else if ( what == MediaPlayer.MEDIA_INFO_BUFFERING_END ) {
                 handlerUI.removeMessages ( SHOW_LOADING );
                 handlerUI.sendEmptyMessage ( HIDE_LOADING );
                 // hideLoading();
-                Intent intent = new Intent ( MediaCenterService.DEVICE_STATUS_CHANGE );
-                intent.putExtra ( "status", "PLAYING" );
-                sendBroadcast ( intent );
+                //Intent intent = new Intent ( MediaCenterService.DEVICE_STATUS_CHANGE );
+                //intent.putExtra ( "status", "PLAYING" );
+                //sendBroadcast ( intent );
             }
             return false;
         }

@@ -157,7 +157,7 @@ public class DmpFragment extends ListFragment {
         }
 
         private void displayDev ( int delay, int timeout ) {
-            Debug.d ( TAG, "display Device:" + delay + " timeout:" + timeout );
+            //Debug.d ( TAG, "display Device:" + delay + " timeout:" + timeout );
             if ( timeout <= 0 ) {
                 mHandler.removeMessages ( DIPLAY_DEV );
                 displayViewImmediate ( true );

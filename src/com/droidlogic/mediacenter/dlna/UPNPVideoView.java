@@ -35,6 +35,7 @@ import android.media.MediaPlayer;
 import android.media.Metadata;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.net.Uri;
 import android.util.AttributeSet;
 import org.cybergarage.util.Debug;
@@ -95,6 +96,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         private MediaPlayer.OnPreparedListener mOnPreparedListener;
         private int         mCurrentBufferPercentage;
         private OnErrorListener mOnErrorListener;
+        private OnSeekCompleteListener mSeekCompleteListener;
         private int         mSeekWhenPrepared;  // recording the seek position while preparing
         private boolean     mCanPause;
         private boolean     mCanSeekBack;
@@ -263,6 +265,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                 mMediaPlayer = new MediaPlayer();
                 mMediaPlayer.setOnPreparedListener ( mPreparedListener );
                 mMediaPlayer.setOnVideoSizeChangedListener ( mSizeChangedListener );
+                mMediaPlayer.setOnSeekCompleteListener ( mSeekCompleteListener );
                 mDuration = -1;
                 mMediaPlayer.setOnCompletionListener ( mCompletionListener );
                 mMediaPlayer.setOnErrorListener ( mErrorListener );
@@ -430,6 +433,9 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                         return true;
                     }
                 }
+                if ( mSeekCompleteListener != null ) {
+                    mSeekCompleteListener.onSeekComplete ( mMediaPlayer );
+                }
                 /* Otherwise, pop up an error dialog so the user knows that
                  * something bad has happened. Only try and pop up the dialog
                  * if we're attached to a window. When we're going away and no
@@ -503,6 +509,9 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
             mOnErrorListener = l;
         }
 
+        public void setOnSeekCompleteListener ( OnSeekCompleteListener l ) {
+            mSeekCompleteListener = l;
+        }
         /**
          * Interface definition for a callback to be invoked when the media
          * play state is changed.
@@ -772,6 +781,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
 
         public void seekTo ( int msec ) {
             if ( isInPlaybackState() ) {
+                android.util.Log.d("TAG","Seekto"+msec);
                 mMediaPlayer.seekTo ( msec );
                 mSeekWhenPrepared = 0;
             } else {

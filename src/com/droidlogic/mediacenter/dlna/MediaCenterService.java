@@ -42,7 +42,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
-
+import org.amlogic.upnp.DesUtils;
 import android.os.SystemProperties;
 
 /**
@@ -203,13 +203,14 @@ public class MediaCenterService extends Service {
                                 mDmrDevice.stopDMR();
                                 mDmrDevice.setFriendlyName ( "DLNA-" + intent.getStringExtra ( "service_name" ) );
                                 mDmrDevice.startDMR();
-                            } else if ( intent.getAction() == DEVICE_STATUS_CHANGE ) {
-                                String status = intent.getStringExtra ( "status" );
-                                if ( status == null ) {
-                                    status = "PLAYING";
-                                }
-                                mDmrDevice.changeStatus ( status );
-                            } else {
+                            }else if ( intent.getAction() == AmlogicCP.PLAY_POSTION_REFRESH ) {
+                                int mCurPosition = 0,mTotalDur = 0;
+                                mCurPosition=intent.getIntExtra("curPosition", mCurPosition);
+                                String mRealTime = DesUtils.timeFormatToString(mCurPosition);
+                                mTotalDur = intent.getIntExtra("totalDuration", mTotalDur);
+                                String mTotalDuration = DesUtils.timeFormatToString(mTotalDur);
+                                mDmrDevice.updatePosition(mRealTime,mTotalDuration);
+                            }else {
                                 Message msg = new Message();
                                 msg.what = DMR_CMD;
                                 msg.obj = intent;
@@ -231,7 +232,7 @@ public class MediaCenterService extends Service {
                             switch ( msg.what ) {
                                 case DMR_CMD:
                                     Intent intent = ( Intent ) msg.obj;
-                                    DMRDevice.this.handleMessage ( intent );
+                                    DMRDevice.super.handleMessage ( intent );
                                     break;
                                 case DMR_DEV_START:
                                     startDMRInternal();
@@ -368,5 +369,6 @@ public class MediaCenterService extends Service {
             }
             return osVersion;
         }
+
 
 }

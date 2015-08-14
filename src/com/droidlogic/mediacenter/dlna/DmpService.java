@@ -113,7 +113,7 @@ public class DmpService extends Service {
         }
 
         public String getDeviceIcon ( String path ) {
-            Debug.d ( TAG, "getDeviceIcon()" );
+            //Debug.d ( TAG, "getDeviceIcon()" );
             return mControlPoint.getDeviceIcon ( path );
         }
 

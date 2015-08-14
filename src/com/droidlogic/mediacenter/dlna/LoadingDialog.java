@@ -48,7 +48,7 @@ public class LoadingDialog extends Dialog {
 
         private static final int COUNT_TIMER = 1;
         private TextView          mTvShow         = null;
-        private int mCountTime = 4;
+        private int mCountTime = 10;
         private AnimationDrawable anim_loading    = null;
         private int type = TYPE_LOADING;
         public LoadingDialog ( Context context, int type, String mtitle ) {
@@ -77,6 +77,7 @@ public class LoadingDialog extends Dialog {
             }
         }
         private Handler mHandler = new Handler() {
+
             @Override
             public void handleMessage ( Message msg ) {
                 switch ( msg.what ) {
