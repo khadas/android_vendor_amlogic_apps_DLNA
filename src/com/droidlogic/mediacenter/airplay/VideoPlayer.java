@@ -106,6 +106,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         @Override
         protected void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
+            Log.i ( TAG, "onCreate" );
             mTimer = new Timer();
             requestWindowFeature ( Window.FEATURE_NO_TITLE );
             getWindow().setFlags ( WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -114,30 +115,15 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
                 View.SYSTEM_UI_FLAG_LOW_PROFILE );
             // PowerManager pm = (PowerManager)
             // getSystemService(Context.POWER_SERVICE);
-            Intent intent = getIntent();
-            Bundle bundle = intent.getExtras();
-            if ( bundle != null ) {
-                mType = bundle.getString ( "TYPE", "AIRPLAY" );
-                mAppleSessionID = bundle.getString ( "SESSIONID", "" );
-                mUrl = bundle.getString ( "URL", "" );
-                mUri = Uri.parse ( mUrl );
-                mStartPosition = bundle.getFloat ( "SP", 0 );
-                //
-                mVideoSession.mCurrentSessionID = mAppleSessionID;
-                mVideoSession.mUri = mUri;
-            }
+
             setContentView ( R.layout.nativeplayer );
             mAudioManager = ( AudioManager ) getSystemService ( AUDIO_SERVICE );
             mVideoView = ( VideoView ) findViewById ( R.id.HappyPlayvideoview );
             mVideoWidth = 0;
             mVideoHeight = 0;
             setupView();
-            mPlaybackInfoHandler.sendEmptyMessage ( SHOW_LOADING );
-            mPlaybackInfoHandler.sendEmptyMessageDelayed ( HIDE_LOADING, 5000 );
             setRequestedOrientation ( ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE );
-            load();
-            mPlaybackInfoHandler.sendEmptyMessage ( 0 );
-            Log.i ( TAG, "Init Video Player OK" );
+
         }
 
         private void registerReceivers() {
@@ -218,7 +204,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
                     mPlaybackInfoHandler.removeMessages ( UPDATE_POS );
                 }
                 mPlaybackInfoHandler.removeMessages ( SHOW_STOP );
-                mPlaybackInfoHandler = null;
+                //mPlaybackInfoHandler = null;
             }
             hideLoading();
             MediaCenterApplication.setPlayer ( false );
@@ -235,10 +221,26 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
                 return;
             }
             running = true;
+            Log.i ( TAG, "onResume" );
+
+            Intent intent = getIntent();
+            Bundle bundle = intent.getExtras();
+            if ( bundle != null ) {
+                mType = bundle.getString ( "TYPE", "AIRPLAY" );
+                mAppleSessionID = bundle.getString ( "SESSIONID", "" );
+                mUrl = bundle.getString ( "URL", "" );
+                mUri = Uri.parse ( mUrl );
+                mStartPosition = bundle.getFloat ( "SP", 0 );
+                //
+                mVideoSession.mCurrentSessionID = mAppleSessionID;
+                mVideoSession.mUri = mUri;
+            }
             mPlaybackInfoHandler.sendEmptyMessage ( SHOW_LOADING );
+            mPlaybackInfoHandler.sendEmptyMessageDelayed ( HIDE_LOADING, 5000 );
+            load();
+            mPlaybackInfoHandler.sendEmptyMessage ( 0 );
             registerReceivers();
             MediaCenterApplication.setPlayer ( true );
-            Log.i ( TAG, "onResume" );
             //SystemProperties.set ( "media.amplayer.displast_frame", "true" );
         }
 
