@@ -68,6 +68,8 @@ public class MediaCenterService extends Service {
         private static final int DMR_DEV_STOP = 103;
         public static final String SERVICE_NAME_CHANGE = "com.android.mediacenter.servicename";
         public static final String DEVICE_STATUS_CHANGE = "com.android.mediacenter.devicestatus";
+        private HandlerThread mDMRDemoThread;
+        private Handler mHandler = null;
         /*
          * (non-Javadoc)
          *
@@ -83,6 +85,24 @@ public class MediaCenterService extends Service {
             super.onCreate();
             mPref = new PrefUtils ( this );
             initDMR();
+            mDMRDemoThread = new HandlerThread ( "DMRDevice" );
+            mDMRDemoThread.start();
+            mHandler = new Handler ( mDMRDemoThread.getLooper() ) {
+                public void handleMessage ( Message msg ) {
+                    switch ( msg.what ) {
+                        case DMR_CMD:
+                            Intent intent = ( Intent ) msg.obj;
+                            mDmrDevice.handleMsg ( intent );
+                            break;
+                        case DMR_DEV_START:
+                            mDmrDevice.startDMRInternal();
+                            break;
+                        case  DMR_DEV_STOP:
+                            mDmrDevice.stopDMRInternal();
+                            break;
+                    }
+                }
+            };
         }
 
 
@@ -189,60 +209,43 @@ public class MediaCenterService extends Service {
         }
 
         class DMRDevice extends MediaRendererDevice {
-                private boolean isDMRStart = false;
-                private Handler mHandler = null;
-                private HandlerThread mDMRDemoThread;
-                private PowerManager.WakeLock mWakeLock;
-                private boolean isRegistReceiver = false;
+            private boolean isDMRStart = false;
+            private PowerManager.WakeLock mWakeLock;
+            private boolean isRegistReceiver = false;
 
-                private BroadcastReceiver mDMRServiceListener = new BroadcastReceiver() {
-                    @Override
-                    public void onReceive ( Context context, Intent intent ) {
-                        if ( isDMRStart ) {
-                            if ( intent.getAction() == SERVICE_NAME_CHANGE ) {
-                                mDmrDevice.stopDMR();
-                                mDmrDevice.setFriendlyName ( "DLNA-" + intent.getStringExtra ( "service_name" ) );
-                                mDmrDevice.startDMR();
-                            }else if ( intent.getAction() == AmlogicCP.PLAY_POSTION_REFRESH ) {
-                                int mCurPosition = 0,mTotalDur = 0;
-                                mCurPosition=intent.getIntExtra("curPosition", mCurPosition);
-                                String mRealTime = DesUtils.timeFormatToString(mCurPosition);
-                                mTotalDur = intent.getIntExtra("totalDuration", mTotalDur);
-                                String mTotalDuration = DesUtils.timeFormatToString(mTotalDur);
-                                mDmrDevice.updatePosition(mRealTime,mTotalDuration);
-                            }else {
-                                Message msg = new Message();
-                                msg.what = DMR_CMD;
-                                msg.obj = intent;
-                                mHandler.sendMessage ( msg );
-                            }
+            private BroadcastReceiver mDMRServiceListener = new BroadcastReceiver() {
+                @Override
+                public void onReceive ( Context context, Intent intent ) {
+                    if ( isDMRStart ) {
+                        if ( intent.getAction() == AmlogicCP.PLAY_POSTION_REFRESH ) {
+                            int mCurPosition = 0,mTotalDur = 0;
+                            mCurPosition=intent.getIntExtra("curPosition", 0);
+                            if (mCurPosition == 0)
+                                return;
+                            String mRealTime = DesUtils.timeFormatToString(mCurPosition);
+                            mTotalDur = intent.getIntExtra("totalDuration", mTotalDur);
+                            String mTotalDuration = DesUtils.timeFormatToString(mTotalDur);
+                            mDmrDevice.updatePosition(mRealTime,mTotalDuration);
+                        }
+                        if ( intent.getAction() == SERVICE_NAME_CHANGE ) {
+                            mDmrDevice.stopDMR();
+                            mDmrDevice.setFriendlyName ( "DLNA-" + intent.getStringExtra ( "service_name" ) );
+                            mDmrDevice.startDMR();
+                        }else {
+                            Message msg = new Message();
+                            msg.what = DMR_CMD;
+                            msg.obj = intent;
+                            mHandler.sendMessage ( msg );
                         }
                     }
-                };
+                }
+            };
                 /**
                  * @Description TODO
                  * @param string
                  */
                 public DMRDevice ( String conf ) throws InvalidDescriptionException {
                     super ( conf );
-                    mDMRDemoThread = new HandlerThread ( "DMRDevice" );
-                    mDMRDemoThread.start();
-                    mHandler = new Handler ( mDMRDemoThread.getLooper() ) {
-                        public void handleMessage ( Message msg ) {
-                            switch ( msg.what ) {
-                                case DMR_CMD:
-                                    Intent intent = ( Intent ) msg.obj;
-                                    DMRDevice.super.handleMessage ( intent );
-                                    break;
-                                case DMR_DEV_START:
-                                    startDMRInternal();
-                                    break;
-                                case  DMR_DEV_STOP:
-                                    stopDMRInternal();
-                                    break;
-                            }
-                        }
-                    };
                 }
 
                 @Override
@@ -317,6 +320,10 @@ public class MediaCenterService extends Service {
                     isDMRStart = false;
                 }
 
+                public boolean isStartDMR(){
+                    return isDMRStart;
+                }
+
                 public void startDMR() {
                     if ( mHandler == null ) {
                         return;
@@ -369,6 +376,4 @@ public class MediaCenterService extends Service {
             }
             return osVersion;
         }
-
-
 }

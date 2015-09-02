@@ -210,6 +210,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                         stopExit();
                         handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, SHOW_DIALOG_DELAY );
                     }
+                    sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                 }
             } );
             mVideoView.setOnPreparedListener ( new MediaPlayer.OnPreparedListener() {
@@ -257,11 +258,11 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                             break;
                         case UPNPVideoView.STATE_PLAYBACK_COMPLETED:
                             play_state = STATE_STOP;
-                            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
+                            //sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                             break;
                         case UPNPVideoView.STATE_ERROR:
                             //case UPNPVideoView.STATE_IDLE:
-                            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
+                            //sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                             /* if(handlerUI != null)
                                  handlerUI.removeMessages(GETINFO_FRESH);*/
                             play_state = STATE_STOP;
