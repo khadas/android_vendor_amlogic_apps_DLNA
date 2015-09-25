@@ -61,7 +61,7 @@ public class DmpFragment extends ListFragment {
         private static final int          HIDE_LOADING = 6;
         private static final int          UPDATE_DATA = 3;
         private static final int          DEVICE_VIEW = 4;
-        private static final int          SEARCH_TIMEOUT     = 10000;
+        private static final int          SEARCH_TIMEOUT     = 30000;
         private List<Map<String, Object>> mDevList;
         private FreshListener             mFreshListener;
         private HandlerThread RemoteHandler;
@@ -71,6 +71,7 @@ public class DmpFragment extends ListFragment {
         private Handler mRemoteHandler;
         private LoadingDialog progressDialog;
         private int mSearchTime;
+        private boolean mFront = false;
         /*------------------------------------------------------------------------------------*/
         @Override
         public void onActivityCreated ( Bundle savedInstanceState ) {
@@ -81,6 +82,7 @@ public class DmpFragment extends ListFragment {
         public void onAttach ( Activity activity ) {
             super.onAttach ( activity );
             mFreshListener = ( FreshListener ) activity;
+            mFreshListener.startDMP();
         }
 
         @Override
@@ -91,6 +93,7 @@ public class DmpFragment extends ListFragment {
             mHandler.removeMessages ( DIPLAY_DEV );
             mHandler.removeMessages ( UPDATE_VIEW );
             mHandler.removeMessages ( SHOW_LOADING );
+            mFreshListener.stopDMP();
             hideLoading();
         }
 
@@ -121,7 +124,8 @@ public class DmpFragment extends ListFragment {
                         String devName = intent
                                          .getStringExtra ( AmlogicCP.EXTRA_DEV_NAME );
                         Debug.d ( TAG, "DevReceiver: " + action + ", " + devName );
-                        mRemoteHandler.sendEmptyMessageDelayed ( UPDATE_VIEW, 100 );
+                        getDevData();
+                        //mRemoteHandler.sendEmptyMessageDelayed ( UPDATE_VIEW, 100 );
                     }
                 }
         }
@@ -151,9 +155,10 @@ public class DmpFragment extends ListFragment {
             //mHandler.sendEmptyMessageDelayed(HIDE_LOADING,SEARCH_TIMEOUT);
             Message msg = new Message();
             msg.what = DIPLAY_DEV;
-            msg.arg1 = mSearchTime * 1000;
+            msg.arg1 = mSearchTime * 2000;
             msg.arg2 = SEARCH_TIMEOUT;
-            mRemoteHandler.sendMessageDelayed ( msg, msg.arg1 );
+            mHandler.sendMessageDelayed(msg, msg.arg1);
+            //mRemoteHandler.sendMessageDelayed ( msg, msg.arg1 );
         }
 
         private void displayDev ( int delay, int timeout ) {
@@ -163,24 +168,23 @@ public class DmpFragment extends ListFragment {
                 displayViewImmediate ( true );
                 return ;
             } else {
+                getDevData();
                 mSearchTime++;
                 Message msg = new Message();
                 msg.what = DIPLAY_DEV;
-                msg.arg1 = mSearchTime * 1000;
+                msg.arg1 = mSearchTime * 2000;
                 msg.arg2 = timeout - delay;
-                mRemoteHandler.sendMessageDelayed ( msg, msg.arg1 );
+                mHandler.sendMessageDelayed(msg, msg.arg1);
+                //mRemoteHandler.sendMessageDelayed ( msg, msg.arg1 );
             }
             displayViewImmediate ( false );
         }
 
         private void displayViewImmediate ( boolean isforce ) {
             getDevData();
-            if ( mDevList != null ) {
-                mHandler.sendEmptyMessage ( UPDATE_DATA );
-            }
-            if ( isforce && ( mDevList == null || mDevList.size() == 0 ) ) {
+            if ( mFront && isforce && ( mDevList == null || mDevList.size() == 0 ) ) {
                 mSearchTime = 0;
-                mHandler.sendEmptyMessage ( HIDE_LOADING );
+                hideLoading();
                 if ( getActivity() != null ) {
                     Toast toast = Toast.makeText ( getActivity(), getActivity()
                                                    .getResources().getString ( R.string.disply_err ),
@@ -234,6 +238,9 @@ public class DmpFragment extends ListFragment {
                     case HIDE_LOADING:
                         hideLoading();
                         break;
+                    case DIPLAY_DEV:
+                        displayDev(msg.arg1, msg.arg2);
+                        break;
                     default:
                         break;
                 }
@@ -245,6 +252,7 @@ public class DmpFragment extends ListFragment {
             HashMap<String, Object> map;
             if ( mDevList != null ) {
                 mDevList.clear();
+                adapter.notifyDataSetChanged();
             }
             if ( deviceList != null && deviceList.size() > 0 ) {
                 hideLoading();
@@ -265,6 +273,7 @@ public class DmpFragment extends ListFragment {
                         msg.obj=path;
                         mRemoteHandler.sendMessage(msg);*/
                         mDevList.add ( map );
+                        adapter.notifyDataSetChanged();
                     }
                 } catch ( Exception e ) {
                     e.printStackTrace();
@@ -279,10 +288,13 @@ public class DmpFragment extends ListFragment {
             public void startSearch();
             public List<String> getDevList();
             public String getDevIcon ( String path );
+            public void startDMP();
+            public void stopDMP();
         }
 
         @Override
         public void onPause() {
+            mFront = false;
             mHandler.removeMessages ( UPDATE_DATA );
             mHandler.removeMessages ( SHOW_LOADING );
             mHandler.removeMessages ( HIDE_LOADING );
@@ -294,6 +306,7 @@ public class DmpFragment extends ListFragment {
         @Override
         public void onResume() {
             super.onResume();
+            mFront = true;
             mSearchTime = 0;
             mFreshBtn = ( ImageButton ) getActivity().findViewById ( R.id.fresh );
             mFreshBtn.setVisibility ( View.VISIBLE );
@@ -307,6 +320,7 @@ public class DmpFragment extends ListFragment {
             filter.addAction ( AmlogicCP.UPNP_DMS_ADDED_ACTION );
             filter.addAction ( AmlogicCP.UPNP_DMS_REMOVED_ACTION );
             getActivity().registerReceiver ( mDevReceiver, filter );
+            getDevData();
         }
 
         @Override

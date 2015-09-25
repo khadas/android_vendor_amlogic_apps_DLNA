@@ -157,7 +157,17 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             if ( mService != null )
             { mService.startSearch(); }
         }
+        @Override
+        public void startDMP(){
+            if ( mService != null )
+                mService.restartDmp();
+        }
 
+        @Override
+        public void stopDMP(){
+            if ( mService != null )
+                mService.forceStop();
+        }
         /* (non-Javadoc)
          * @see com.droidlogic.mediacenter.DmpFragment.FreshListener#getFullList()
          */

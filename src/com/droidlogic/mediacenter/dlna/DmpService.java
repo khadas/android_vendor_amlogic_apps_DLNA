@@ -76,6 +76,7 @@ public class DmpService extends Service {
         public IBinder onBind ( Intent arg0 ) {
             mIconsCache = new HashMap<String, String>();
             IntentFilter filter = new IntentFilter();
+            initDMP();
             filter.addAction ( NETWORK_ERROR );
             registerReceiver ( mDMPServiceListener, filter );
             return mDmpBinder;
@@ -144,7 +145,7 @@ public class DmpService extends Service {
                 mDmpThread.start();
             }
             mHandler = new DmpHandler ( mDmpThread.getLooper() );
-            mHandler.sendEmptyMessage ( START_DMP );
+            //mHandler.sendEmptyMessage ( START_DMP );
         }
         @Override
         public void onDestroy() {
@@ -190,7 +191,7 @@ public class DmpService extends Service {
         @Override
         public void onCreate() {
             super.onCreate();
-            initDMP();
+            //initDMP();
             mDmpBinder = new DmpBinder();
             mDevList = new ArrayList<String>();
         }
