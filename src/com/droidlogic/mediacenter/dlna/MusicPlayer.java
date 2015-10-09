@@ -163,6 +163,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private static final int DIALOG_SHOW_DELAY = 5000;
         private static final int PROGRESS_TIME_DELAY = 2000;
         private static final int BUFFER_INTERVAL = 1000;
+        /*send to Device info:AVT_STOP_STATUS*/
+        private static final int STOP_PLAY_BROADCAST = 3000;
 
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
@@ -579,9 +581,9 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     random_play();
                 }
             } else {
-                handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, 6000 );
+                handlerUI.sendEmptyMessageDelayed ( STOP_DEVICE, STOP_PLAY_BROADCAST );
+                handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, DIALOG_SHOW_DELAY );
             }
-            handlerUI.sendEmptyMessageDelayed ( STOP_DEVICE, 6000 );
         }
         private void stopExit() {
             handlerUI.removeMessages ( SHOW_STOP );
@@ -1155,14 +1157,14 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         if ( !isShowingForehand ) {
                             MusicPlayer.this.finish();
                         } else {
-                            handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
+                            handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, DIALOG_SHOW_DELAY );
                         }
                         break;
                     case VOLUME_HIDE:
                         dialog_volume.dismiss();
                         break;
                     case STOP_DEVICE:
-                       // sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
+                        sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                         break;
                 }
             }
