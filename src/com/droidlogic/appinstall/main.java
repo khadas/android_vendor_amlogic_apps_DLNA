@@ -362,7 +362,14 @@ public class main extends Activity {
             //init dev count
             File pfile = new File (USB_PATH);
             File[] files = pfile.listFiles();
-            mDevs = new String[files.length + 1]; //+1 indicate NAND_PATH
+            int num = 0;
+            if (files != null) {
+                num = files.length + 1;
+            }
+            else {
+                num = 1; // 1 indicate NAND_PATH
+            }
+            mDevs = new String[num];
             File dir = new File (NAND_PATH);
             if (dir.exists() && dir.isDirectory()) {
                 mDevs[devCnt] = dir.toString();
