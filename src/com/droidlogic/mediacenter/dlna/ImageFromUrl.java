@@ -511,13 +511,14 @@ public class ImageFromUrl extends Activity {
                                     bmOptions.inPurgeable = true;
                                     bmOptions.inPreferredConfig = Bitmap.Config.RGB_565;
                                     bmOptions.inDither = false;
-                                    Debug.d(TAG, "before decode:"+System.currentTimeMillis());
                                     myBitmap = BitmapFactory.decodeStream ( input, null, bmOptions );
-                                    Debug.d ( TAG, "myBitmap==null" + ( myBitmap == null ) );
+                                    Debug.d(TAG,"myBitmap==null"+(myBitmap==null));
+                                    Intent intent = new Intent( MediaRendererDevice.PLAY_STATE_PLAYING );
+                                    intent.putExtra("currentURI",urlString);
+                                    ImageFromUrl.this.sendBroadcast ( intent );
                                     if ( mHandler != null ) {
                                         mHandler.sendEmptyMessage ( SHOW_BITMAP_URL );
                                     }
-                                    Debug.d(TAG,"before showMap:"+System.currentTimeMillis());
                                     connection.disconnect();
                                 }
                             } catch ( Exception e ) {

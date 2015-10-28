@@ -164,7 +164,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private static final int PROGRESS_TIME_DELAY = 2000;
         private static final int BUFFER_INTERVAL = 1000;
         /*send to Device info:AVT_STOP_STATUS*/
-        private static final int STOP_PLAY_BROADCAST = 3000;
+        private static final int STOP_PLAY_BROADCAST = 6000;
 
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
@@ -1034,6 +1034,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                               + ",  mediaType=" + mediaType );
                     readyForFinish = false;
                     if ( action.equals ( AmlogicCP.UPNP_PLAY_ACTION ) ) {
+                        handlerUI.removeMessages(STOP_DEVICE);
                         stopExit();
                         String uri = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
                         if ( !cur_uri.equals ( uri ) ) {

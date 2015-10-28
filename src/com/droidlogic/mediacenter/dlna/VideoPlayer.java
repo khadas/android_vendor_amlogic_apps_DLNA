@@ -210,7 +210,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                         stopExit();
                         handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, SHOW_DIALOG_DELAY );
                     }
-                    sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
+                    //sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                 }
             } );
             mVideoView.setOnPreparedListener ( new MediaPlayer.OnPreparedListener() {
@@ -253,16 +253,17 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                             play_state = STATE_PAUSE;
                             break;
                         case UPNPVideoView.STATE_PLAYING:
+                            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
                             play_state = STATE_PLAY;
                             readyForFinish = false;
                             break;
                         case UPNPVideoView.STATE_PLAYBACK_COMPLETED:
                             play_state = STATE_STOP;
-                            //sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
+                            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                             break;
                         case UPNPVideoView.STATE_ERROR:
                             //case UPNPVideoView.STATE_IDLE:
-                            //sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
+                            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                             /* if(handlerUI != null)
                                  handlerUI.removeMessages(GETINFO_FRESH);*/
                             play_state = STATE_STOP;
@@ -289,7 +290,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                         /*mBrocastProgress.postDelayed(
                                 new ProgressRefresher(),
                                 500);*/
-                        Debug.d ( TAG, "refressGetInforefressGetInforefressGetInforefressGetInfo" );
+                        //Debug.d ( TAG, "refressGetInforefressGetInforefressGetInforefressGetInfo" );
                         refressGetInfo();
                         return;
                     case HNALDE_HIDE_LOADING:
@@ -552,7 +553,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             mVideoController.dispatchKeyEvent ( new KeyEvent ( KeyEvent.ACTION_DOWN,
                                                 KeyEvent.KEYCODE_MEDIA_PLAY ) );
 
-            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
         }
 
         private void pause() {
