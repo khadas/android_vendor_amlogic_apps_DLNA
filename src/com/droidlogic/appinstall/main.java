@@ -4,6 +4,8 @@ package com.droidlogic.appinstall;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,6 +18,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.storage.VolumeInfo;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +38,7 @@ import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageDeleteObserver;
 import android.os.PowerManager;
 import android.os.HandlerThread;
+import android.os.storage.StorageManager;
 import android.provider.Settings;
 import android.content.Context;
 import android.view.KeyEvent;
@@ -87,11 +91,17 @@ public class main extends Activity {
         private static int INSTALL_APKS = 2;
         protected int mStatus = -1;
 
+        private StorageManager mStorageManager;
+        private List<VolumeInfo> mVolumes;
+
         /** Called when the activity is first created. */
         @Override
         public void onCreate (Bundle savedInstanceState) {
             super.onCreate (savedInstanceState);
             setContentView (R.layout.main);
+
+            mStorageManager = (StorageManager)getSystemService(Context.STORAGE_SERVICE);
+
             //keep system awake
             mScreenLock = ( (PowerManager) this.getSystemService (Context.POWER_SERVICE)).newWakeLock (PowerManager.SCREEN_BRIGHT_WAKE_LOCK, TAG);
             m_info = (TextView) findViewById (R.id.ScanInfo);
@@ -107,9 +117,9 @@ public class main extends Activity {
             m_list.setOnItemClickListener (new AdapterView.OnItemClickListener() {
                 public void onItemClick (AdapterView<?> parent, View view, int position, long id) {
                     APKInfo apkinfo = mApkList.get (position);
-                    /*if(apkinfo.isInstalled() == true)
-                        uninstall_apk(apkinfo.pCurPkgName);
-                    else*/
+                    //if(apkinfo.isInstalled() == true)
+                        //uninstall_apk(apkinfo.pCurPkgName);
+                    //else
                     install_apk (apkinfo.filepath);
                 }
             });
@@ -359,7 +369,34 @@ public class main extends Activity {
             String cdrom = getString (R.string.cdrom_device_str);
             String sdcardExt = getString (R.string.ext_sdcard_device_str);
             String DeviceArray[] = {internal, sdcard, usb, cdrom, sdcardExt};
-            //init dev count
+
+            int num = 0;
+            mVolumes = mStorageManager.getVolumes();
+            Collections.sort(mVolumes, VolumeInfo.getDescriptionComparator());
+            for (VolumeInfo vol : mVolumes) {
+                if (vol != null && vol.isMountedReadable()) {
+                    num++;
+                }
+            }
+            mDevs = new String[num];
+            mDevStrs = new String[num];
+            for (VolumeInfo vol : mVolumes) {
+                if (vol != null && vol.isMountedReadable()) {
+                    File path = vol.getPath();
+                    mDevs[devCnt] = path.toString();
+                    mDevStrs[devCnt] = mStorageManager.getBestVolumeDescription(vol);
+                    devCnt++;
+                }
+            }
+
+            for (int idx = 0; idx < devCnt; idx++) {
+                if (mDevs[idx].equals (mScanRoot)) {
+                    selid = idx;
+                }
+            }
+
+            // shield for android 6.0 support
+            /*//init dev count
             File pfile = new File (USB_PATH);
             File[] files = pfile.listFiles();
             int num = 0;
@@ -442,7 +479,8 @@ public class main extends Activity {
                 if (mDevs[idx].equals (mScanRoot)) {
                     selid = idx;
                 }
-            }
+            }*/
+
             //show dialog to choose dialog
             new AlertDialog.Builder (main.this)
             .setTitle (R.string.alertdialog_title)
@@ -481,7 +519,7 @@ public class main extends Activity {
             .show();
         }
 
-        protected String mDevStrs[] = null;
+        private String mDevStrs[] = null;
         private void updatePathName (String dev) {
             String internal = getString (R.string.memory_device_str);
             String sdcard = getString (R.string.sdcard_device_str);
