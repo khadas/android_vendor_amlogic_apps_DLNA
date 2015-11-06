@@ -374,14 +374,23 @@ public class main extends Activity {
             mVolumes = mStorageManager.getVolumes();
             Collections.sort(mVolumes, VolumeInfo.getDescriptionComparator());
             for (VolumeInfo vol : mVolumes) {
-                if (vol != null && vol.isMountedReadable()) {
+                if (vol != null && vol.isMountedReadable() && vol.getType() == VolumeInfo.TYPE_PUBLIC) {
                     num++;
                 }
             }
+            num = num + 1; // for /sdcard(internal storage)
             mDevs = new String[num];
             mDevStrs = new String[num];
+
+            //internal storage
+            File dir = new File (NAND_PATH);
+            mDevs[devCnt] = dir.toString();
+            mDevStrs[devCnt] = DeviceArray[1];
+            devCnt++;
+
+            //external storage
             for (VolumeInfo vol : mVolumes) {
-                if (vol != null && vol.isMountedReadable()) {
+                if (vol != null && vol.isMountedReadable() && vol.getType() == VolumeInfo.TYPE_PUBLIC) {
                     File path = vol.getPath();
                     mDevs[devCnt] = path.toString();
                     mDevStrs[devCnt] = mStorageManager.getBestVolumeDescription(vol);
