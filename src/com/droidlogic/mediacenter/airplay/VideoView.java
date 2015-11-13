@@ -187,8 +187,8 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
 
         public void stopPlayback() {
             if ( mMediaPlayer != null ) {
-                //if (isInPlaybackState())
-                //  mMediaPlayer.stop();
+                if (isInPlaybackState())
+                  mMediaPlayer.stop();
                 mMediaPlayer.reset();
                 mMediaPlayer.release();
                 mMediaPlayer = null;

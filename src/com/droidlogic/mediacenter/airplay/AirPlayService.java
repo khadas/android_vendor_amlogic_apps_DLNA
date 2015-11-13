@@ -265,7 +265,9 @@ public class AirPlayService extends Service {
                     }
                     mVideoSession.isActive = true;
                 }
-                eventlistener.OnPostEvent ( mSessionId, PlaybackState.LOADING, null );
+                if ( null != eventlistener ) {
+                    eventlistener.OnPostEvent ( mSessionId, PlaybackState.LOADING, null );
+                }
             }
             @Override
             public void play ( String mSessionId ) {
@@ -284,7 +286,9 @@ public class AirPlayService extends Service {
                     mVideoSession.isActive = true;
                 }
                 playbackEvent ( "play", null, mSessionId );
-                eventlistener.OnPostEvent ( mSessionId, PlaybackState.PLAYING, null );
+                if ( null != eventlistener ) {
+                    eventlistener.OnPostEvent ( mSessionId, PlaybackState.PLAYING, null );
+                }
             }
             @Override
             public void pause ( String mSessionId ) {
@@ -293,7 +297,9 @@ public class AirPlayService extends Service {
                 // if (!mSessionID.equals(mSessionId))
                 // return;
                 playbackEvent ( "pause", null, mSessionId );
-                eventlistener.OnPostEvent ( mSessionId, PlaybackState.PAUSED, null );
+                if ( null != eventlistener ) {
+                    eventlistener.OnPostEvent ( mSessionId, PlaybackState.PAUSED, null );
+                }
             }
             @Override
             public void stop ( String mSessionId ) {
@@ -353,14 +359,14 @@ public class AirPlayService extends Service {
                 Log.i ( TAG, "setVolume mSessionId:" + mSessionId + " mVolume:"
                         + mVolume );
                 // Log.i(TAG,mSessionId);
-                mAudioManager.setStreamVolume ( AudioManager.STREAM_MUSIC, mVolume,
+                mAudioManager.setStreamVolume ( AudioManager.STREAM_SYSTEM, mVolume,
                                                 AudioManager.FLAG_SHOW_UI );
             }
             @Override
             public void setMute ( String mSessionId, boolean mute ) {
                 Log.i ( TAG, "setMute mSessionId:" + mSessionId + "mute?" + mute );
                 // Log.i(TAG,mSessionId);
-                mAudioManager.setStreamMute ( AudioManager.STREAM_MUSIC, mute );
+                mAudioManager.setStreamMute ( AudioManager.STREAM_SYSTEM, mute );
             }
             @Override
             public void onScreenCodeShow ( String mScreenCode, int mTimeout ) {
@@ -425,7 +431,7 @@ public class AirPlayService extends Service {
             bundle.putString ( "SESSIONID", sessionid );
             intent.putExtras ( bundle );
             intent.setClass ( this, VideoPlayer.class );
-            intent.setFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
+            intent.setFlags ( Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_NEW_TASK );
             startActivity ( intent );
         }
 

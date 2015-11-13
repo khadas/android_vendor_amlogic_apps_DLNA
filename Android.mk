@@ -14,7 +14,10 @@ LOCAL_REQUIRED_MODULES := libhpplayaudio.so \
                           libhpplaysmdns.so \
                           libhpplaymdns.so \
                           libhpplayvideo.so \
-                          libhpplayvideo19.so
+                          libhpplayvideo19.so \
+                          libhisivideo.so \
+                          libhisivideo19.so \
+                          libhisivideo_3798m.so
 
 #LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 include $(BUILD_PACKAGE)
@@ -24,7 +27,7 @@ include $(BUILD_PACKAGE)
 include $(CLEAR_VARS)
 LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := libmid:libs/mid-sdk-2.10.jar \
                                         libmta:libs/mta-sdk-2.0.0.jar \
-                                        liblebo:libs/LEBO-SDK-1.1.2.9r.jar \
+                                        liblebo:libs/LEBO-SDK-2.0.1.0r_internal.jar \
                                         libandroid-support-v4:libs/android-support-v4.jar \
                                         libdlna:libs/dlna.jar
 
@@ -68,6 +71,30 @@ include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libhpplayvideo19.so
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_SRC_FILES := libs/armeabi-v7a/$(LOCAL_MODULE)
+OVERRIDE_BUILD_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libhisivideo.so
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_SRC_FILES := libs/armeabi-v7a/$(LOCAL_MODULE)
+OVERRIDE_BUILD_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libhisivideo19.so
+LOCAL_MODULE_CLASS := SHARED_LIBRARIES
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_SRC_FILES := libs/armeabi-v7a/$(LOCAL_MODULE)
+OVERRIDE_BUILD_MODULE_PATH := $(TARGET_OUT_INTERMEDIATE_LIBRARIES)
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libhisivideo_3798m.so
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
 LOCAL_SRC_FILES := libs/armeabi-v7a/$(LOCAL_MODULE)
