@@ -879,8 +879,8 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     super ( context, R.style.theme_dialog );
                     setContentView ( R.layout.volume_dialog );
                     LayoutParams params = getWindow().getAttributes();
-                    params.x = 120;
-                    params.y = -120;
+                    params.x = 190;
+                    params.y = -200;
                     getWindow().setAttributes ( params );
                 }
 
