@@ -1,6 +1,5 @@
 package com.droidlogic.mediacenter.airplay;
 
-import org.apache.http.util.EncodingUtils;
 
 import com.hpplay.happyplay.AllCast;
 import com.hpplay.happyplay.OnAirPlayEventListener;
@@ -33,6 +32,7 @@ import android.util.Log;
 
 import com.droidlogic.mediacenter.MediaCenterApplication;
 import com.droidlogic.mediacenter.R;
+import java.io.UnsupportedEncodingException;
 
 public class AirPlayService extends Service {
         private String TAG = "AirPlayService";
@@ -210,15 +210,27 @@ public class AirPlayService extends Service {
             return isstart;
         }
 
+        private static byte[] getAsciiBytes(String data) {
+            if (data == null) {
+                throw new IllegalArgumentException("Parameter may not be null");
+            }
+
+            try {
+                return data.getBytes("US-ASCII");
+            } catch (UnsupportedEncodingException e) {
+                throw new Error("HttpClient requires ASCII support");
+            }
+        }
+
         // put string key pairs to byte[]
         private int putstrtobyte ( byte[] ba, String key, String value, int begin ) {
             ba[begin] = ( byte ) ( key.length() + value.length() );
             int start = begin + 1;
-            byte[] bb = EncodingUtils.getAsciiBytes ( key );
+            byte[] bb = getAsciiBytes ( key );
             int bb_len = bb.length;
             System.arraycopy ( bb, 0, ba, start, bb_len );
             start = start + bb.length;
-            bb = EncodingUtils.getAsciiBytes ( value );
+            bb = getAsciiBytes ( value );
             bb_len = bb.length;
             System.arraycopy ( bb, 0, ba, start, bb_len );
             start = start + bb.length;

@@ -209,6 +209,11 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             hideLoading();
             MediaCenterApplication.setPlayer ( false );
             stop();
+            if ( mTimerTask != null ) {
+                mTimerTask.cancel();
+                mTimerTask = null;
+            }
+            hideVolume();
             //SystemProperties.set ( "media.amplayer.displast_frame", "false" );
         }
 
@@ -519,6 +524,12 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
             mVideoView.requestFocus();
         }
 
+        private void hideVolume() {
+            if ( dialog_volume != null && dialog_volume.isShowing() ) {
+                dialog_volume.dismiss();
+            }
+        }
+
         @Override
         public void onBufferingUpdate ( MediaPlayer arg0, int percent ) {
             //Log.i(TAG, "onBufferingUpdate percent:" + percent);
@@ -669,7 +680,7 @@ public class VideoPlayer extends Activity implements OnBufferingUpdateListener,
         class VolumeHideTask extends TimerTask {
                 public void run() {
                     if ( null != dialog_volume && dialog_volume.isShowing() ) {
-                        dismissDialog ( DIALOG_VOLUME_ID );
+                        hideVolume();
                     }
                 }
         }

@@ -44,7 +44,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
-
+import java.lang.reflect.Constructor;
 import android.os.SystemProperties;
 
 /**
@@ -143,27 +143,39 @@ public class VideoController extends FrameLayout {
             // mWindow = PolicyManager.makeNewWindow(mContext);
             try {
                 Class policyClass;
-                policyClass = Class.forName ( POLICYMANAGER_CLASS_NAME );
-                Method meths[] = policyClass.getMethods();
-                Method makenewwindow = null;
-                // Method makenewwindow = policyClass.getMethod("makeNewWindow");
-                for ( int i = 0; i < meths.length; i++ ) {
-                    if ( meths[i].getName().endsWith ( "makeNewWindow" ) )
-                    { makenewwindow = meths[i]; }
+                if ( android.os.Build.VERSION.SDK_INT >= 23 ) {
+                    policyClass = Class.forName ( "com.android.internal.policy.PhoneWindow" );
+                    if (policyClass != null) {
+                        Constructor create = policyClass.getConstructor(Context.class);
+                        if (create != null) {
+                            mWindow = (Window)create.newInstance(mContext);
+                         }
+                    }
+                }else{
+                    policyClass = Class.forName ( POLICYMANAGER_CLASS_NAME );
+                    Method meths[] = policyClass.getMethods();
+                    Method makenewwindow = null;
+                    // Method makenewwindow = policyClass.getMethod("makeNewWindow");
+                    for ( int i = 0; i < meths.length; i++ ) {
+                        if ( meths[i].getName().endsWith ( "makeNewWindow" ) )
+                        { makenewwindow = meths[i]; }
+                    }
+                    mWindow = ( Window ) makenewwindow.invoke ( null, mContext );
                 }
-                mWindow = ( Window ) makenewwindow.invoke ( null, mContext );
             } catch ( Exception e ) {
                 e.printStackTrace();
             }
-            mWindow.setWindowManager ( mWindowManager, null, null );
-            mWindow.requestFeature ( Window.FEATURE_NO_TITLE );
-            mDecor = mWindow.getDecorView();
-            mDecor.setOnTouchListener ( mTouchListener );
-            mWindow.setContentView ( this );
-            mWindow.setBackgroundDrawableResource ( android.R.color.transparent );
-            // While the media controller is up, the volume control keys should
-            // affect the media stream type
-            mWindow.setVolumeControlStream ( AudioManager.STREAM_MUSIC );
+            if ( mWindow != null ) {
+                mWindow.setWindowManager ( mWindowManager, null, null );
+                mWindow.requestFeature ( Window.FEATURE_NO_TITLE );
+                mDecor = mWindow.getDecorView();
+                mDecor.setOnTouchListener ( mTouchListener );
+                mWindow.setContentView ( this );
+                mWindow.setBackgroundDrawableResource ( android.R.color.transparent );
+                // While the media controller is up, the volume control keys should
+                // affect the media stream type
+                mWindow.setVolumeControlStream ( AudioManager.STREAM_MUSIC );
+            }
             setFocusable ( true );
             setFocusableInTouchMode ( true );
             setDescendantFocusability ( ViewGroup.FOCUS_AFTER_DESCENDANTS );

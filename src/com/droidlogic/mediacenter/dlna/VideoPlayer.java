@@ -427,6 +427,18 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                 running = false;
             }
             hideLoading();
+
+            if ( mTimerTask != null ) {
+                mTimerTask.cancel();
+                mTimerTask = null;
+            }
+            hideVolume();
+        }
+
+        private void hideVolume() {
+            if ( dialog_volume != null && dialog_volume.isShowing() ) {
+                dialog_volume.dismiss();
+            }
         }
 
         public void onStop() {
@@ -670,7 +682,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         }
         class VolumeHideTask extends TimerTask {
                 public void run() {
-                    dismissDialog ( DIALOG_VOLUME_ID );
+                    hideVolume();
                 }
         }
         public static int parseTimeStringToMSecs ( String time ) {
