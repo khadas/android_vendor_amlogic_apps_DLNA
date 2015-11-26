@@ -263,7 +263,7 @@ public class DmpFragment extends ListFragment {
                         map.put ( "item_name", path );
                         map.put ( "item_sel", R.drawable.item_img_unsel );
                         String icon_type = mFreshListener.getDevIcon ( ( String ) map.get ( "item_name" ) );
-                        if ( icon_type != null ) {
+                        if ( icon_type != null && !icon_type.isEmpty() ) {
                             map.put ( "item_type", icon_type );
                         } else {
                             map.put ( "item_type", R.drawable.cloud );

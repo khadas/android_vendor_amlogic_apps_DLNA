@@ -728,6 +728,7 @@ public class UPNPImageView extends View {
             } else {
                 mDrawableWidth = mDrawableHeight = -1;
             }
+            UPNPImageView.this.postInvalidate();
         }
 
         private void resizeFromDrawable() {
