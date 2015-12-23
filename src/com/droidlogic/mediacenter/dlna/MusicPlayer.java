@@ -161,7 +161,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private PowerManager.WakeLock mWakeLock;
 
         private static final int DIALOG_SHOW_DELAY = 5000;
-        private static final int PROGRESS_TIME_DELAY = 2000;
+        private static final int PROGRESS_TIME_DELAY = 1000;
         private static final int BUFFER_INTERVAL = 1000;
         /*send to Device info:AVT_STOP_STATUS*/
         private static final int STOP_PLAY_BROADCAST = 6000;
