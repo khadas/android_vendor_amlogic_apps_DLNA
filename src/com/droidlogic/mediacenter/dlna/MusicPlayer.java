@@ -161,10 +161,11 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private PowerManager.WakeLock mWakeLock;
 
         private static final int DIALOG_SHOW_DELAY = 5000;
-        private static final int PROGRESS_TIME_DELAY = 2000;
+        private static final int PROGRESS_TIME_DELAY = 1000;
         private static final int BUFFER_INTERVAL = 1000;
         /*send to Device info:AVT_STOP_STATUS*/
         private static final int STOP_PLAY_BROADCAST = 6000;
+        private boolean setMute = false;
 
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
@@ -432,7 +433,10 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             if ( mPlayer != null ) {
                 mPlayer.pause();
             }
-            mAudioManager.setStreamMute ( AudioManager.STREAM_MUSIC, false );
+            /*resume mute status when pause*/
+            if (setMute) {
+                mAudioManager.setStreamMute ( AudioManager.STREAM_MUSIC, false );
+            }
             unregisterReceiver ( mUPNPReceiver );
             mWakeLock.release();
             // sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_PAUSED);
@@ -1111,6 +1115,11 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         Boolean mute = ( Boolean ) intent.getExtra ( "DesiredMute", false );
                         Debug.d ( "mute", "*******setMuteAction=" + mute );
                         // mAudioManager.setMasterMute(mute);
+                        if ( mute ) {
+                            setMute = true;
+                        }else{
+                            setMute = false;
+                        }
                         mAudioManager.setStreamMute ( AudioManager.STREAM_MUSIC, mute );
                     }
                 }
