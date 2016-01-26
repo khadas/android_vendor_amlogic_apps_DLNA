@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.SystemProperties;
 import android.util.Log;
 
 import com.droidlogic.mediacenter.MediaCenterApplication;
@@ -57,6 +58,7 @@ public class AirPlayService extends Service {
 
         public final String ACTION_MIRROR_START = "com.hpplaysdk.happyplay.MIRROR_START";
         public final String ACTION_MIRROR_STOP = "com.hpplaysdk.happyplay.MIRROR_STOP";
+        private static final String mOMXDisplaymode = SystemProperties.get("media.omx.display_mode", "0");
 
         @Override
         public IBinder onBind ( Intent intent ) {
@@ -83,8 +85,10 @@ public class AirPlayService extends Service {
                     // mAllCast.startDaemonService();
                 } else if ( action.equals ( "com.hpplaysdk.happyplay.MIRROR_START" ) ) {
                     Log.i( TAG, "Mirror Started" );
+                    SystemProperties.set("media.omx.display_mode", "0");
                 } else if ( action.equals ( "com.hpplaysdk.happyplay.MIRROR_STOP" ) ) {
                     Log.i( TAG, "Mirror Stopped" );
+                    SystemProperties.set("media.omx.display_mode", mOMXDisplaymode);
                 }
             }
         };
