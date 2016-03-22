@@ -13,24 +13,24 @@ LOCAL_PRIVILEGED_MODULE := true
 LOCAL_REQUIRED_MODULES := libhpplayaudio.so \
                           libhpplaysmdns.so \
                           libhpplaymdns.so \
+                          libhpplaymirror.so \
                           libhpplayvideo.so \
                           libhpplayvideo19.so \
                           libhisivideo.so \
                           libhisivideo19.so \
-                          libhisivideo_3798m.so
-
+                          libhisivideo_3798m.so \
+                          libplatinum-jni.so
 #LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 include $(BUILD_PACKAGE)
 
 ##############################################
 
 include $(CLEAR_VARS)
-LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := libmid:libs/mid-sdk-2.10.jar \
-                                        libmta:libs/mta-sdk-2.0.0.jar \
-                                        liblebo:libs/LEBO-SDK-2.0.1.0r_internal.jar \
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := liblebo:libs/LEBO-SDK-2.0.2.9r_external_amlogic.jar \
+                                        libmid:libs/mid-mid-sdk-2.3.jar \
+                                        libmta:libs/mta-android-stat-sdk-2.1.0_20160111.jar \
                                         libandroid-support-v4:libs/android-support-v4.jar \
                                         libdlna:libs/dlna.jar
-
 include $(BUILD_MULTI_PREBUILT)
 
 
