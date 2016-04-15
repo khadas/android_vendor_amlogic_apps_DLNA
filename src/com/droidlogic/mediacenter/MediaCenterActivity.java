@@ -27,6 +27,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.animation.Animation;
@@ -36,6 +38,8 @@ import android.widget.TextView;
 
 public class MediaCenterActivity extends Activity  implements FreshListener {
         private static final String TAG = "DLNA";
+        private static final String SYSTEM_DIALOG_REASON_KEY = "reason";
+        private static final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
         private PrefUtils mPrefUtils;
         private Animation animation;
         //private DmpBinder mBinder;
@@ -44,7 +48,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
         private ServiceConnection mConn = null;
         private TextView mDeviceName = null;
         private Fragment mCallbacks;
-
+        private Context mContent;
         @Override
         protected void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
@@ -52,7 +56,11 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             mPrefUtils = new PrefUtils ( this );
             animation = ( AnimationSet ) AnimationUtils.loadAnimation ( this, R.anim.refresh_btn );
             mDeviceName = ( TextView ) findViewById ( R.id.device_name );
-            checkNet();
+            mContent = this;
+            if (mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false )) {
+                Log.e(TAG,"Start Service on create");
+                checkNet();
+            }
             LogStart();
         }
 
@@ -68,7 +76,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
                     mService.forceStop();
                 }
             };
-            getApplicationContext().bindService ( new Intent ( this, DmpService.class ), mConn, Context.BIND_AUTO_CREATE );
+            getApplicationContext().bindService ( new Intent ( mContent, DmpService.class ), mConn, Context.BIND_AUTO_CREATE );
             mStartDmp = true;
         }
 
@@ -76,16 +84,16 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
                 Log.d ( TAG, "onStartAirProxy" );
                 Intent intent = new Intent();
-                intent.setClass ( this, AirPlayService.class );
+                intent.setClass ( mContent, AirPlayService.class );
                 startService ( intent );
             }
         }
 
         private void stopAirplay() {
             if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) && !mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
-                Log.d ( TAG, "onStartAirProxy" );
+                Log.d ( TAG, "onStopAirProxy" );
                 Intent intent = new Intent();
-                intent.setClass ( this, AirPlayService.class );
+                intent.setClass ( mContent, AirPlayService.class );
                 stopService ( intent );
             }
         }
@@ -117,6 +125,11 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
         @Override
         protected void onResume() {
             super.onResume();
+            if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) && !mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
+                Log.e(TAG,"Start Service on onResume");
+                checkNet();
+            }
+            registerHomeKeyReceiver(mContent);
             /*mRefreshView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -124,6 +137,11 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
                 }
             });*/
             showDeviceName();
+        }
+        @Override
+        protected void onPause() {
+            unregisterHomeKeyReceiver(mContent);
+            super.onPause();
         }
 
         public void showDeviceName() {
@@ -135,7 +153,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             boolean startApk = mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_START_SERVICE, false );
             boolean startReboot = mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false );
             if ( startApk || startReboot ) {
-                Intent intent = new Intent ( this, MediaCenterService.class );
+                Intent intent = new Intent ( mContent, MediaCenterService.class );
                 startService ( intent );
             }
         }
@@ -144,7 +162,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             boolean startApk = mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_START_SERVICE, false );
             boolean startReboot = mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false );
             if ( !startReboot ) {
-                Intent intent = new Intent ( this, MediaCenterService.class );
+                Intent intent = new Intent ( mContent, MediaCenterService.class );
                 stopService ( intent );
             }
         }
@@ -218,15 +236,27 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             return super.onKeyDown ( keyCode, event );
         }
 
+        private void registerHomeKeyReceiver(Context context) {
+            Log.i(TAG, "registerHomeKeyReceiver");
+            final IntentFilter homeFilter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            context.registerReceiver(mHomeKeyReceiver, homeFilter);
+        }
+
+        private void unregisterHomeKeyReceiver(Context context) {
+            Log.i(TAG, "unregisterHomeKeyReceiver");
+            if (null != mHomeKeyReceiver) {
+                context.unregisterReceiver(mHomeKeyReceiver);
+            }
+        }
         private void checkNet() {
-            ConnectivityManager mConnectivityManager = ( ConnectivityManager ) this.getSystemService ( Context.CONNECTIVITY_SERVICE );
+            ConnectivityManager mConnectivityManager = ( ConnectivityManager ) mContent.getSystemService ( Context.CONNECTIVITY_SERVICE );
             NetworkInfo wifiInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_WIFI );
             NetworkInfo ethInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_ETHERNET );
             NetworkInfo mobileInfo = mConnectivityManager.getNetworkInfo ( ConnectivityManager.TYPE_MOBILE );
             if ( ethInfo == null && wifiInfo == null && mobileInfo == null ) {
                 Intent mIntent = new Intent();
                 mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
-                mIntent.setClass ( this, DMRError.class );
+                mIntent.setClass ( mContent, DMRError.class );
                 startActivity ( mIntent );
                 return;
             }
@@ -239,7 +269,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             } else {
                 Intent mIntent = new Intent();
                 mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
-                mIntent.setClass ( this, DMRError.class );
+                mIntent.setClass ( mContent, DMRError.class );
                 startActivity ( mIntent );
             }
         }
@@ -255,4 +285,24 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
                 org.cybergarage.util.Debug.on();  //LOG ON
             }
         }
+        private BroadcastReceiver mHomeKeyReceiver =
+            new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                Log.i(TAG, "onReceive: action: " + action);
+                if (action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
+                    String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
+                    Log.i(TAG, "reason: " + reason);
+                    if (SYSTEM_DIALOG_REASON_HOME_KEY.equals(reason)) {
+                        Log.i(TAG, "homekey stop service");
+                        stopMediaCenterService();
+                        stopDmpService();
+                        stopAirplay();
+                        MediaCenterActivity.this.finish();
+                    }
+                }
+
+            }
+        };
 }
