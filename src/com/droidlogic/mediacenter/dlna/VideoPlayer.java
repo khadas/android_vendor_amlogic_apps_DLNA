@@ -218,6 +218,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     Debug.d ( TAG, "##########onPrepared####################" +currentURI);
                     if ( isFinishing() )
                     { return; }
+                    sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
                     handlerUI.sendEmptyMessage ( HIDE_LOADING );
                     mp.setOnInfoListener ( VideoPlayer.this );
                     play();
@@ -246,14 +247,14 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             mVideoView.setOnStateChangedListener ( new UPNPVideoView.OnStateChangedListener() {
                 public void onStateChanged ( int state ) {
                     Debug.d ( TAG,
-                              "##########onStateChanged####################" );
+                              "##########onStateChanged####################"+state );
                     switch ( state ) {
                         case UPNPVideoView.STATE_PAUSED:
                             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PAUSED );
                             play_state = STATE_PAUSE;
                             break;
                         case UPNPVideoView.STATE_PLAYING:
-                            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
+                            //sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
                             play_state = STATE_PLAY;
                             readyForFinish = false;
                             break;
@@ -262,7 +263,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                             break;
                         case UPNPVideoView.STATE_ERROR:
-                            //case UPNPVideoView.STATE_IDLE:
+                        //case UPNPVideoView.STATE_IDLE:
                             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
                             /* if(handlerUI != null)
                                  handlerUI.removeMessages(GETINFO_FRESH);*/
@@ -352,6 +353,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             int vol = mAudioManager.getStreamVolume ( AudioManager.STREAM_MUSIC );
             mVideoBuffer = SystemProperties.get ( "media.amplayer.buffertime" );
             SystemProperties.set ( "media.amplayer.buffertime", "6" );
+        SystemProperties.set("media.amplayer.displast_frame", "true");
             if ( mLastState == STATE_PLAY ) {
                 play();
             }
@@ -447,6 +449,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "onStop: make running as FALSE" );
+            SystemProperties.set("media.amplayer.displast_frame", "false");
             mCurPos = 0;
             mDuration = 0;
             currentURI = null;

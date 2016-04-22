@@ -43,8 +43,8 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
-import java.util.*;
-import android.media.MediaMetadataRetriever;
+
+
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -166,7 +166,9 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         /*send to Device info:AVT_STOP_STATUS*/
         private static final int STOP_PLAY_BROADCAST = 6000;
         private boolean setMute = false;
-
+        private String mNextURI = null;
+        private String mNextFileName = null;
+        private String mCurrentMeta = null;
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             setContentView ( R.layout.music_activity );
@@ -207,6 +209,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             Intent intent = getIntent();
             media_type = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_TYPE );
             cur_uri = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
+            mNextURI= intent.getStringExtra(MediaRendererDevice.EXTRA_NEXT_URI);
+            mCurrentMeta = intent.getStringExtra(MediaRendererDevice.EXTRA_META_DATA);
             file_name = intent.getStringExtra ( AmlogicCP.EXTRA_FILE_NAME );
             String type = intent.getStringExtra ( DeviceFileBrowser.DEV_TYPE );
             if ( DeviceFileBrowser.TYPE_DMP.equals ( type ) ) {
@@ -272,6 +276,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                     AmlogicCP.PLAY_POSTION_REFRESH );
                                 intent.putExtra ( "curPosition", progress );
                                 intent.putExtra ( "totalDuration", mTotalDuration );
+                    intent.putExtra ("currentURI",cur_uri);
+                    intent.putExtra ("currentMeta",mCurrentMeta);
                                 sendBroadcast ( intent );
                                 //Debug.d(TAG, "######sendBroadcast(seekto)######" + progress + "/" + mTotalDuration);
                             }
@@ -564,29 +570,37 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         }
 
         public void onCompletion ( MediaPlayer mp ) {
-            Debug.d ( TAG, "##########onCompletion####################" );
-            Intent intent = new Intent (AmlogicCP.PLAY_POSTION_REFRESH );
-            intent.putExtra ( "curPosition", mTotalDuration );
-            intent.putExtra ( "totalDuration", mTotalDuration );
-            sendBroadcast ( intent );
-            mProgress.setProgress ( mTotalDuration );
-            //mVisualizerView.release();
-            mProgressRefresher.removeCallbacksAndMessages ( null );
-            play_state = STATE_STOP;
-            updatePlayPause();
-            if ( isBrowserMode ) {
-                stopExit();
-                handlerUI.removeMessages ( SHOW_STOP );
-                if ( mode == MODE_ALL_LOOP ) {
+            if (play_state != STATE_STOP) {
+                Debug.d ( TAG, "##########onCompletion####################" +mNextURI);
+                Intent intent = new Intent (AmlogicCP.PLAY_POSTION_REFRESH );
+                intent.putExtra ( "curPosition", mTotalDuration );
+                intent.putExtra ( "totalDuration", mTotalDuration );
+                sendBroadcast ( intent );
+                mProgress.setProgress ( mTotalDuration );
+                mProgressRefresher.removeCallbacksAndMessages ( null );
+                play_state = STATE_STOP;
+                updatePlayPause();
+                if (mNextURI != null&&!mNextURI.isEmpty()) {
+                    stopExit();
+                    handlerUI.removeMessages ( SHOW_STOP );
                     next();
-                } else if ( mode == MODE_SINGLE_LOOP ) {
-                    change_music();
-                } else {
-                    random_play();
+                    return;
                 }
-            } else {
-                handlerUI.sendEmptyMessageDelayed ( STOP_DEVICE, STOP_PLAY_BROADCAST );
-                handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, DIALOG_SHOW_DELAY );
+                if ( isBrowserMode ) {
+                    stopExit();
+                    handlerUI.removeMessages ( SHOW_STOP );
+                    if ( mode == MODE_ALL_LOOP ) {
+                        next();
+                    } else if ( mode == MODE_SINGLE_LOOP ) {
+                        change_music();
+                    } else {
+                        random_play();
+                    }
+                } else {
+                    handlerUI.sendEmptyMessageDelayed ( STOP_DEVICE, STOP_PLAY_BROADCAST );
+                    handlerUI.removeMessages ( SHOW_STOP );
+                    handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, DIALOG_SHOW_DELAY );
+                }
             }
         }
         private void stopExit() {
@@ -774,7 +788,10 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                               AudioManager.AUDIOFOCUS_GAIN_TRANSIENT );
             mPlayer.start();
             play_state = STATE_PLAY;
-            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
+            Intent intent = new Intent( MediaRendererDevice.PLAY_STATE_PLAYING );
+            intent.putExtra("currentURI",cur_uri);
+            intent.putExtra("currentMeta",mCurrentMeta);
+            sendBroadcast ( intent );
             mProgressRefresher.postDelayed ( new ProgressRefresher(), PROGRESS_TIME_DELAY );
             readyForFinish = false;
             updatePlayPause();
@@ -797,6 +814,20 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     mCurIndex = 0;
                 }
                 change_music();
+                if ((cur_uri == null) || (cur_uri.isEmpty())) {
+                    next();
+                }
+            }else if(mNextURI != null && !mNextURI.isEmpty()) {
+                cur_uri = mNextURI;
+                if (mNextFileName == null || mNextFileName.isEmpty()) {
+                   file_name = cur_uri.substring ( cur_uri.lastIndexOf ( '/' ) + 1, cur_uri.length() );
+                   mNextFileName = file_name;
+                }
+                if (mFileName != null) {
+                    mFileName.setText(file_name);
+                }
+               mNextURI = null;
+               start();
             }
         }
 
@@ -820,6 +851,9 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private void change_music() {
             Map<String, Object> item = ( Map<String, Object> ) DeviceFileBrowser.playList.get ( mCurIndex );
             cur_uri = ( String ) item.get ( "item_uri" );
+            if ((cur_uri == null) || (cur_uri.isEmpty())) {
+                return;
+            }
             file_name = ( String ) item.get ( "item_name" );
             //mFileName.setText(file_name +"                                 " + file_name +"                                 " + file_name +"                 ");
             mFileName.setText ( file_name );
@@ -1041,6 +1075,9 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         handlerUI.removeMessages(STOP_DEVICE);
                         stopExit();
                         String uri = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
+                        mNextURI= intent.getStringExtra(MediaRendererDevice.EXTRA_NEXT_URI);
+                        mCurrentMeta = intent.getStringExtra(MediaRendererDevice.EXTRA_META_DATA);
+                        android.util.Log.d(TAG,"cur_uri:"+cur_uri+"uri"+uri+"=?"+cur_uri.equals ( uri )+"mNextURI:"+mNextURI);
                         if ( !cur_uri.equals ( uri ) ) {
                             if ( play_state != STATE_STOP ) {
                                 stopPlayback();
@@ -1422,9 +1459,9 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 handlerUI.removeMessages ( SHOW_LOADING );
                 handlerUI.sendEmptyMessage ( HIDE_LOADING );
                 // hideLoading();
-                //Intent intent = new Intent ( MediaCenterService.DEVICE_STATUS_CHANGE );
-                //intent.putExtra ( "status", "PLAYING" );
-                //sendBroadcast ( intent );
+                Intent intent = new Intent ( MediaCenterService.DEVICE_STATUS_CHANGE );
+                intent.putExtra ( "status", "PLAYING" );
+                sendBroadcast ( intent );
             }
             return false;
         }

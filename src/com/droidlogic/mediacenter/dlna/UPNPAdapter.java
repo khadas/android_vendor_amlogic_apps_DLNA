@@ -32,7 +32,7 @@ import android.widget.Checkable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import com.droidlogic.mediacenter.R;
 import org.cybergarage.util.Debug;
 
 /**
@@ -69,7 +69,7 @@ public class UPNPAdapter extends BaseAdapter implements Filterable {
 
         private SimpleFilter mFilter;
         private ArrayList < Map < String, ? >> mUnfilteredData;
-
+        private AsynImageLoader asynImageLoader;
         /**
          * Constructor
          *
@@ -87,6 +87,7 @@ public class UPNPAdapter extends BaseAdapter implements Filterable {
          */
         public UPNPAdapter ( Context context, List <? extends Map < String, ? >> data,
                              int resource, String[] from, int[] to ) {
+            asynImageLoader = new AsynImageLoader();
             mData = data;
             mResource = mDropDownResource = resource;
             mFrom = from;
@@ -198,30 +199,30 @@ public class UPNPAdapter extends BaseAdapter implements Filterable {
                             setViewText ( ( TextView ) v, text );
                         } else if ( v instanceof ImageView ) {
                             if ( data instanceof Integer ) {
-                                setViewImage ( ( ImageView ) v, ( Integer ) data );
-                            } else {
-                                setViewImage ( ( ImageView ) v, text );
-                            }
-                        } else if ( v instanceof UPNPImageView ) {
-                            if ( data instanceof Integer ) {
-                                ( ( UPNPImageView ) v ).setImageResource ( ( Integer ) data );
-                                //setViewImage((UPNPImageView) v, (Integer) data);
-                            } else {
-                                try {
-                                    ( ( UPNPImageView ) v ).setImageResource ( Integer.parseInt ( text ) );
-                                } catch ( NumberFormatException nfe ) {
-                                    ( ( UPNPImageView ) v ).setImageURI ( Uri.parse ( text ) );
-                                }
-                                //setViewImage((UPNPImageView) v, text);
-                            }
+                            ((ImageView)v).setImageResource((Integer) data);
                         } else {
-                            throw new IllegalStateException ( v.getClass().getName() + " is not a " +
-                                                              " view that can be bounds by this UPNPAdapter" );
+                            asynImageLoader.showImageAsyn((ImageView)v, text, R.drawable.ic_missing_thumbnail_picture);
                         }
+                    } else if (v instanceof UPNPImageView) {
+                        if (data instanceof Integer) {
+                            ((UPNPImageView)v).setImageResource((Integer) data);
+                            //setViewImage((UPNPImageView) v, (Integer) data);
+                        } else {
+                            try {
+                                 ((UPNPImageView)v).setImageResource(Integer.parseInt(text));
+                            } catch (NumberFormatException nfe) {
+                                ((UPNPImageView)v).setImageURI(Uri.parse(text));
+                            }
+                            //setViewImage((UPNPImageView) v, text);
+                        }
+                    } else {
+                        throw new IllegalStateException(v.getClass().getName() + " is not a " +
+                                " view that can be bounds by this UPNPAdapter");
                     }
                 }
             }
         }
+    }
 
         /**
          * Returns the {@link ViewBinder} used to bind data to views.

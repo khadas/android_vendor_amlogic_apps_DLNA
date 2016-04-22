@@ -184,8 +184,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
                     handlerUI.sendEmptyMessageDelayed ( LOADERR, 500 );
                 }
                 return new UPNPAdapter ( getActivity(), filelist,
-                R.layout.device_item, new String[] {
-                    "item_type", "item_name", "item_sel"
+                        R.layout.dmp_item, new String[] {"item_type", "item_name", "item_sel"
                 }, new int[] {
                     R.id.item_type, R.id.item_name, R.id.item_sel,
                 } );
@@ -194,9 +193,9 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
 
         private List<Map<String, Object>> getListData ( boolean force ) {
             filelist = null;/*
-        if (mDeviceBrowserTask != null) {
-            mDeviceBrowserTask = null;
-        }*/
+            if (mDeviceBrowserTask != null) {
+                mDeviceBrowserTask = null;
+            }*/
             // if(mHandler.hasCallbacks(mDeviceBrowserTask)){
             mHandler.removeCallbacks ( mDeviceBrowserTask );
             // }
@@ -259,7 +258,8 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
                                                                  .get ( "item_uri" ) );
                             }
                             item.put ( "item_media_type", type );
-                            item.put ( "item_type", getFileTypeImg ( type ) );
+                        String pre_uri = (String) item.get("preview_uri");
+                        item.put("item_type", (null!=pre_uri &&(!pre_uri.isEmpty()))?pre_uri:getFileTypeImg(type));
                         }
                         mediaServerTree.addLeaf ( curTree.getHead(), item );
                         if ( DEBUG ) { Debug.d ( TAG, "item[" + i + "] got: " + item ); }
@@ -291,17 +291,18 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
         }
 
         class NetDeviceBrowserThread implements Runnable {
-                private String mThreadName;
-                public NetDeviceBrowserThread ( String threadName ) {
-                    mThreadName = threadName;
-                }
+            private String mThreadName;
+            public NetDeviceBrowserThread ( String threadName ) {
+                mThreadName = threadName;
+            }
 
-                public void run() {
-                    if ( if_thread_run == true ) {
-                        handlerUI.removeMessages ( DISPLAYDATA );
-                        handlerUI.sendEmptyMessageDelayed ( LOADINGSHOW, 500 );
-                        if ( curItemId == null )
-                        { curItemId = MEDIA_SERVER_ROOT_ID; }
+            public void run() {
+                if ( if_thread_run == true ) {
+                    handlerUI.removeMessages ( DISPLAYDATA );
+                    handlerUI.sendEmptyMessageDelayed ( LOADINGSHOW, 500 );
+                    if ( curItemId == null )
+                    { curItemId = MEDIA_SERVER_ROOT_ID; }
+                    try{
                         filelist = getNetFileData ( curItemId );
                         Map<String, Object> map = new HashMap<String, Object>();
                         map.put ( "item_name", getText ( R.string.str_back ) );
@@ -315,146 +316,159 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
                                 filelist.set ( 0, map );
                             }
                         }
-                        handlerUI.removeMessages ( LOADINGSHOW );
-                        handlerUI.sendEmptyMessage ( DISPLAYDATA );
-                        handlerUI.sendEmptyMessage ( LOADINGHIDE );
+                        if ( handlerUI != null ) {
+                            handlerUI.removeMessages ( LOADINGSHOW );
+                            handlerUI.sendEmptyMessage ( DISPLAYDATA );
+                            handlerUI.sendEmptyMessage ( LOADINGHIDE );
+                        }
+                    }catch(Exception ex){
+                    }
+                    if ( handlerUI != null ) {
+                        handlerUI.removeMessages(LOADINGSHOW);
                     }
                 }
-        }
-
-        private LoadingDialog progressDialog = null;
-
-        private void showLoading() {
-            if ( progressDialog == null ) {
-                progressDialog = new LoadingDialog ( getActivity(),
-                                                     LoadingDialog.TYPE_LOADING, this.getResources().getString (
-                                                             R.string.str_loading ) );
-                progressDialog.show();
             }
         }
 
-        private void hideLoading() {
-            if ( progressDialog != null ) {
-                progressDialog.stopAnim();
-                progressDialog.dismiss();
-                progressDialog = null;
+    private LoadingDialog progressDialog = null;
+
+    private void showLoading() {
+        if (progressDialog == null) {
+            progressDialog = new LoadingDialog(getActivity(),
+                    LoadingDialog.TYPE_LOADING, this.getResources().getString(
+                            R.string.str_loading));
+            progressDialog.show();
+        }
+    }
+
+    private void hideLoading() {
+        if (progressDialog != null) {
+            progressDialog.stopAnim();
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+    }
+
+    private void displayData() {
+        UPNPAdapter adapter = getFileAdapter(1);
+        if (adapter.getCount() <= 1) {
+            Toast.makeText(getActivity(),
+                    getResources().getString(R.string.no_files),
+                    Toast.LENGTH_SHORT);
+        }
+        setListAdapter(adapter);
+    }
+
+    private Handler handlerUI = new Handler() {
+                                  @Override
+                                  public void handleMessage(Message msg) {
+                                      switch (msg.what) {
+                                          case LOADINGSHOW:
+                                              showLoading();
+                                              break;
+                                          case DISPLAYDATA:
+                                              displayData();
+                                              break;
+                                          case LOADERR:
+                                              hideLoading();
+                                              Toast.makeText(
+                                                      getActivity(),
+                                                      getResources()
+                                                              .getString(
+                                                                      R.string.browser_fail),
+                                                      Toast.LENGTH_SHORT);
+                                              break;
+                                          case LOADINGHIDE:
+                                              hideLoading();
+                                          default:
+                                              break;
+                                      }
+                                  }
+                              };
+    @Override
+    public void onDestroyView() {
+        if_thread_run = false;
+        if (handlerUI != null) {
+            handlerUI.removeMessages(LOADINGSHOW);
+        }
+        super.onDestroyView();
+    }
+    private void up2top() {
+        if (curTree == null || curItemId == null
+                || curItemId == MEDIA_SERVER_ROOT_ID) {
+            if_thread_run = false;
+            Debug.d(TAG, "back to device list");
+            FragmentManager fm = getFragmentManager();
+            if (fm.getBackStackEntryCount() > 0) {
+                fm.popBackStack();
+            }
+            return;
+        }
+        curTree = curTree.getParent();
+        if (curTree == null) {
+            curItemId = MEDIA_SERVER_ROOT_ID;
+        } else {
+            Map<String, Object> tmp = curTree.getHead();
+            curItemId = (String) tmp.get("item_id");
+        }
+        removePathList(pathLevel - 1);
+        displayView();
+    }
+
+    private void getPlayList(String type) {
+        playList.clear();
+        for (int i = 0; i < filelist.size(); i++) {
+            Map<String, Object> item = filelist.get(i);
+            String mediaType = (String) item.get("item_media_type");
+            if (type.equals(mediaType)) {
+                playList.add(item);
             }
         }
+    }
 
-        private void displayData() {
-            UPNPAdapter adapter = getFileAdapter ( 1 );
-            if ( adapter.getCount() <= 1 ) {
-                Toast.makeText ( getActivity(),
-                                 getResources().getString ( R.string.no_files ),
-                                 Toast.LENGTH_SHORT );
-            }
-            setListAdapter ( adapter );
+    protected void openNetFile(String uri, String type, String upnp_name) {
+        if (type == null) {
+            type = DesUtils.CheckMediaType(uri);
         }
-
-        private Handler handlerUI = new Handler() {
-            @Override
-            public void handleMessage ( Message msg ) {
-                switch ( msg.what ) {
-                    case LOADINGSHOW:
-                        showLoading();
-                        break;
-                    case DISPLAYDATA:
-                        displayData();
-                        break;
-                    case LOADERR:
-                        hideLoading();
-                        Toast.makeText (
-                            getActivity(),
-                            getResources()
-                            .getString (
-                                R.string.browser_fail ),
-                            Toast.LENGTH_SHORT );
-                        break;
-                    case LOADINGHIDE:
-                        hideLoading();
-                    default:
-                        break;
-                }
-            }
-        };
-
-        private void up2top() {
-            if ( curTree == null || curItemId == null
-                    || curItemId == MEDIA_SERVER_ROOT_ID ) {
-                if_thread_run = false;
-                Debug.d ( TAG, "back to device list" );
-                FragmentManager fm = getFragmentManager();
-                if ( fm.getBackStackEntryCount() > 0 ) {
-                    fm.popBackStack();
-                }
-                return;
-            }
-            curTree = curTree.getParent();
-            if ( curTree == null ) {
-                curItemId = MEDIA_SERVER_ROOT_ID;
-            } else {
-                Map<String, Object> tmp = curTree.getHead();
-                curItemId = ( String ) tmp.get ( "item_id" );
-            }
-            removePathList ( pathLevel - 1 );
-            displayView();
+        if (type.equals(TYPE_IMAGE)) {
+            getPlayList(TYPE_IMAGE);
+            Intent intent = new Intent(IMAGE_URI_ACTION);
+            intent.putExtra(AmlogicCP.EXTRA_MEDIA_URI, uri);
+            intent.putExtra(AmlogicCP.EXTRA_MEDIA_TYPE, TYPE_IMAGE);
+            intent.setClass(getActivity(), ImageFromUrl.class);
+            intent.putExtra(DEV_TYPE, TYPE_DMP);
+            intent.putExtra(CURENT_POS, play_index);
+            startActivity(intent);
         }
-
-        private void getPlayList ( String type ) {
-            playList.clear();
-            for ( int i = 0; i < filelist.size(); i++ ) {
-                Map<String, Object> item = filelist.get ( i );
-                String mediaType = ( String ) item.get ( "item_media_type" );
-                if ( type.equals ( mediaType ) ) {
-                    playList.add ( item );
-                }
-            }
+        else if (type.equals(TYPE_VIDEO)) {
+            getPlayList(TYPE_VIDEO);
+            Intent intent = new Intent();
+            intent.putExtra(AmlogicCP.EXTRA_MEDIA_URI, uri);
+            intent.putExtra(AmlogicCP.EXTRA_MEDIA_TYPE, TYPE_VIDEO);
+            intent.putExtra(DEV_TYPE, TYPE_DMP);
+            intent.putExtra(CURENT_POS, play_index);
+            intent.setClass(getActivity(), VideoPlayer.class);
+            startActivity(intent);
+            //startActivityForResult(intent, REQUEST_CODE);
+        } else if (type.equals(TYPE_AUDIO)) {
+            getPlayList(TYPE_AUDIO);
+            Intent intent = new Intent();
+            intent.setClass(getActivity(), MusicPlayer.class);
+            intent.putExtra(AmlogicCP.EXTRA_MEDIA_URI, uri);
+            intent.putExtra(AmlogicCP.EXTRA_MEDIA_TYPE, TYPE_AUDIO);
+            intent.putExtra(AmlogicCP.EXTRA_FILE_NAME, upnp_name);
+            intent.putExtra(DEV_TYPE, TYPE_DMP);
+            intent.putExtra(CURENT_POS, play_index);
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setAction(android.content.Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.parse(uri), type);
+            intent.putExtra(AMLOGIC_UPNP_NAME, upnp_name);
+            startActivity(intent);
         }
-
-        protected void openNetFile ( String uri, String type, String upnp_name ) {
-            if ( type == null ) {
-                type = DesUtils.CheckMediaType ( uri );
-            }
-            if ( type.equals ( TYPE_IMAGE ) ) {
-                getPlayList ( TYPE_IMAGE );
-                Intent intent = new Intent ( IMAGE_URI_ACTION );
-                intent.putExtra ( AmlogicCP.EXTRA_MEDIA_URI, uri );
-                intent.putExtra ( AmlogicCP.EXTRA_MEDIA_TYPE, TYPE_IMAGE );
-                intent.setClass ( getActivity(), ImageFromUrl.class );
-                intent.putExtra ( DEV_TYPE, TYPE_DMP );
-                intent.putExtra ( CURENT_POS, play_index );
-                startActivity ( intent );
-            } else if ( type.equals ( TYPE_VIDEO ) ) {
-                getPlayList ( TYPE_VIDEO );
-                Intent intent = new Intent();
-                intent.putExtra ( AmlogicCP.EXTRA_MEDIA_URI, uri );
-                intent.putExtra ( AmlogicCP.EXTRA_MEDIA_TYPE, TYPE_VIDEO );
-                intent.putExtra ( DEV_TYPE, TYPE_DMP );
-                intent.putExtra ( CURENT_POS, play_index );
-                intent.setClass ( getActivity(), VideoPlayer.class );
-                startActivity ( intent );
-                //startActivityForResult(intent, REQUEST_CODE);
-            } else if ( type.equals ( TYPE_AUDIO ) ) {
-                getPlayList ( TYPE_AUDIO );
-                Intent intent = new Intent();
-                intent.setClass ( getActivity(), MusicPlayer.class );
-                intent.putExtra ( AmlogicCP.EXTRA_MEDIA_URI, uri );
-                intent.putExtra ( AmlogicCP.EXTRA_MEDIA_TYPE, TYPE_AUDIO );
-                intent.putExtra ( AmlogicCP.EXTRA_FILE_NAME, upnp_name );
-                intent.putExtra ( DEV_TYPE, TYPE_DMP );
-                intent.putExtra ( CURENT_POS, play_index );
-                startActivity ( intent );
-            } else {
-                Intent intent = new Intent();
-                intent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
-                intent.setAction ( android.content.Intent.ACTION_VIEW );
-                intent.setDataAndType ( Uri.parse ( uri ), type );
-                intent.putExtra ( AMLOGIC_UPNP_NAME, upnp_name );
-                startActivity ( intent );
-            }
-        }
-
-
+    }
 
         @Override
         public void onResume() {

@@ -89,6 +89,7 @@ public class ImageFromUrl extends Activity {
         private static final int     STOP_SHOW_INTERVAL  = 5000;
         private static final int     SLIDE_SHOW_INTERVAL = 5000;
         private static final int     SLIDE_MIN_INTERVAL  = 2000;
+        private static final int     SLIDE_SHOW_NEXT = 10000;
         public static boolean        isShowingForehand;
         private LoadingDialog        exitDlg;
         private static final int     SLIDE_UNSTATE       = 0;
@@ -109,6 +110,7 @@ public class ImageFromUrl extends Activity {
         private boolean              isBrowserMode;
         private boolean reg = false;
         private boolean stopZoom = false;
+        private String mNextURI;
         @Override
         protected void onCreate ( Bundle arg0 ) {
             super.onCreate ( arg0 );
@@ -212,6 +214,7 @@ public class ImageFromUrl extends Activity {
             if ( intent != null ) {
                 String url = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
                 Message msg = new Message();
+                mNextURI= intent.getStringExtra(MediaRendererDevice.EXTRA_NEXT_URI);
                 if ( DeviceFileBrowser.TYPE_DMP.equals ( intent
                         .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) ) {
                     mCurIndex = intent.getIntExtra ( DeviceFileBrowser.CURENT_POS, 0 );
@@ -428,6 +431,7 @@ public class ImageFromUrl extends Activity {
             }
             unregistRec();
             if ( mDecodeBitmapTask != null ) {
+                mDecodeBitmapTask.interrupted();
                 mDecodeBitmapTask.stopThread();
             }
             mDecodeBitmapTask = null;
@@ -455,6 +459,7 @@ public class ImageFromUrl extends Activity {
                         hideLoading();
                         mHandler.removeMessages ( LOADING_URL_IMAG );
                         String url = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
+                        mNextURI= intent.getStringExtra(MediaRendererDevice.EXTRA_NEXT_URI);
                         Message msg = new Message();
                         if ( DeviceFileBrowser.TYPE_DMP.equals ( intent
                                 .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) ) {
@@ -513,11 +518,13 @@ public class ImageFromUrl extends Activity {
                                     bmOptions.inDither = false;
                                     myBitmap = BitmapFactory.decodeStream ( input, null, bmOptions );
                                     Debug.d(TAG,"myBitmap==null"+(myBitmap==null));
-                                    Intent intent = new Intent( MediaRendererDevice.PLAY_STATE_PLAYING );
-                                    intent.putExtra("currentURI",urlString);
-                                    ImageFromUrl.this.sendBroadcast ( intent );
+                                    Intent playIntent = new Intent(MediaRendererDevice.PLAY_STATE_PLAYING);
+                                    ImageFromUrl.this.sendBroadcast(playIntent);
                                     if ( mHandler != null ) {
-                                        mHandler.sendEmptyMessage ( SHOW_BITMAP_URL );
+                                        Message msg = Message.obtain();
+                                        msg.what = SHOW_BITMAP_URL;
+                                        msg.obj = urlString;
+                                        mHandler.sendMessage(msg);
                                     }
                                     connection.disconnect();
                                 }
@@ -544,8 +551,7 @@ public class ImageFromUrl extends Activity {
         private void showLoading() {
             if ( mLoadingDialog == null ) {
                 mLoadingDialog = new LoadingDialog ( this,
-                                                     LoadingDialog.TYPE_LOADING, this.getResources().getString (
-                                                             R.string.loading ) );
+                                     LoadingDialog.TYPE_LOADING, this.getResources().getString (R.string.loading ) );
                 mLoadingDialog.setCancelable ( true );
                 mLoadingDialog.show();
             } else {
@@ -644,6 +650,15 @@ public class ImageFromUrl extends Activity {
                                  Toast.LENGTH_SHORT ).show();
             }
             hideLoading();
+            if (mNextURI != null && !mNextURI.isEmpty()) {
+                String uri = mNextURI;
+                Message msg = new Message();
+                msg.what = LOADING_URL_IMAG;
+                msg.obj = uri;
+                msg.arg1 = 1;
+                mHandler.sendMessageDelayed(msg,SLIDE_SHOW_NEXT);
+                mNextURI = "";
+            }
             if ( mSlideShow == SLIDE_START && null != mHandler ) {
                 mHandler.sendEmptyMessageDelayed ( SLID_SHOW, SLIDE_SHOW_INTERVAL );
             }
