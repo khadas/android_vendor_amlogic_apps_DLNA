@@ -7,7 +7,6 @@
     <device>
       <deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType>
       <friendlyName>AML-Intel DMR</friendlyName>
-      <INMPR03>1.0</INMPR03>
       <manufacturer>Amlogic Corporation</manufacturer>
       <manufacturerURL>http://www.amlogic.com</manufacturerURL>
       <modelDescription>Intel AV Media Renderer device</modelDescription>

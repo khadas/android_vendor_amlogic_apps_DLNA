@@ -218,7 +218,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     Debug.d ( TAG, "##########onPrepared####################" +currentURI);
                     if ( isFinishing() )
                     { return; }
-                    sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
+                    //sendPlayStateChangeBroadcast ( MedIaRendererDevice.PLAY_STATE_PLAYING );
                     handlerUI.sendEmptyMessage ( HIDE_LOADING );
                     mp.setOnInfoListener ( VideoPlayer.this );
                     play();
@@ -254,7 +254,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                             play_state = STATE_PAUSE;
                             break;
                         case UPNPVideoView.STATE_PLAYING:
-                            //sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
+                            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
                             play_state = STATE_PLAY;
                             readyForFinish = false;
                             break;
@@ -626,6 +626,9 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                             } );
                         } else {
                             mVideoController.setPrevNextListeners ( null, null );
+                        }
+                        if ( currentURI.equals ( uri ) && play_state == STATE_PLAY ) {
+                            sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
                         }
                         if ( !currentURI.equals ( uri ) || ( play_state == STATE_STOP ) ) {
                             mCurPos = 0;
