@@ -27,7 +27,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-
+import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 /**
  * @ClassName DMRError
  * @Description TODO
@@ -72,7 +73,13 @@ public class DMRError extends Activity implements OnClickListener {
 
         private void exitApp() {
             ActivityManager activityMgr = ( ActivityManager ) getSystemService ( ACTIVITY_SERVICE );
-            activityMgr.forceStopPackage ( getPackageName() );
-            this.stopService ( new Intent ( DMRError.this, MediaCenterService.class ) );
+            try {
+                Method method = ActivityManager.class.getMethod("forceStopPackage",String.class);
+                method.invoke(activityMgr,getPackageName());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                this.stopService ( new Intent ( DMRError.this, MediaCenterService.class ) );
+            }
         }
 }

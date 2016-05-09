@@ -32,7 +32,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.Metadata;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
@@ -83,7 +82,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         // of STATE_PAUSED.
         private int mCurrentState = STATE_IDLE;
         private int mTargetState  = STATE_IDLE;
-
+        private Context mContext;
         // All the stuff we need for playing and showing a video
         private SurfaceHolder mSurfaceHolder = null;
         private MediaPlayer mMediaPlayer = null;
@@ -104,16 +103,19 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
 
         public UPNPVideoView ( Context context ) {
             super ( context );
+            mContext = context;
             initVideoView();
         }
 
         public UPNPVideoView ( Context context, AttributeSet attrs ) {
             this ( context, attrs, 0 );
+            mContext = context;
             initVideoView();
         }
 
         public UPNPVideoView ( Context context, AttributeSet attrs, int defStyle ) {
             super ( context, attrs, defStyle );
+            mContext = context;
             initVideoView();
         }
 
@@ -344,18 +346,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                     mp.getStringParameter(MediaPlayer.KEY_PARAMETER_AML_PLAYER_TYPE_STR)
                     +" Prepared");*/
                 // Get the capabilities of the player for this stream
-                Metadata data = mp.getMetadata ( MediaPlayer.METADATA_ALL,
-                                                 MediaPlayer.BYPASS_METADATA_FILTER );
-                if ( data != null ) {
-                    mCanPause = !data.has ( Metadata.PAUSE_AVAILABLE )
-                                || data.getBoolean ( Metadata.PAUSE_AVAILABLE );
-                    mCanSeekBack = !data.has ( Metadata.SEEK_BACKWARD_AVAILABLE )
-                                   || data.getBoolean ( Metadata.SEEK_BACKWARD_AVAILABLE );
-                    mCanSeekForward = !data.has ( Metadata.SEEK_FORWARD_AVAILABLE )
-                                      || data.getBoolean ( Metadata.SEEK_FORWARD_AVAILABLE );
-                } else {
-                    mCanPause = mCanSeekBack = mCanSeekForward = true;
-                }
+                mCanPause = mCanSeekBack = mCanSeekForward = true;
                 if ( mOnPreparedListener != null ) {
                     mOnPreparedListener.onPrepared ( mMediaPlayer );
                 }
@@ -445,14 +436,14 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                     Resources r = mContext.getResources();
                     int messageId;
                     if ( framework_err == MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK ) {
-                        messageId = com.android.internal.R.string.VideoView_error_text_invalid_progressive_playback;
+                        messageId = (int)PrefUtils.getResource("com.android.internal.R.string","VideoView_error_text_invalid_progressive_playback");
                     } else {
-                        messageId = com.android.internal.R.string.VideoView_error_text_unknown;
+                        messageId = (int)PrefUtils.getResource("com.android.internal.R.string","VideoView_error_text_unknown");
                     }
                     new AlertDialog.Builder ( mContext )
-                    .setTitle ( com.android.internal.R.string.VideoView_error_title )
+                    .setTitle ( (int)PrefUtils.getResource("com.android.internal.R.string","VideoView_error_title") )
                     .setMessage ( messageId )
-                    .setPositiveButton ( com.android.internal.R.string.VideoView_error_button,
+                    .setPositiveButton (  (int)PrefUtils.getResource("com.android.internal.R.string","VideoView_error_button"),
                     new DialogInterface.OnClickListener() {
                         public void onClick ( DialogInterface dialog, int whichButton ) {
                             /* If we get here, there is no onError listener, so

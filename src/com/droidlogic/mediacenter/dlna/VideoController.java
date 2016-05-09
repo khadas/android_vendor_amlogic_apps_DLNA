@@ -45,7 +45,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
-import android.os.SystemProperties;
 
 /**
  * A view containing controls for a MediaPlayer. Typically contains the buttons
@@ -228,9 +227,9 @@ public class VideoController extends FrameLayout {
             WindowManager.LayoutParams p = mDecorLayoutParams;
             p.width = mAnchor.getWidth();
             p.y = anchorPos[1] + mAnchor.getHeight();
-            int m1080scale = SystemProperties
+            /*int m1080scale = SystemProperties
                              .getInt ( "ro.platform.has.1080scale", 0 );
-            /*if (m1080scale != 2) {
+             if (m1080scale != 2) {
                 if (getCurDisplayMode().equals("480p") && mAnchor.getHeight() > 480) {
                     p.gravity = Gravity.TOP | Gravity.LEFT;
                     if (p.width > 720)

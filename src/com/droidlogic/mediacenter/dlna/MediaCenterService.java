@@ -45,7 +45,6 @@ import android.os.PowerManager;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import org.amlogic.upnp.DesUtils;
-import android.os.SystemProperties;
 
 /**
  * @ClassName MediaCenterService
@@ -163,7 +162,7 @@ public class MediaCenterService extends Service {
             }
         }
         if (mac == null) {
-            mac = SystemProperties.get("ubootenv.var.ethaddr", "UNKNOWN");
+            mac = (String)PrefUtils.getProperties("ubootenv.var.ethaddr", "UNKNOWN");
         }
         HostInterface.resetInterface();
         if (!mac.isEmpty() && mac.contains(":")) {

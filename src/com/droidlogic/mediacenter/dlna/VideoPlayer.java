@@ -34,11 +34,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
-import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.PowerManager;
-import android.os.SystemProperties;
-
 import android.provider.Settings;
 
 import android.widget.Button;
@@ -46,7 +43,6 @@ import android.widget.SeekBar;
 import android.widget.ProgressBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
-import android.view.IWindowManager;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Window;
@@ -59,7 +55,8 @@ import android.view.Display;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
+import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import org.amlogic.upnp.*; // for CyberLink
 
 import org.cybergarage.util.Debug;
@@ -117,7 +114,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         private LoadingDialog    progressDialog      = null;
         private int              mLastState          = STATE_STOP;
         private int              volume_level        = 50;
-        private IWindowManager   iWindowManager;
         private boolean          mDisplayDMP         = false;
         private String           mVideoBuffer        = "0.0";
         private PowerManager.WakeLock mWakeLock;
@@ -134,8 +130,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             mTimer = new Timer();
-            iWindowManager = IWindowManager.Stub.asInterface ( ServiceManager
-                             .getService ( "window" ) );
             setContentView ( R.layout.video_view );
             mVideoController = new VideoController ( this );
             Intent intent = getIntent();
@@ -351,9 +345,9 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             running = true;
             int max = mAudioManager.getStreamMaxVolume ( AudioManager.STREAM_MUSIC );
             int vol = mAudioManager.getStreamVolume ( AudioManager.STREAM_MUSIC );
-            mVideoBuffer = SystemProperties.get ( "media.amplayer.buffertime" );
-            SystemProperties.set ( "media.amplayer.buffertime", "6" );
-        SystemProperties.set("media.amplayer.displast_frame", "true");
+            mVideoBuffer = (String)PrefUtils.getProperties( "media.amplayer.buffertime","0.0");
+            PrefUtils.setProperties("media.amplayer.buffertime", "6" );
+            PrefUtils.setProperties("media.amplayer.displast_frame", "true");
             if ( mLastState == STATE_PLAY ) {
                 play();
             }
@@ -411,14 +405,17 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                                             VideoPlayer.this.getContentResolver(),
                                             Settings.System.TRANSITION_ANIMATION_SCALE,
                                             mTransitionAnimationScale );
+
             try {
-                iWindowManager.setAnimationScale ( 1, 0.0f );
-            } catch ( RemoteException e ) {
+                Class service = Class.forName("android.view.IWindowManager.Stub");
+                Method method = service.getMethod("setAnimationScale",int.class,float.class);
+                method.invoke(service, 1, 0.0f );
+            } catch ( Exception e ) {
             }
             mLastState = play_state;
             pause();
             //sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_PAUSED);
-            SystemProperties.set ( "media.amplayer.buffertime", mVideoBuffer );
+            PrefUtils.setProperties ( "media.amplayer.buffertime", mVideoBuffer );
             if ( handlerUI != null ) {
                 handlerUI.removeMessages ( GETINFO_FRESH );
             }
@@ -449,7 +446,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "onStop: make running as FALSE" );
-            SystemProperties.set("media.amplayer.displast_frame", "false");
+            PrefUtils.setProperties("media.amplayer.displast_frame", "false");
             mCurPos = 0;
             mDuration = 0;
             currentURI = null;
@@ -461,8 +458,10 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             super.onDestroy();
             handlerUI = null;
             try {
-                iWindowManager.setAnimationScale ( 1, mTransitionAnimationScale );
-            } catch ( RemoteException e ) {
+                Class service = Class.forName("android.view.IWindowManager.Stub");
+                Method method = service.getMethod("setAnimationScale",int.class,float.class);
+                method.invoke(service, 1, mTransitionAnimationScale);
+            } catch ( Exception e ) {
             }
         }
 
@@ -678,7 +677,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                         { vol_bar.setProgress ( vol ); }
                     } else if ( action.equals ( AmlogicCP.UPNP_SETMUTE_ACTION ) ) {
                         Debug.d ( TAG, "*******setMuteAction" );
-                        Boolean mute = ( Boolean ) intent.getExtra ( "DesiredMute", false );
+                        Boolean mute = ( Boolean ) intent.getBooleanExtra ( "DesiredMute", false );
                         Debug.d ( TAG, "*******setMuteAction=" + mute + "is StreamMute?" + mAudioManager.isStreamMute ( AudioManager.STREAM_MUSIC ) );
                         // mAudioManager.setMasterMute(mute);
                         mAudioManager.setStreamMute ( AudioManager.STREAM_MUSIC, mute );

@@ -16,6 +16,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 /**
  * @ClassName PrefUtils
  * @Description TODO
@@ -38,7 +41,25 @@ public class PrefUtils {
             mContent = cxt;
             mPrefs = PreferenceManager.getDefaultSharedPreferences(cxt);
         }
+        public static Object getResource(String cname,String fieldname) {
+            Field field = null;
+            Object ret = null;
+            try{
+                Class rclass = Class.forName(cname);
+                field = rclass.getField(fieldname);
+                ret = field.get(null);
+            }catch (Exception ex) {
+                ex.printStackTrace();
+                return 0;
+            }
+            if (field != null) {
+                Log.d(TAG,"getResource:"+cname+" Val："+ret);
+                return ret;
+            } else {
+                return 0;
+            }
 
+        }
         public void setString ( String key, String Str ) {
             SharedPreferences.Editor mEditor = mPrefs.edit();
             mEditor.putString ( key, Str );
@@ -55,5 +76,30 @@ public class PrefUtils {
         }
         public String getString ( String key, String defVal ) {
             return mPrefs.getString ( key, defVal );
+        }
+        public static Object getProperties(String key, String def) {
+            String defVal = def;
+            try {
+                Class properClass = Class.forName("android.os.SystemProperties");
+                Method getMethod = properClass.getMethod("get",String.class,String.class);
+                defVal = (String)getMethod.invoke(null,key,def);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                Log.d(TAG,"getProperty:"+key+" defVal:"+defVal);
+                return defVal;
+            }
+
+        }
+        public static void setProperties(String key, String def) {
+            String defVal = def;
+            try {
+                Class properClass = Class.forName("android.os.SystemProperties");
+                Method getMethod = properClass.getMethod("set",String.class,String.class);
+                defVal = (String)getMethod.invoke(null,key,def);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
         }
 }

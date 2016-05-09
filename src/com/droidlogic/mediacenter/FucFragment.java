@@ -8,7 +8,7 @@ import com.droidlogic.mediacenter.R;
 import com.droidlogic.mediacenter.airplay.setting.SettingsPreferences;
 import com.droidlogic.mediacenter.dlna.DmpFragment;
 import com.droidlogic.mediacenter.dlna.DmpStartFragment;
-
+import com.droidlogic.mediacenter.dlna.PrefUtils;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
@@ -61,7 +61,7 @@ public class FucFragment extends ListFragment {
             mData = getData();
             SimpleAdapter adapter = new SimpleAdapter ( getActivity(), mData,
                     R.layout.funclist, new String[] {LIST_IMG, LIST_TITLE, LIST_SUMMARY},
-                    new int[] {R.id.img, com.android.internal.R.id.title, com.android.internal.R.id.summary} );
+                    new int[] {R.id.img, (int)PrefUtils.getResource("com.android.internal.R$id","title"), (int)PrefUtils.getResource("com.android.internal.R$id","summary")} );
             this.setListAdapter ( adapter );
             View detailsFrame = getActivity().findViewById ( R.id.frag_detail );
             mDualPane = detailsFrame != null && detailsFrame.getVisibility() == View.VISIBLE;

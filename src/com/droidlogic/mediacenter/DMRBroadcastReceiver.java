@@ -46,7 +46,10 @@ import android.util.Log;
  */
 public class DMRBroadcastReceiver extends BroadcastReceiver {
         private PrefUtils mPrefUtils;
-
+        public static final int WIFI_AP_STATE_ENABLED = 13;
+        public static final int WIFI_AP_STATE_FAILED = 14;
+        public static final String WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED";
+        public static final String WIFI_STAT = "wifi_state";
         private static final String TAG = "DMRBroadcastReceiver";
         private static final int STOPSERVICE = 0;
         private static final int STARTSERVICE = 1;
@@ -62,7 +65,7 @@ public class DMRBroadcastReceiver extends BroadcastReceiver {
             Log.d ( TAG ,">>>>>onReceive : onReceive" + intent.getAction());
             if ( ( ConnectivityManager.CONNECTIVITY_ACTION ).equals ( intent.getAction() ) ) {
                 ConnectivityManager cMgr = ( ConnectivityManager ) cxt.getSystemService ( Context.CONNECTIVITY_SERVICE );
-                NetworkInfo netInfo = ( NetworkInfo ) intent.getExtra ( ConnectivityManager.EXTRA_NETWORK_INFO, null );
+                NetworkInfo netInfo = ( NetworkInfo ) intent.getExtras ().getParcelable(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo netInfoWIFI = cMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
                 NetworkInfo netInfoETH = cMgr.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
 
@@ -81,9 +84,10 @@ public class DMRBroadcastReceiver extends BroadcastReceiver {
                         Log.d ( TAG ," No ActiveNetwork !"+ netInfoWIFI.getState() +"|" +netInfoETH.getState());
                 }
             }
-            if ( ( WifiManager.WIFI_AP_STATE_CHANGED_ACTION ).equals ( intent.getAction() ) ) {
-                int wifi_AP_State =  intent.getIntExtra ( WifiManager.EXTRA_WIFI_AP_STATE, WifiManager.WIFI_AP_STATE_FAILED );
-                if ( WifiManager.WIFI_AP_STATE_ENABLED == wifi_AP_State ) {
+            if ( ( WIFI_AP_STATE_CHANGED_ACTION ).equals ( intent.getAction() ) ) {
+
+                int wifi_AP_State =  intent.getIntExtra ( "wifi_state", 14 );
+                if ( WIFI_AP_STATE_ENABLED == wifi_AP_State ) {
                     cxt.stopService ( new Intent ( cxt, MediaCenterService.class ) );
                     mHandler.sendEmptyMessage (STOPSERVICE);
                     mHandler.sendEmptyMessageDelayed ( STARTSERVICE, 3000 );
