@@ -34,20 +34,19 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-
 import org.cybergarage.util.Debug;
-import android.view.RemotableViewMethod;
+//import android.view.RemotableViewMethod;
 import android.view.View;
 import android.view.ViewDebug;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.RemoteViews.RemoteView;
-import com.android.internal.R;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.HttpURLConnection;
-
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 /**
  * Displays an arbitrary image, such as an icon.  The UPNPImageView class
  * can load images from various sources (such as resources or content
@@ -63,7 +62,7 @@ import java.net.HttpURLConnection;
  * @attr ref android.R.styleable#ImageView_scaleType
  * @attr ref android.R.styleable#ImageView_cropToPadding
  */
-@RemoteView
+//@RemoteView
 public class UPNPImageView extends View {
         // settable by the client
         private Uri mUri;
@@ -74,13 +73,21 @@ public class UPNPImageView extends View {
         private boolean mAdjustViewBounds = false;
         private int mMaxWidth = Integer.MAX_VALUE;
         private int mMaxHeight = Integer.MAX_VALUE;
-
+        protected int mScrollX;
+        protected int mScrollY;
+        protected int mRight;
+        protected int mTop;
+        protected int mBottom;
+        protected int mLeft;
         // these are applied to the drawable
         private ColorFilter mColorFilter;
         private int mAlpha = 255;
         private int mViewAlphaScale = 256;
         private boolean mColorMod = false;
-
+        private int mPaddingLeft = 0;
+        private int mPaddingRight = 0;
+        private int mPaddingTop = 0;
+        private int mPaddingBottom = 0;
         private Drawable mDrawable = null;
         private int[] mState = null;
         private boolean mMergeState = false;
@@ -115,7 +122,14 @@ public class UPNPImageView extends View {
             mContext = context;
             initImageView();
         }
-
+        private void initParam() {
+            try {
+                Method method = View.class.getMethod("setFrame",int.class,int.class,int.class,int.class);
+                method.setAccessible(true);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
         public UPNPImageView ( Context context, AttributeSet attrs ) {
             this ( context, attrs, 0 );
             mContext = context;
@@ -126,36 +140,34 @@ public class UPNPImageView extends View {
             initImageView();
             mContext = context;
             TypedArray a = context.obtainStyledAttributes ( attrs,
-                           R.styleable.ImageView, defStyle, 0 );
-            Drawable d = a.getDrawable ( com.android.internal.R.styleable.ImageView_src );
+                           (int[])PrefUtils.getResource("com.android.internal.R$styleable","ImageView"), defStyle, 0 );
+            Drawable d = a.getDrawable ( (int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_src") );
             if ( d != null ) {
                 setImageDrawable ( d );
             }
             mBaselineAlignBottom = a.getBoolean (
-                                       com.android.internal.R.styleable.ImageView_baselineAlignBottom, false );
+                        (int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_baselineAlignBottom"), false );
             mBaseline = a.getDimensionPixelSize (
-                            com.android.internal.R.styleable.ImageView_baseline, -1 );
+                        (int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_baseline"), -1 );
             setAdjustViewBounds (
-                a.getBoolean ( com.android.internal.R.styleable.ImageView_adjustViewBounds,
-                               false ) );
+                a.getBoolean ((int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_adjustViewBounds"), false ) );
             setMaxWidth ( a.getDimensionPixelSize (
-                              com.android.internal.R.styleable.ImageView_maxWidth, Integer.MAX_VALUE ) );
+                (int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_maxWidth"), Integer.MAX_VALUE ) );
             setMaxHeight ( a.getDimensionPixelSize (
-                               com.android.internal.R.styleable.ImageView_maxHeight, Integer.MAX_VALUE ) );
-            int index = a.getInt ( com.android.internal.R.styleable.ImageView_scaleType, -1 );
+                (int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_maxHeight"), Integer.MAX_VALUE ) );
+            int index = a.getInt ( (int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_scaleType"), -1 );
             if ( index >= 0 ) {
                 setScaleType ( sScaleTypeArray[index] );
             }
-            int tint = a.getInt ( com.android.internal.R.styleable.ImageView_tint, 0 );
+            int tint = a.getInt ((int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_tint"), 0 );
             if ( tint != 0 ) {
                 setColorFilter ( tint );
             }
-            int alpha = a.getInt ( com.android.internal.R.styleable.ImageView_drawableAlpha, 255 );
+            int alpha = a.getInt ( (int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_drawableAlpha"), 255 );
             if ( alpha != 255 ) {
                 setAlpha ( alpha );
             }
-            mCropToPadding = a.getBoolean (
-                                 com.android.internal.R.styleable.ImageView_cropToPadding, false );
+            mCropToPadding = a.getBoolean ( (int)PrefUtils.getResource("com.android.internal.R$styleable","ImageView_cropToPadding"), false );
             a.recycle();
             //need inflate syntax/reader for matrix
         }
@@ -232,8 +244,8 @@ public class UPNPImageView extends View {
          * @see #getAdjustViewBounds()
          *
          * @attr ref android.R.styleable#ImageView_adjustViewBounds
-         */
-        @android.view.RemotableViewMethod
+
+        @android.view.RemotableViewMethod*/
         public void setAdjustViewBounds ( boolean adjustViewBounds ) {
             mAdjustViewBounds = adjustViewBounds;
             if ( adjustViewBounds ) {
@@ -273,8 +285,8 @@ public class UPNPImageView extends View {
          * @see #getMaxWidth()
          *
          * @attr ref android.R.styleable#ImageView_maxWidth
-         */
-        @android.view.RemotableViewMethod
+
+        @android.view.RemotableViewMethod*/
         public void setMaxWidth ( int maxWidth ) {
             mMaxWidth = maxWidth;
         }
@@ -311,8 +323,8 @@ public class UPNPImageView extends View {
          * @see #getMaxHeight()
          *
          * @attr ref android.R.styleable#ImageView_maxHeight
-         */
-        @android.view.RemotableViewMethod
+
+        @android.view.RemotableViewMethod*/
         public void setMaxHeight ( int maxHeight ) {
             mMaxHeight = maxHeight;
         }
@@ -336,8 +348,8 @@ public class UPNPImageView extends View {
          * @param resId the resource identifier of the the drawable
          *
          * @attr ref android.R.styleable#ImageView_src
-         */
-        @android.view.RemotableViewMethod
+
+        @android.view.RemotableViewMethod*/
         public void setImageResource ( int resId ) {
             if ( mUri != null || mResource != resId ) {
                 updateDrawable ( null );
@@ -363,8 +375,8 @@ public class UPNPImageView extends View {
          * {@link android.graphics.BitmapFactory} instead.</p>
          *
          * @param uri The Uri of an image
-         */
-        @android.view.RemotableViewMethod
+
+        @android.view.RemotableViewMethod */
         public void setImageURI ( Uri uri ) {
             if ( mResource != 0 ||
                     ( mUri != uri &&
@@ -405,8 +417,8 @@ public class UPNPImageView extends View {
          * Sets a Bitmap as the content of this UPNPImageView.
          *
          * @param bm The bitmap to set
-         */
-        @android.view.RemotableViewMethod
+
+        @android.view.RemotableViewMethod */
         public void setImageBitmap ( Bitmap bm ) {
             // if this is used frequently, may handle bitmaps explicitly
             // to reduce the intermediate drawable object
@@ -433,8 +445,8 @@ public class UPNPImageView extends View {
          * {@link android.graphics.drawable.LevelListDrawable}.
          *
          * @param level The new level for the image.
-         */
-        @android.view.RemotableViewMethod
+
+        @android.view.RemotableViewMethod  */
         public void setImageLevel ( int level ) {
             mLevel = level;
             if ( mDrawable != null ) {
@@ -654,11 +666,16 @@ public class UPNPImageView extends View {
                         String scheme = mUri.getScheme();
                         if ( ContentResolver.SCHEME_ANDROID_RESOURCE.equals ( scheme ) ) {
                             try {
-                                // Load drawable through Resources, to get the source density information
-                                ContentResolver.OpenResourceIdResult r =
-                                    mContext.getContentResolver().getResourceId ( mUri );
-                                d = r.r.getDrawable ( r.id );
+                                Class openResult = Class.forName("android.content.ContentResolver.OpenResourceIdResult");
+                                Field resources = openResult.getField("r");
+                                Field id = openResult.getField("id");
+                                Method getResult = ContentResolver.class.getMethod("getResourceId",Uri.class);
+                                Object result = getResult.invoke(mContext.getContentResolver(),mUri);
+                                Resources r = (Resources)resources.get(result);
+                                int idVal = (int)id.get(result);
+                                d = r.getDrawable ( idVal );
                             } catch ( Exception e ) {
+                                e.printStackTrace();
                                 Debug.e ( "UPNPImageView", "Unable to open content: " + mUri, e );
                             }
                         } else if ( ContentResolver.SCHEME_CONTENT.equals ( scheme )
@@ -870,11 +887,17 @@ public class UPNPImageView extends View {
             return result;
         }
 
-        @Override
         protected boolean setFrame ( int l, int t, int r, int b ) {
-            boolean changed = super.setFrame ( l, t, r, b );
-            mHaveFrame = true;
-            configureBounds();
+            boolean changed = false;
+            try {
+                Method method = View.class.getMethod("setFrame",Integer.TYPE,Integer.TYPE,Integer.TYPE,Integer.TYPE);
+                changed = (boolean)method.invoke(this,l,t,r,b);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                mHaveFrame = true;
+                configureBounds();
+            }
             return changed;
         }
 
@@ -1068,8 +1091,8 @@ public class UPNPImageView extends View {
          *
          * @param color Color tint to apply.
          * @attr ref android.R.styleable#ImageView_tint
-         */
-        @RemotableViewMethod
+
+        @RemotableViewMethod*/
         public final void setColorFilter ( int color ) {
             setColorFilter ( color, PorterDuff.Mode.SRC_ATOP );
         }
@@ -1122,8 +1145,8 @@ public class UPNPImageView extends View {
          * @param alpha the alpha value that should be applied to the image
          *
          * @see #getImageAlpha()
-         */
-        @RemotableViewMethod
+
+        @RemotableViewMethod */
         public void setImageAlpha ( int alpha ) {
             setAlpha ( alpha );
         }
@@ -1134,9 +1157,9 @@ public class UPNPImageView extends View {
          * @param alpha the alpha value that should be applied to the image
          *
          * @deprecated use #setImageAlpha(int) instead
-         */
+
+        @RemotableViewMethod */
         @Deprecated
-        @RemotableViewMethod
         public void setAlpha ( int alpha ) {
             alpha &= 0xFF;          // keep it legal
             if ( mAlpha != alpha ) {
@@ -1158,7 +1181,7 @@ public class UPNPImageView extends View {
             }
         }
 
-        @RemotableViewMethod
+        //@RemotableViewMethod
         @Override
         public void setVisibility ( int visibility ) {
             super.setVisibility ( visibility );

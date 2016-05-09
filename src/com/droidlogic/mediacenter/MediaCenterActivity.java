@@ -20,7 +20,6 @@ import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.SystemProperties;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.ComponentName;
@@ -249,7 +248,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
         }
 
         public void LogStart() {
-            if ( !SystemProperties.getBoolean ( "rw.app.dlna.debug", false ) ) {
+            if ( PrefUtils.getProperties ( "rw.app.dlna.debug", "false" ).equals("true") ) {
                 org.cybergarage.util.Debug.off(); //LOG OFF
             } else {
                 org.cybergarage.util.Debug.on();  //LOG ON

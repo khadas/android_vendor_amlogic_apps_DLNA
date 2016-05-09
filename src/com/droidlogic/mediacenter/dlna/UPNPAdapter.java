@@ -176,6 +176,7 @@ public class UPNPAdapter extends BaseAdapter implements Filterable {
                     if ( binder != null ) {
                         bound = binder.setViewValue ( v, data, text );
                     }
+                    android.util.Log.d("DLNA","bound"+bound);
                     if ( !bound ) {
                         if ( v instanceof Checkable ) {
                             if ( data instanceof Boolean ) {

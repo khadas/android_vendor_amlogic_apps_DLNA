@@ -32,7 +32,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.os.SystemProperties;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;

@@ -17,7 +17,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
-import android.net.InterfaceConfiguration;
+
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
@@ -25,9 +25,7 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.INetworkManagementService;
 import android.os.Message;
-import android.os.ServiceManager;
 import android.util.Log;
 
 import com.droidlogic.mediacenter.MediaCenterApplication;

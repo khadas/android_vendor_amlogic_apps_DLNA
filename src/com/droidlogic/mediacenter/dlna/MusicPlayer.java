@@ -73,7 +73,6 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 
 import android.media.AudioManager;
-import android.media.Metadata;
 import android.media.MediaPlayer;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -1149,7 +1148,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         { vol_bar.setProgress ( volume_level ); }
                     } else if ( action.equals ( AmlogicCP.UPNP_SETMUTE_ACTION ) ) {
                         Debug.d ( TAG, "*******setMuteAction" );
-                        Boolean mute = ( Boolean ) intent.getExtra ( "DesiredMute", false );
+                        Boolean mute = ( Boolean ) intent.getBooleanExtra ( "DesiredMute", false );
                         Debug.d ( "mute", "*******setMuteAction=" + mute );
                         // mAudioManager.setMasterMute(mute);
                         if ( mute ) {
