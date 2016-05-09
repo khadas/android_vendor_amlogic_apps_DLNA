@@ -134,9 +134,6 @@ public class ImageFromUrl extends Activity {
             btnBack.setOnClickListener ( new View.OnClickListener() {
                 @Override
                 public void onClick ( View v ) {
-                    unregistRec();
-                    hideLoading();
-                    mHandler = null;
                     ImageFromUrl.this.finish();
                 }
             } );
@@ -210,7 +207,7 @@ public class ImageFromUrl extends Activity {
             btnLeft.setOnFocusChangeListener ( listener );
             reg = false;
             Intent intent = getIntent();
-            android.util.Log.d ( TAG, "intent!=null" + ( intent != null ) + intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI ) );
+            Debug.d ( TAG, "intent!=null" + ( intent != null ) + intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI ) );
             if ( intent != null ) {
                 String url = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
                 Message msg = new Message();
@@ -329,9 +326,9 @@ public class ImageFromUrl extends Activity {
                     mCurUri.setUrl ( null );
                     mHandler.sendEmptyMessage ( SHOWPANEL );
                 } else {
-                    mHandler = null;
+                    //mHandler = null;
                     unregistRec();
-                    hideLoading();
+                    stopExit();
                     ImageFromUrl.this.finish();
                 }
                 return true;
@@ -418,11 +415,8 @@ public class ImageFromUrl extends Activity {
 
         @Override
         protected void onPause() {
-            super.onStop();
-            if ( exitDlg != null ) {
-                exitDlg.dismiss();
-                exitDlg = null;
-            }
+            super.onPause();
+            stopExit();
             isShowingForehand = false;
             hideLoading();
             mSlideShow = SLIDE_STOP;
