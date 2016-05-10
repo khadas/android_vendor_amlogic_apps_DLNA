@@ -678,10 +678,8 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     } else if ( action.equals ( AmlogicCP.UPNP_SETMUTE_ACTION ) ) {
                         Debug.d ( TAG, "*******setMuteAction" );
                         Boolean mute = ( Boolean ) intent.getBooleanExtra ( "DesiredMute", false );
-                        Debug.d ( TAG, "*******setMuteAction=" + mute + "is StreamMute?" + mAudioManager.isStreamMute ( AudioManager.STREAM_MUSIC ) );
                         // mAudioManager.setMasterMute(mute);
                         mAudioManager.setStreamMute ( AudioManager.STREAM_MUSIC, mute );
-                        Debug.d ( TAG, "*******setMuteAction=" + mute + "is StreamMute?" + mAudioManager.isStreamMute ( AudioManager.STREAM_MUSIC ) );
                     }
                 }
         }
