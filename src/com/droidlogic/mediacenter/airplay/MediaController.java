@@ -383,6 +383,7 @@ public class MediaController extends FrameLayout {
             // cause the progress bar to be updated even if mShowing
             // was already true. This happens, for example, if we're
             // paused with the progress bar showing the user hits play.
+            mHandler.removeMessages(SHOW_PROGRESS);
             mHandler.sendEmptyMessage ( SHOW_PROGRESS );
             Message msg = mHandler.obtainMessage ( FADE_OUT );
             if ( timeout != 0 ) {
@@ -425,7 +426,8 @@ public class MediaController extends FrameLayout {
                         pos = setProgress();
                         if ( !mDragging && mShowing && mPlayer.isPlaying() ) {
                             msg = obtainMessage ( SHOW_PROGRESS );
-                            sendMessageDelayed ( msg, 1000 - ( pos % 1000 ) );
+                            removeMessages(SHOW_PROGRESS);
+                            sendMessageDelayed ( msg, 1000);
                         }
                         break;
                 }
@@ -668,6 +670,7 @@ public class MediaController extends FrameLayout {
                 // Ensure that progress is properly updated in the future,
                 // the call to show() does not guarantee this because it is a
                 // no-op if we are already showing.
+                mHandler.removeMessages(SHOW_PROGRESS);
                 mHandler.sendEmptyMessage ( SHOW_PROGRESS );
             }
         };

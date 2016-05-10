@@ -258,8 +258,13 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
                                                                  .get ( "item_uri" ) );
                             }
                             item.put ( "item_media_type", type );
-                        String pre_uri = (String) item.get("preview_uri");
-                        item.put("item_type", (null!=pre_uri &&(!pre_uri.isEmpty()))?pre_uri:getFileTypeImg(type));
+
+                            String pre_uri = (String) item.get("preview_uri");
+                            if ( type == TYPE_IMAGE ) {
+                                item.put("item_type", (null!=pre_uri &&(!pre_uri.isEmpty()))?pre_uri:getFileTypeImg(type));
+                            } else {
+                                item.put("item_type", getFileTypeImg(type));
+                            }
                         }
                         mediaServerTree.addLeaf ( curTree.getHead(), item );
                         if ( DEBUG ) { Debug.d ( TAG, "item[" + i + "] got: " + item ); }

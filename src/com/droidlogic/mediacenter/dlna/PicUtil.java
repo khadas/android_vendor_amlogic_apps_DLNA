@@ -143,9 +143,18 @@ public class PicUtil {
             }
             is.close();
             bos.close();
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inJustDecodeBounds = true;
+            opts.inPreferredConfig = Bitmap.Config.RGB_565;
+            BitmapFactory.decodeFile(cacheFile.getCanonicalPath(),opts);
+            if ( opts.outHeight > 140 || opts.outWidth > 140 ) {
+                int maxLength = opts.outHeight>opts.outWidth?opts.outHeight:opts.outWidth;
+                opts.inSampleSize = maxLength/140;
+            }
+            opts.inJustDecodeBounds = false;
 
             // 从本地加载图片
-            bitmap = BitmapFactory.decodeFile(cacheFile.getCanonicalPath());
+            bitmap = BitmapFactory.decodeFile(cacheFile.getCanonicalPath(),opts);
             //String name =MD5Util.createMd5(imageUri);
         } catch (MalformedURLException e) {
             // TODO Auto-generated catch block

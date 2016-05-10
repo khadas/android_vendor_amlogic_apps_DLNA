@@ -176,7 +176,6 @@ public class UPNPAdapter extends BaseAdapter implements Filterable {
                     if ( binder != null ) {
                         bound = binder.setViewValue ( v, data, text );
                     }
-                    android.util.Log.d("DLNA","bound"+bound);
                     if ( !bound ) {
                         if ( v instanceof Checkable ) {
                             if ( data instanceof Boolean ) {
@@ -200,30 +199,30 @@ public class UPNPAdapter extends BaseAdapter implements Filterable {
                             setViewText ( ( TextView ) v, text );
                         } else if ( v instanceof ImageView ) {
                             if ( data instanceof Integer ) {
-                            ((ImageView)v).setImageResource((Integer) data);
-                        } else {
-                            asynImageLoader.showImageAsyn((ImageView)v, text, R.drawable.ic_missing_thumbnail_picture);
-                        }
-                    } else if (v instanceof UPNPImageView) {
-                        if (data instanceof Integer) {
-                            ((UPNPImageView)v).setImageResource((Integer) data);
-                            //setViewImage((UPNPImageView) v, (Integer) data);
-                        } else {
-                            try {
-                                 ((UPNPImageView)v).setImageResource(Integer.parseInt(text));
-                            } catch (NumberFormatException nfe) {
-                                ((UPNPImageView)v).setImageURI(Uri.parse(text));
+                                ((ImageView)v).setImageResource((Integer) data);
+                            } else {
+                                asynImageLoader.showImageAsyn((ImageView)v, text, R.drawable.ic_missing_thumbnail_picture);
                             }
-                            //setViewImage((UPNPImageView) v, text);
+                        } else if (v instanceof UPNPImageView) {
+                            if (data instanceof Integer) {
+                                ((UPNPImageView)v).setImageResource((Integer) data);
+                                //setViewImage((UPNPImageView) v, (Integer) data);
+                            } else {
+                                try {
+                                     ((UPNPImageView)v).setImageResource(Integer.parseInt(text));
+                                } catch (NumberFormatException nfe) {
+                                    ((UPNPImageView)v).setImageURI(Uri.parse(text));
+                                }
+                                //setViewImage((UPNPImageView) v, text);
+                            }
+                        } else {
+                            throw new IllegalStateException(v.getClass().getName() + " is not a " +
+                                    " view that can be bounds by this UPNPAdapter");
                         }
-                    } else {
-                        throw new IllegalStateException(v.getClass().getName() + " is not a " +
-                                " view that can be bounds by this UPNPAdapter");
                     }
                 }
             }
         }
-    }
 
         /**
          * Returns the {@link ViewBinder} used to bind data to views.
