@@ -124,10 +124,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
         @Override
         protected void onResume() {
             super.onResume();
-            if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) && !mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
-                Log.e(TAG,"Start Service on onResume");
-                checkNet();
-            }
+            checkNet();
             registerHomeKeyReceiver(mContent);
             /*mRefreshView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -262,9 +259,13 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             if ( ( ethInfo != null && ethInfo.isConnectedOrConnecting() ) ||
                     ( wifiInfo != null && wifiInfo.isConnectedOrConnecting() ) ||
             ( mobileInfo != null && mobileInfo.isConnectedOrConnecting() ) ) {
-                startMediaCenterService();
+                if ( mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false ) ) {
+                    startMediaCenterService();
+                }
+                if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
+                    startAirplay();
+                }
                 startDmpService();
-                startAirplay();
             } else {
                 Intent mIntent = new Intent();
                 mIntent.addFlags ( Intent.FLAG_ACTIVITY_NEW_TASK );
