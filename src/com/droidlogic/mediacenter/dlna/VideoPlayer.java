@@ -567,6 +567,11 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             mVideoController.dispatchKeyEvent ( new KeyEvent ( KeyEvent.ACTION_DOWN,
                                                 KeyEvent.KEYCODE_MEDIA_PLAY ) );
 
+            View hide = findViewById(R.id.full_view);
+            if ( hide != null && hide.isShown() ) {
+                hide.setVisibility(View.GONE);
+            }
+
         }
 
         private void pause() {

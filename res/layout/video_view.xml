@@ -9,5 +9,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true" />
-
+	<View
+		android:background="#000000"
+		android:id="@+id/full_view"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+	/>
 </RelativeLayout>

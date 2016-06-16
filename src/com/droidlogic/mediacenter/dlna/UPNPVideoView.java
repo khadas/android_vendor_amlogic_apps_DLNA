@@ -355,10 +355,10 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                 }
                 mVideoWidth = mp.getVideoWidth();
                 mVideoHeight = mp.getVideoHeight();
-                int seekToPosition = mSeekWhenPrepared;  // mSeekWhenPrepared may be changed after seekTo() call
+                /*int seekToPosition = mSeekWhenPrepared;  // mSeekWhenPrepared may be changed after seekTo() call
                 if ( seekToPosition != 0 ) {
                     seekTo ( seekToPosition );
-                }
+                }*/
                 if ( mVideoWidth != 0 && mVideoHeight != 0 ) {
                     //Debug.d("@@@@", "video size: " + mVideoWidth +"/"+ mVideoHeight);
                     getHolder().setFixedSize ( mVideoWidth, mVideoHeight );
@@ -372,7 +372,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                                 mVideoController.show();
                             }*/
                         } else if ( !isPlaying() &&
-                        ( seekToPosition != 0 || getCurrentPosition() > 0 ) ) {
+                        ( /*seekToPosition != 0 ||*/ getCurrentPosition() > 0 ) ) {
                             if ( mVideoController != null ) {
                                 // Show the media controls when we're paused into a video and make 'em stick.
                                 mVideoController.show ( 0 );
@@ -571,7 +571,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
             }
             public void surfaceChanged ( SurfaceHolder holder, int format,
             int w, int h ) {
-                mSurfaceWidth = w;
+                /*mSurfaceWidth = w;
                 mSurfaceHeight = h;
                 boolean isValidState =  ( mTargetState == STATE_PLAYING );
                 boolean hasValidSize = ( mVideoWidth == w && mVideoHeight == h );
@@ -580,7 +580,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                         seekTo ( mSeekWhenPrepared );
                     }
                     start();
-                }
+                }*/
                 initSurface ( holder );
             }
             public void surfaceCreated ( SurfaceHolder holder ) {
@@ -719,7 +719,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         }
 
         public void start() {
-            if ( isInPlaybackState() ) {
+			if ( isInPlaybackState() ) {
                 mMediaPlayer.start();
                 mCurrentState = STATE_PLAYING;
                 if ( mOnStateChangedListener != null ) {
@@ -772,12 +772,11 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
 
         public void seekTo ( int msec ) {
             if ( isInPlaybackState() ) {
-                android.util.Log.d("TAG","Seekto"+msec);
                 mMediaPlayer.seekTo ( msec );
-                mSeekWhenPrepared = 0;
-            } else {
+                //mSeekWhenPrepared = 0;
+            }/* else {
                 mSeekWhenPrepared = msec;
-            }
+            }*/
         }
 
         public boolean isPlaying() {
