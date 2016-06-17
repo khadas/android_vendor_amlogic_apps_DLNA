@@ -233,8 +233,8 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
             mHeaders = headers;
             mSeekWhenPrepared = 0;
             openVideo();
-            requestLayout();
-            invalidate();
+            //requestLayout();
+            //invalidate();
         }
 
         public void stopPlayback() {
@@ -251,10 +251,10 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         }
 
         private void openVideo() {
-            if ( mUri == null || mSurfaceHolder == null ) {
+            /*if ( mUri == null || mSurfaceHolder == null ) {
                 // not ready for playback just yet, will try again later
                 return;
-            }
+            }*/
             // Tell the music playback service to pause
             // TODO: these constants need to be published somewhere in the framework.
             Intent i = new Intent ( "com.android.music.musicservicecommand" );
@@ -274,10 +274,10 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                 mMediaPlayer.setOnBufferingUpdateListener ( mBufferingUpdateListener );
                 mCurrentBufferPercentage = 0;
                 mMediaPlayer.setDataSource ( mContext, mUri, mHeaders );
-                mMediaPlayer.setDisplay ( mSurfaceHolder );
+                //mMediaPlayer.setDisplay ( mSurfaceHolder );
                 mMediaPlayer.setAudioStreamType ( AudioManager.STREAM_MUSIC );
                 mMediaPlayer.setScreenOnWhilePlaying ( true );
-                mMediaPlayer.prepareAsync();
+                mMediaPlayer.prepare();
                 // we don't set the target state here either, but preserve the
                 // target state that was there before.
                 mCurrentState = STATE_PREPARING;
@@ -585,14 +585,18 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
             }
             public void surfaceCreated ( SurfaceHolder holder ) {
                 mSurfaceHolder = holder;
-                openVideo();
+                if ( mMediaPlayer != null ) {
+                    mMediaPlayer.setDisplay ( mSurfaceHolder );
+                }
+                //openVideo();
                 initSurface ( holder );
             }
             public void surfaceDestroyed ( SurfaceHolder holder ) {
                 // after we return from this we can't use the surface any more
                 mSurfaceHolder = null;
                 if ( mVideoController != null ) { mVideoController.hide(); }
-                release ( true );
+                stopPlayback();
+                //release ( true );
             }
         };
 
@@ -719,7 +723,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         }
 
         public void start() {
-			if ( isInPlaybackState() ) {
+            if ( isInPlaybackState() ) {
                 mMediaPlayer.start();
                 mCurrentState = STATE_PLAYING;
                 if ( mOnStateChangedListener != null ) {

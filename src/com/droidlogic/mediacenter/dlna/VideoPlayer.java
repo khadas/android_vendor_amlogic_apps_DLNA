@@ -213,7 +213,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     if ( isFinishing() )
                     { return; }
                     //sendPlayStateChangeBroadcast ( MedIaRendererDevice.PLAY_STATE_PLAYING );
-                    handlerUI.sendEmptyMessage ( HIDE_LOADING );
                     mp.setOnInfoListener ( VideoPlayer.this );
                     play();
                     if ( nextDlg != null ) {
@@ -248,6 +247,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                             play_state = STATE_PAUSE;
                             break;
                         case UPNPVideoView.STATE_PLAYING:
+                            handlerUI.sendEmptyMessage ( HIDE_LOADING );
                             sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_PLAYING );
                             play_state = STATE_PLAY;
                             readyForFinish = false;
@@ -566,12 +566,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             }
             mVideoController.dispatchKeyEvent ( new KeyEvent ( KeyEvent.ACTION_DOWN,
                                                 KeyEvent.KEYCODE_MEDIA_PLAY ) );
-
-            View hide = findViewById(R.id.full_view);
-            if ( hide != null && hide.isShown() ) {
-                hide.setVisibility(View.GONE);
-            }
-
         }
 
         private void pause() {
