@@ -26,7 +26,7 @@ include $(BUILD_PACKAGE)
 ##############################################
 
 include $(CLEAR_VARS)
-LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := liblebo:libs/LEBO-SDK-2.0.2.9r_external_amlogic.jar \
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := liblebo:libs/LEBO-SDK-3.0.0.1r_external_amlogic.jar \
                                         libmid:libs/mid-mid-sdk-2.3.jar \
                                         libmta:libs/mta-android-stat-sdk-2.1.0_20160111.jar \
                                         libandroid-support-v4:libs/android-support-v4.jar \
