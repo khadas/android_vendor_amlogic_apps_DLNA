@@ -120,12 +120,12 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         private boolean mHideStatusBar = false;
         private Timer mTimer;
         private TimerTask mTimerTask;
-
+        private boolean seekComplete;
         private static final int SHOW_DIALOG_DELAY = 5000;
         private static final int HIDE_LOADING_DIALOG = 500;
         private static final int FRESH_POSITION = 2000;
         private static final int SWITCH_VIDEO_DELAY = 3000;
-
+        public static final int SEEK_INTERVAL            = 9999;
         @Override
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
@@ -180,7 +180,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             } else {
                 mVideoController.setPrevNextListeners ( null, null );
             }
-            start();
             mBrocastProgress = new Handler();
             mAudioManager = ( AudioManager ) getSystemService ( Context.AUDIO_SERVICE );
             mVideoView.setOnCompletionListener ( new MediaPlayer.OnCompletionListener() {
@@ -234,7 +233,8 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     Debug.d ( TAG, "#############onSeekComplete#####################"+mp.getCurrentPosition());
                     handlerUI.sendEmptyMessage ( HIDE_LOADING );
                     handlerUI.removeMessages ( GETINFO_FRESH );
-                    refressGetInfo();
+                    handlerUI.sendEmptyMessage ( GETINFO_FRESH );
+                    seekComplete = true;
                 }
             } );
             mVideoView.setOnStateChangedListener ( new UPNPVideoView.OnStateChangedListener() {
@@ -266,6 +266,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     }
                 }
             } );
+            start();
             mUPNPReceiver = new UPNPReceiver();
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "##############################" );
@@ -282,10 +283,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                         start();
                         return;
                     case GETINFO_FRESH:
-                        /*mBrocastProgress.postDelayed(
-                                new ProgressRefresher(),
-                                500);*/
-                        //Debug.d ( TAG, "refressGetInforefressGetInforefressGetInforefressGetInfo" );
                         refressGetInfo();
                         return;
                     case HNALDE_HIDE_LOADING:
@@ -533,6 +530,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             // mAudioManager.requestAudioFocus(mAudioFocusListener,
             // AudioManager.STREAM_MUSIC,
             // AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+            seekComplete = true;
             Debug.d ( TAG, "*********************currentURI=" + currentURI );
             //showLoading();
             handlerUI.sendEmptyMessage ( SHOW_LOADING );
@@ -644,7 +642,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                         stopExit();
                         handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, 6000 );
                     } else if ( action.equals ( MediaRendererDevice.PLAY_STATE_SEEK ) ) {
-                        handlerUI.removeMessages ( GETINFO_FRESH );
                         String time = intent.getStringExtra ( "REL_TIME" );
                         if ( time == null || time.isEmpty() )
                             return;
@@ -652,8 +649,15 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                         if ( ( msecs < 0 ) || ( ( msecs > mDuration ) && ( mDuration > 0 ) ) )
                         { return; }
                         Debug.d ( TAG, "*********seek to: " + time + ",   msecs=" + msecs + "mDuration:"+ mDuration);
-
-                        mVideoView.seekTo ( msecs );
+                        if ( seekComplete ) {
+                            seekComplete = false;
+                            if (( msecs - mVideoView.getCurrentPosition() ) > SEEK_INTERVAL || ( mVideoView.getCurrentPosition() - msecs ) > SEEK_INTERVAL ) {
+                                mVideoView.seekTo ( msecs );
+                                if ( play_state == STATE_PLAY ) {
+                                    handlerUI.removeMessages ( GETINFO_FRESH );
+                                }
+                            }
+                        }
                         //handlerUI.sendEmptyMessageDelayed(3, 500);
                     } else if ( action.equals ( AmlogicCP.UPNP_SETVOLUME_ACTION ) ) {
                         int vol = intent.getIntExtra ( "DesiredVolume", 50 );
