@@ -233,8 +233,8 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
             mHeaders = headers;
             mSeekWhenPrepared = 0;
             openVideo();
-            //requestLayout();
-            //invalidate();
+            requestLayout();
+            invalidate();
         }
 
         public void stopPlayback() {
@@ -274,7 +274,9 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                 mMediaPlayer.setOnBufferingUpdateListener ( mBufferingUpdateListener );
                 mCurrentBufferPercentage = 0;
                 mMediaPlayer.setDataSource ( mContext, mUri, mHeaders );
-                //mMediaPlayer.setDisplay ( mSurfaceHolder );
+                if (mSurfaceHolder != null) {
+                    mMediaPlayer.setDisplay ( mSurfaceHolder );
+                }
                 mMediaPlayer.setAudioStreamType ( AudioManager.STREAM_MUSIC );
                 mMediaPlayer.setScreenOnWhilePlaying ( true );
                 mMediaPlayer.prepare();
@@ -571,6 +573,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
             }
             public void surfaceChanged ( SurfaceHolder holder, int format,
             int w, int h ) {
+                mSurfaceHolder = holder;
                 /*mSurfaceWidth = w;
                 mSurfaceHeight = h;
                 boolean isValidState =  ( mTargetState == STATE_PLAYING );
