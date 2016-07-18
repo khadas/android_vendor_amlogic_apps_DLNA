@@ -562,16 +562,14 @@ public class main extends Activity {
         //functions for installing and uninstalling
         public void install_apk (String apk_filepath) {
             Intent installintent = new Intent();
-            installintent.setComponent (new ComponentName ("com.android.packageinstaller", "com.android.packageinstaller.PackageInstallerActivity"));
             installintent.setAction (Intent.ACTION_VIEW);
-            installintent.setData (Uri.fromFile (new File (apk_filepath)));
+            installintent.setDataAndType(Uri.fromFile (new File (apk_filepath)), "application/vnd.android.package-archive");
             startActivity (installintent);
         }
 
         public void uninstall_apk (String apk_pkgname) {
             Intent uninstallintent = new Intent();
-            uninstallintent.setComponent (new ComponentName ("com.android.packageinstaller", "com.android.packageinstaller.UninstallerActivity"));
-            uninstallintent.setAction (Intent.ACTION_VIEW);
+            uninstallintent.setAction (Intent.ACTION_UNINSTALL_PACKAGE);
             uninstallintent.setData (Uri.fromParts ("package", apk_pkgname, null));
             startActivity (uninstallintent);
         }
