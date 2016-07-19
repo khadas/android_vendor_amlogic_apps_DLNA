@@ -317,6 +317,10 @@ public class MediaCenterService extends Service {
         }
 
         private void startDMRInternal() {
+            if (isDMRStart) {
+                //already run;
+                return;
+            }
             if (super.isRunning()) {
                 super.stop(false);
             }

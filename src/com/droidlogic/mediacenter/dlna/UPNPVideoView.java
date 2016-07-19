@@ -100,7 +100,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         private boolean     mCanPause;
         private boolean     mCanSeekBack;
         private boolean     mCanSeekForward;
-
+        private boolean     mWaitDisplay;
         public UPNPVideoView ( Context context ) {
             super ( context );
             mContext = context;
@@ -232,7 +232,13 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
             mUri = uri;
             mHeaders = headers;
             mSeekWhenPrepared = 0;
-            openVideo();
+            if ( mSurfaceHolder == null ) {
+                mWaitDisplay = true;
+            }else {
+                openVideo();
+                mWaitDisplay = false;
+            }
+
             requestLayout();
             invalidate();
         }
@@ -251,10 +257,6 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         }
 
         private void openVideo() {
-            /*if ( mUri == null || mSurfaceHolder == null ) {
-                // not ready for playback just yet, will try again later
-                return;
-            }*/
             // Tell the music playback service to pause
             // TODO: these constants need to be published somewhere in the framework.
             Intent i = new Intent ( "com.android.music.musicservicecommand" );
@@ -274,11 +276,9 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                 mMediaPlayer.setOnBufferingUpdateListener ( mBufferingUpdateListener );
                 mCurrentBufferPercentage = 0;
                 mMediaPlayer.setDataSource ( mContext, mUri, mHeaders );
-                if (mSurfaceHolder != null) {
-                    mMediaPlayer.setDisplay ( mSurfaceHolder );
-                }
-                mMediaPlayer.setAudioStreamType ( AudioManager.STREAM_MUSIC );
+                mMediaPlayer.setDisplay( mSurfaceHolder );
                 mMediaPlayer.setScreenOnWhilePlaying ( true );
+                mMediaPlayer.setAudioStreamType ( AudioManager.STREAM_MUSIC );
                 mMediaPlayer.prepare();
                 // we don't set the target state here either, but preserve the
                 // target state that was there before.
@@ -588,10 +588,10 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
             }
             public void surfaceCreated ( SurfaceHolder holder ) {
                 mSurfaceHolder = holder;
-                if ( mMediaPlayer != null ) {
-                    mMediaPlayer.setDisplay ( mSurfaceHolder );
+                if (mWaitDisplay) {
+                    openVideo();
+                    mWaitDisplay = false;
                 }
-                //openVideo();
                 initSurface ( holder );
             }
             public void surfaceDestroyed ( SurfaceHolder holder ) {
