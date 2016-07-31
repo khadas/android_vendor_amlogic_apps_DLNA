@@ -54,6 +54,7 @@ import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -120,6 +121,7 @@ public class ImageFromUrl extends Activity {
             mShowView = ( ImageView ) findViewById ( R.id.imageview );
             mHandler = new DecodeHandler ( mCurUri );
             mDecodeBitmapTask.start();
+            Debug.d(TAG,"mCurUri:"+mCurUri);
             ViewGroup mainView = ( ViewGroup ) findViewById ( R.id.image_control );
             mainView.setOnClickListener ( new View.OnClickListener() {
                 @Override
@@ -207,7 +209,6 @@ public class ImageFromUrl extends Activity {
             btnLeft.setOnFocusChangeListener ( listener );
             reg = false;
             Intent intent = getIntent();
-            Debug.d ( TAG, "intent!=null" + ( intent != null ) + intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI ) );
             if ( intent != null ) {
                 String url = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
                 Message msg = new Message();
@@ -329,6 +330,7 @@ public class ImageFromUrl extends Activity {
                     //mHandler = null;
                     unregistRec();
                     stopExit();
+                    mSlideShow = SLIDE_UNSTATE;
                     ImageFromUrl.this.finish();
                 }
                 return true;
@@ -394,9 +396,10 @@ public class ImageFromUrl extends Activity {
         @Override
         protected void onResume() {
             super.onResume();
+            getWindow().addFlags(LayoutParams.FLAG_DISMISS_KEYGUARD | LayoutParams.FLAG_TURN_SCREEN_ON);
             isShowingForehand = true;
-            mHandler.removeMessages ( STOP_BY_SEVER );
-            mHandler.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
+            //mHandler.removeMessages ( STOP_BY_SEVER );
+            //mHandler.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
             if ( isBrowserMode ) {
                 mHandler.sendEmptyMessageDelayed ( HIDEPANEL, STOP_SHOW_INTERVAL );
             }
@@ -419,7 +422,7 @@ public class ImageFromUrl extends Activity {
             stopExit();
             isShowingForehand = false;
             hideLoading();
-            mSlideShow = SLIDE_STOP;
+            mSlideShow = SLIDE_UNSTATE;
             if ( mCurUri != null ) {
                 mCurUri.setUrl ( null );
             }
@@ -432,6 +435,20 @@ public class ImageFromUrl extends Activity {
             mWakeLock.release();
         }
 
+        @Override
+        protected void onStop() {
+            super.onStop();
+            Debug.d(TAG,"onStop");
+            if ( mHandler != null ) {
+                mHandler = null;
+            }
+            if ( mCurUri != null ) {
+                mCurUri = null;
+            }
+            if ( mDecodeBitmapTask != null ) {
+                mDecodeBitmapTask = null;
+            }
+        }
 
         class ImageFromUrlReceiver extends BroadcastReceiver {
                 /*
@@ -465,6 +482,7 @@ public class ImageFromUrl extends Activity {
                         }
                         msg.what = LOADING_URL_IMAG;
                         msg.obj = url;
+                        mHandler.removeMessages(LOADING_URL_IMAG);
                         mHandler.sendMessage ( msg );
                         return;
                     } else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) ) {
@@ -515,10 +533,12 @@ public class ImageFromUrl extends Activity {
                                     Intent playIntent = new Intent(MediaRendererDevice.PLAY_STATE_PLAYING);
                                     ImageFromUrl.this.sendBroadcast(playIntent);
                                     if ( mHandler != null ) {
-                                        Message msg = Message.obtain();
+                                        mHandler.removeMessages(SHOW_BITMAP_URL);
+                                        Message msg = new Message();
                                         msg.what = SHOW_BITMAP_URL;
                                         msg.obj = urlString;
                                         mHandler.sendMessage(msg);
+                                        Debug.d(TAG,"SHOW_BITMAP_URL"+urlString);
                                     }
                                     connection.disconnect();
                                 }
@@ -613,16 +633,18 @@ public class ImageFromUrl extends Activity {
         }
 
         private void showImage() {
+             Debug.d(TAG,"showImage showMap:"+mSlideShow);
             if ( mSlideShow == SLIDE_STOP ) {
                 hideLoading();
                 return;
             }
-            Debug.d(TAG,"showImage showMap:"+System.currentTimeMillis());
+            Debug.d(TAG,"showImage showMap:"+System.currentTimeMillis()+"-"+(myBitmap != null));
             if ( myBitmap != null ) {
                 zoomCount = 1;
                 int height = myBitmap.getHeight();
                 int width = myBitmap.getWidth();
                 float reSize = 1.0f;
+                Debug.d(TAG,"showImage showMap:"+height+"-"+width);
                 if ( width > TOPSIZE || height > TOPSIZE ) {
                     if ( height > width ) {
                         reSize = TOPSIZE / height;
@@ -633,8 +655,10 @@ public class ImageFromUrl extends Activity {
                     matrix.postScale ( reSize, reSize );
                     myBitmap = Bitmap.createBitmap ( myBitmap, 0, 0, width,
                                                      height, matrix, true );
+                    Debug.d(TAG,"showImage showMap:"+(myBitmap==null));
                     mShowView.setImageBitmap ( myBitmap );
                 } else {
+                    Debug.d(TAG,"showImage showMa==========");
                     mShowView.setImageBitmap ( myBitmap );
                 }
                 //myBitmap = null;
@@ -674,6 +698,7 @@ public class ImageFromUrl extends Activity {
 
                 @Override
                 public void handleMessage ( Message msg ) {
+                    Debug.d (TAG,"handleMessage msg:"+msg.what);
                     switch ( msg.what ) {
                         case LOADING_URL_IMAG:
                             stopExit();
@@ -686,7 +711,7 @@ public class ImageFromUrl extends Activity {
                             }
                             break;
                         case SHOW_BITMAP_URL:
-                            hideLoading();
+                            //hideLoading();
                             showImage();
                             break;
                         case SHOW_STOP:
@@ -709,21 +734,21 @@ public class ImageFromUrl extends Activity {
                                 }
                                 mSlideView.setVisibility ( View.VISIBLE );
                             }
-                            return;
+                            break;
                         case HIDEPANEL:
                             if ( mSlideView != null ) {
                                 mSlideView.setVisibility ( View.INVISIBLE );
                             }
-                            return;
+                            break;
                         case STOP_BY_SEVER:
-                            if ( !isShowingForehand ) {
+                            /*if ( !isShowingForehand ) {
                                 ImageFromUrl.this.finish();
                             } else {
                                 if ( null != mHandler ) {
                                     mHandler.sendEmptyMessageDelayed ( STOP_BY_SEVER, 5000 );
                                 }
-                            }
-                            return;
+                            }*/
+                            break;
                     }
                 }
         }

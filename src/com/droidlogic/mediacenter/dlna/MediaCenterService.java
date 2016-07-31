@@ -271,6 +271,7 @@ public class MediaCenterService extends Service {
                 String name = cn.getClassName();
                 if (!MusicPlayer.isShowingForehand && MediaRendererDevice.TYPE_AUDIO.equals(type)) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                     intent.setClass(MediaCenterService.this, MusicPlayer.class);
                     VideoPlayer.running = false;
                     ImageFromUrl.isShowingForehand = false;
@@ -279,6 +280,7 @@ public class MediaCenterService extends Service {
                     return;
                 } else if (!VideoPlayer.running && MediaRendererDevice.TYPE_VIDEO.equals(type)) {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                     intent.setClass(MediaCenterService.this, VideoPlayer.class);
                     ImageFromUrl.isShowingForehand = false;
                     MusicPlayer.isShowingForehand = false;
@@ -286,6 +288,7 @@ public class MediaCenterService extends Service {
                     startActivity(intent);
                     return;
                 } else if (!ImageFromUrl.isShowingForehand && MediaRendererDevice.TYPE_IMAGE.equals(type)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.setClass(MediaCenterService.this, ImageFromUrl.class);
                     MusicPlayer.isShowingForehand = false;

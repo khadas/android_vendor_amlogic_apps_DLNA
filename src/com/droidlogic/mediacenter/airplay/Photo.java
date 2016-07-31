@@ -94,7 +94,8 @@ public class Photo extends Activity {
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             requestWindowFeature ( Window.FEATURE_NO_TITLE );
-            getWindow().setFlags ( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN );
+            getWindow().setFlags ( WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             container = new FrameLayout ( this );
             android.view.ViewGroup.LayoutParams lp1 = new LayoutParams ( LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT );
             container.setLayoutParams ( lp1 );

@@ -171,6 +171,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             setContentView ( R.layout.music_activity );
+            getWindow().addFlags(LayoutParams.FLAG_DISMISS_KEYGUARD | LayoutParams.FLAG_TURN_SCREEN_ON);
             LayoutParams params = getWindow().getAttributes();
             //params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
             //| WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;

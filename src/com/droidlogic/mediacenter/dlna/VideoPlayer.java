@@ -129,6 +129,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         @Override
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
+            getWindow().addFlags(LayoutParams.FLAG_DISMISS_KEYGUARD | LayoutParams.FLAG_TURN_SCREEN_ON);
             mTimer = new Timer();
             setContentView ( R.layout.video_view );
             mVideoController = new VideoController ( this );
