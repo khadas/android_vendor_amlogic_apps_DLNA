@@ -246,8 +246,9 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         public void stopPlayback() {
             if ( mMediaPlayer != null ) {
                 mMediaPlayer.stop();
-                mMediaPlayer.release();
-                mMediaPlayer = null;
+                mMediaPlayer.reset();
+                //mMediaPlayer.release();
+                //mMediaPlayer = null;
                 mCurrentState = STATE_IDLE;
                 mTargetState  = STATE_IDLE;
                 if ( mOnStateChangedListener != null ) {
@@ -599,7 +600,7 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                 mSurfaceHolder = null;
                 if ( mVideoController != null ) { mVideoController.hide(); }
                 stopPlayback();
-                //release ( true );
+                release ( true );
             }
         };
 

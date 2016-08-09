@@ -592,7 +592,7 @@ public class VideoController extends FrameLayout {
                 }
                 return true;
             } else if ( keyCode == KeyEvent.KEYCODE_MEDIA_STOP ) {
-                if ( uniqueDown && mPlayer.isInPlaybackState() ) {
+                if ( uniqueDown && (mPlayer != null) && mPlayer.isInPlaybackState() ) {
                     mPlayer.seekTo ( 0 );
                     setProgress();
                     if ( mPlayer.isPlaying() ) {

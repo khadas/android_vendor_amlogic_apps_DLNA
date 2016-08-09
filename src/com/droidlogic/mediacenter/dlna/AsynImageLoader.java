@@ -28,7 +28,8 @@ public class AsynImageLoader {
     // cache images map loaded
     private Map<String, SoftReference<Bitmap>> caches;
     // task list
-    private List<Task> taskQueue;
+    private HashMap<String,Task> taskQueue;
+    private ArrayList<String> taskQueueName;
     private boolean isRunning = false;
 
     private ImageCallback getImageCallback(final ImageView imageView, final int resId) {
@@ -52,9 +53,10 @@ public class AsynImageLoader {
         public void run() {
             while (isRunning) {
                 // 当队列中还有未处理的任务时，执行下载任务
-                while (taskQueue.size() > 0) {
+                while ( taskQueueName != null && taskQueueName.size() > 0) {
                     // 获取第一个任务，并将之从任务队列中删除
-                    Task task = taskQueue.remove(0);
+                    String key = taskQueueName.remove(0);
+                    Task task = taskQueue.remove(key);
                     task.bitmap = PicUtil.getbitmapAndwrite(task.path);
                     // 将下载的图片添加到缓存
                     caches.put(task.path, new SoftReference<Bitmap>(task.bitmap));
@@ -92,7 +94,8 @@ public class AsynImageLoader {
     public AsynImageLoader() {
         // init
         caches = new HashMap<String, SoftReference<Bitmap>>();
-        taskQueue = new ArrayList<AsynImageLoader.Task>();
+        taskQueue = new HashMap<String,AsynImageLoader.Task>();
+        taskQueueName = new ArrayList<String>();
         isRunning = true;
         new Thread(runnable).start();
     }
@@ -123,7 +126,7 @@ public class AsynImageLoader {
      * @param imageCallback
      * @return
      */
-    private Bitmap loadImageAsyn(String path, ImageCallback imageCallback) {
+    private synchronized Bitmap loadImageAsyn(String path, ImageCallback imageCallback) {
         // 判断缓存中是否已经存在该图片
         if (caches.containsKey(path)) {
             // 取出软引用
@@ -139,13 +142,12 @@ public class AsynImageLoader {
                 return bitmap;
             }
         } else {
-            // 如果缓存中不常在该图片，则创建图片下载任务
-            Task task = new Task();
-            task.path = path;
-            task.callback = imageCallback;
-            Log.d(TAG, "create task," + path);
-            if (!taskQueue.contains(task)) {
-                taskQueue.add(task);
+            if (!taskQueue.containsKey(path)) {
+                Task task = new Task();
+                task.path = path;
+                task.callback = imageCallback;
+                taskQueueName.add(path);
+                taskQueue.put(path,task);
                 // 唤醒任务下载队列
                 synchronized (runnable) {
                     runnable.notify();

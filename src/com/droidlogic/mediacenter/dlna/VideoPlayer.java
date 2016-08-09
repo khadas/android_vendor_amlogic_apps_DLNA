@@ -345,7 +345,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             int vol = mAudioManager.getStreamVolume ( AudioManager.STREAM_MUSIC );
             mVideoBuffer = (String)PrefUtils.getProperties( "media.amplayer.buffertime","0.0");
             PrefUtils.setProperties("media.amplayer.buffertime", "6" );
-            PrefUtils.setProperties("media.amplayer.displast_frame", "true");
+            //PrefUtils.setProperties("media.amplayer.displast_frame", "true");
             if ( mLastState == STATE_PLAY ) {
                 play();
             }
@@ -444,7 +444,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "##############################" );
             Debug.d ( TAG, "onStop: make running as FALSE" );
-            PrefUtils.setProperties("media.amplayer.displast_frame", "false");
+            //PrefUtils.setProperties("media.amplayer.displast_frame", "false");
             mCurPos = 0;
             mDuration = 0;
             currentURI = null;
