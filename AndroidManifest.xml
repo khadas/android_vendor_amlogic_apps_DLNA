@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.droidlogic.mediacenter"
     android:versionCode="2"
-    android:sharedUserId="android.uid.system"
+    android:sharedUserId="android.uid.mediacenter"
     android:versionName="@string/setting_version_summary" >
 
     <uses-sdk
@@ -46,6 +46,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.READ_FRAME_BUFFER" />
+    <uses-permission android:name="android.permission.READ_DREAM_STATE" />
     <application
     android:name="com.droidlogic.mediacenter.MediaCenterApplication"
         android:allowBackup="true"
@@ -101,7 +102,8 @@
                 <action android:name="com.android.mediacenter.networkerr" />
             </intent-filter>
         </service>
-
+        <service android:name="com.hpplay.happyplay.SdkServiceForRestart" >
+        </service>
         <receiver android:name="com.droidlogic.mediacenter.DMRBroadcastReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
