@@ -116,6 +116,10 @@ public class ImageFromUrl extends Activity {
         protected void onCreate ( Bundle arg0 ) {
             super.onCreate ( arg0 );
             setContentView ( R.layout.display_image_activity );
+        }
+        @Override
+        protected void onStart() {
+            super.onStart();
             mCurUri = new DecordUri();
             mDecodeBitmapTask = new DecodeBitmapTask ( mCurUri );
             mShowView = ( ImageView ) findViewById ( R.id.imageview );
@@ -427,11 +431,6 @@ public class ImageFromUrl extends Activity {
                 mCurUri.setUrl ( null );
             }
             unregistRec();
-            if ( mDecodeBitmapTask != null ) {
-                mDecodeBitmapTask.interrupted();
-                mDecodeBitmapTask.stopThread();
-            }
-            mDecodeBitmapTask = null;
             mWakeLock.release();
         }
 
@@ -446,6 +445,8 @@ public class ImageFromUrl extends Activity {
                 mCurUri = null;
             }
             if ( mDecodeBitmapTask != null ) {
+                mDecodeBitmapTask.interrupted();
+                mDecodeBitmapTask.stopThread();
                 mDecodeBitmapTask = null;
             }
         }
