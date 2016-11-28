@@ -63,7 +63,7 @@ public class DMRBroadcastReceiver extends BroadcastReceiver {
             mPrefUtils = new PrefUtils ( cxt );
             /*restart DMRservice when network config changed*/
             Log.d ( TAG ,">>>>>onReceive : onReceive" + intent.getAction());
-            if ( ( ConnectivityManager.CONNECTIVITY_ACTION ).equals ( intent.getAction() ) ) {
+            if ((ConnectivityManager.CONNECTIVITY_ACTION).equals(intent.getAction())) {
                 ConnectivityManager cMgr = ( ConnectivityManager ) cxt.getSystemService ( Context.CONNECTIVITY_SERVICE );
                 NetworkInfo netInfo = ( NetworkInfo ) intent.getExtras ().getParcelable(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo netInfoWIFI = cMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -97,13 +97,13 @@ public class DMRBroadcastReceiver extends BroadcastReceiver {
             }
             //this broadcast is useless than network change
             if ( intent.getAction().equals ( Intent.ACTION_BOOT_COMPLETED ) ) {
-                //SharedPreferences prefs = Utils.getSharedPreferences(cxt);
-                //boolean autostart  = prefs.getBoolean(SettingsPreferences.KEY_BOOT_CFG, false);
-                //SharedPreferences.Editor editor = prefs.edit();
-                //boolean autostart = mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false );
-                //if ( autostart ) {
-                //cxt.startService(new Intent(cxt,AirPlayService.class));
-                //}
+                SharedPreferences prefs = Utils.getSharedPreferences(cxt);
+                boolean autostart  = prefs.getBoolean(SettingsPreferences.KEY_BOOT_CFG, false);
+                SharedPreferences.Editor editor = prefs.edit();
+                autostart = mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false );
+                if ( autostart ) {
+                    cxt.startService(new Intent(cxt,AirPlayService.class));
+                }
             }
         }
         private Handler mHandler = new Handler() {
