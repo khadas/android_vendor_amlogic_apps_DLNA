@@ -2,7 +2,7 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := optional
-LOCAL_STATIC_JAVA_LIBRARIES := libandroid-support-v4 libdlna libmid libmta liblebo
+LOCAL_STATIC_JAVA_LIBRARIES := libandroid-support-v4 libdlna libmid libmta liblebo libumeng libutd libce
 LOCAL_JAVA_LIBRARIES := droidlogic
 LOCAL_SDK_VERSION := current
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
@@ -20,7 +20,7 @@ LOCAL_PREBUILT_JNI_LIBS := \
                           libs/armeabi-v7a/libhisivideo.so \
                           libs/armeabi-v7a/libhisivideo19.so \
                           libs/armeabi-v7a/libhisivideo_3798m.so \
-                          libs/armeabi-v7a/libplatinum-jni.so
+                          libs/armeabi-v7a/liblebodlna-jni.so
 #LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 LOCAL_MULTILIB := 32
 include $(BUILD_PACKAGE)
@@ -28,11 +28,14 @@ include $(BUILD_PACKAGE)
 ##############################################
 
 include $(CLEAR_VARS)
-LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := liblebo:libs/LEBO-SDK-3.0.1.3r_external_amlogic.jar \
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := liblebo:libs/LEBO-SDK-4.0.0.2r_external_amlogic.jar \
                                         libmid:libs/mid-mid-sdk-2.3.jar \
                                         libmta:libs/mta-android-stat-sdk-2.1.0_20160111.jar \
                                         libandroid-support-v4:libs/android-support-v4.jar \
-                                        libdlna:libs/dlna.jar
+                                        libdlna:libs/dlna.jar \
+										libumeng:libs/umeng-analytics-v6.0.1.jar \
+										libutd:libs/utdid4all-1.0.4.jar \
+										libce:libs/ce-premium-cn-2.4.13.jar
 LOCAL_MULTILIB := 32
 include $(BUILD_MULTI_PREBUILT)
 
