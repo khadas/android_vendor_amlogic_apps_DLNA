@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.droidlogic.mediacenter"
     android:versionCode="2"
-    android:sharedUserId="android.uid.mediacenter"
+    android:sharedUserId="android.uid.system"
     android:versionName="@string/setting_version_summary" >
 
     <uses-sdk
