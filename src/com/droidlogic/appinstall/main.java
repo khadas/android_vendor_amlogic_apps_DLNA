@@ -93,7 +93,7 @@ public class main extends Activity {
 
         private StorageManager mStorageManager;
         private List<VolumeInfo> mVolumes;
-
+        private boolean recvFlag = false;
         /** Called when the activity is first created. */
         @Override
         public void onCreate (Bundle savedInstanceState) {
@@ -159,8 +159,9 @@ public class main extends Activity {
                     if (index >= 0) {
                         String path = data.substring (index);
                         if (path.equals (mScanRoot)) {
-                            m_list.setAdapter (null);
+                            //m_list.setAdapter (null);
                             mApkList.clear();
+                            pkgadapter.notifyDataSetChanged();
                         }
                     }
                     else { //exception handle
@@ -184,15 +185,22 @@ public class main extends Activity {
 
         public void onResume() {
             Log.d (TAG, "onResume");
-            pkgadapter.notifyDataSetChanged();
             m_scanop.setHandler (mainhandler);
             m_installop.setHandler (mainhandler);
             IntentFilter intentFilter = new IntentFilter (Intent.ACTION_MEDIA_MOUNTED);
             intentFilter.addAction (Intent.ACTION_MEDIA_EJECT);
             intentFilter.addAction (Intent.ACTION_MEDIA_UNMOUNTED);
             intentFilter.addDataScheme ("file");
-            registerReceiver (mMountReceiver, intentFilter);
+            if (!recvFlag) {
+                registerReceiver (mMountReceiver, intentFilter);
+                recvFlag = true;
+            }
             super.onResume();
+            if ( mScanRoot != null && mScanRoot.length() > 0 ) {
+                startScanOp();
+            } else {
+                pkgadapter.notifyDataSetChanged();
+            }
         }
 
         public void onPause() {
@@ -209,15 +217,14 @@ public class main extends Activity {
             if (mHandleDiag != null) {
                 mHandleDiag.dismiss();
             }
-            //unregisterReceiver(mMountReceiver);
             //release the wakelock
             super.onPause();
+            if (recvFlag) {
+                unregisterReceiver (mMountReceiver);
+                recvFlag = false;
+            }
         }
         public void onStop() {
-            if (mMountReceiver != null) {
-                unregisterReceiver (mMountReceiver);
-                mMountReceiver = null;
-            }
             super.onStop();
         }
         protected void onDestroy() {
@@ -858,8 +865,8 @@ public class main extends Activity {
         protected void startScanOp() {
             KeepSystemAwake (true);
             mStatus = SCAN_APKS;
-            mScanDiag.start();
             showScanDiag (0, 0);
+            mScanDiag.start();
             m_scanop.start();
             m_scanop.setHandler (mainhandler);
         }
