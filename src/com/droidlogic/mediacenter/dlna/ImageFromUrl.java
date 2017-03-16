@@ -432,6 +432,7 @@ public class ImageFromUrl extends Activity {
             }
             unregistRec();
             mWakeLock.release();
+            this.finish();
         }
 
         @Override
