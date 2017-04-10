@@ -7,6 +7,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+
+import android.provider.MediaStore.Files;
+import android.provider.MediaStore.Files.FileColumns;
+import android.content.ContentResolver;
+import android.database.Cursor;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -90,6 +96,7 @@ public class main extends Activity {
         private static int VIEW_APKS = 1;
         private static int INSTALL_APKS = 2;
         protected int mStatus = -1;
+        private int item_position_selected, item_position_first, fromtop_piexl;
 
         private StorageManager mStorageManager;
         private List<VolumeInfo> mVolumes;
@@ -119,10 +126,15 @@ public class main extends Activity {
                     APKInfo apkinfo = mApkList.get (position);
                     //if(apkinfo.isInstalled() == true)
                         //uninstall_apk(apkinfo.pCurPkgName);
-                    //else
+                    item_position_first = m_list.getFirstVisiblePosition();
+                    item_position_selected = m_list.getSelectedItemPosition();
+                    View v = m_list.getChildAt(item_position_selected - item_position_first);
+                    fromtop_piexl = (v == null) ? 0 :v.getTop();
                     install_apk (apkinfo.filepath);
+
                 }
             });
+
             //change dir button
             m_DirEdit = (TextView) findViewById (R.id.Dir);
             m_DirEdit.setText (" ", TextView.BufferType.NORMAL);
@@ -232,7 +244,6 @@ public class main extends Activity {
                 m_scanop.stop();
                 m_installop.stop();
             }
-            Log.d (TAG, "onDestroy");
             KeepSystemAwake (false);
             super.onDestroy();
         }
@@ -264,6 +275,7 @@ public class main extends Activity {
                             }
                             if (mApkList.size() > 0) {
                                 m_list.setAdapter (pkgadapter);
+                                m_list.setSelectionFromTop(item_position_selected, fromtop_piexl);
                                 m_list.setVisibility (android.view.View.VISIBLE);
                                 m_info.setVisibility (android.view.View.INVISIBLE);
                             }
@@ -410,92 +422,6 @@ public class main extends Activity {
                     selid = idx;
                 }
             }
-
-            // shield for android 6.0 support
-            /*//init dev count
-            File pfile = new File (USB_PATH);
-            File[] files = pfile.listFiles();
-            int num = 0;
-            if (files != null) {
-                num = files.length + 1;
-            }
-            else {
-                num = 1; // 1 indicate NAND_PATH
-            }
-            mDevs = new String[num];
-            File dir = new File (NAND_PATH);
-            if (dir.exists() && dir.isDirectory()) {
-                mDevs[devCnt] = dir.toString();
-            }
-            dir = new File (SD_PATH);
-            if (Environment.getExternalStorageState(dir).equals(Environment.MEDIA_MOUNTED)) {
-                devCnt++;
-                mDevs[devCnt] = dir.toString();
-            }
-            dir = new File (USB_PATH);
-            if (dir.exists() && dir.isDirectory()) {
-                if (dir.listFiles() != null) {
-                for (File file : dir.listFiles()) {
-                        if (file.isDirectory()) {
-                            String devname = null;
-                            String path = file.getAbsolutePath();
-                            if ( ((path.startsWith (USB_PATH + "/sd") || path.startsWith (USB_PATH + "/sr")) && !path.equals (SD_PATH))
-                                && Environment.getExternalStorageState(file).equals(Environment.MEDIA_MOUNTED)) {
-                                devCnt++;
-                                mDevs[devCnt] = file.toString();
-                            }
-                        }
-                    }
-                }
-            }
-            dir = new File (ROOT_PATH);
-            if (dir.exists() && dir.isDirectory()) {
-                if (dir.listFiles() != null) {
-                for (File file : dir.listFiles()) {
-                        if (file.isDirectory()) {
-                            String devname = null;
-                            String path = file.getAbsolutePath();
-                            if (path.startsWith (ROOT_PATH + "/udisk")) {
-                                String stateStr = Environment.getStorageState (new File (path));
-                                if (stateStr.equals (Environment.MEDIA_MOUNTED)) {
-                                    devCnt++;
-                                    mDevs[devCnt] = file.toString();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            int len = devCnt + 1;
-            mDevStrs = new String[len];
-            for (int idx = 0; idx < len; idx++) {
-                if (mDevs[idx] == null) {
-                    Log.e (TAG, "showChooseDev err, mDevs[" + idx + "]==null.");
-                    continue;
-                }
-                if (mDevs[idx].equals (NAND_PATH)) {
-                    mDevStrs[idx] = DeviceArray[1];
-                }
-                else if ( (mDevs[idx].startsWith (USB_PATH + "/sd") || mDevs[idx].startsWith (ROOT_PATH + "/udisk")) && !mDevs[idx].equals (SD_PATH)) {
-                    dev_usb_count++;
-                    char data = (char) ('A' + dev_usb_count - 1);
-                    mDevStrs[idx] = DeviceArray[2] + "(" + data + ":)" ;
-                }
-                else if (mDevs[idx].startsWith (USB_PATH + "/sr") && !mDevs[idx].equals (SD_PATH)) {
-                    dev_cd_count++;
-                    char data = (char) ('A' + dev_cd_count - 1);
-                    mDevStrs[idx] = DeviceArray[3] + "(" + data + ":)" ;
-                }
-                else if (mDevs[idx].equals (SD_PATH)) {
-                    mDevStrs[idx] = DeviceArray[4];
-                }
-                else {
-                    mDevStrs[idx] = mDevs[idx];
-                }
-                if (mDevs[idx].equals (mScanRoot)) {
-                    selid = idx;
-                }
-            }*/
 
             //show dialog to choose dialog
             new AlertDialog.Builder (main.this)
@@ -865,8 +791,6 @@ public class main extends Activity {
         protected void startScanOp() {
             KeepSystemAwake (true);
             mStatus = SCAN_APKS;
-            showScanDiag (0, 0);
-            mScanDiag.start();
             m_scanop.start();
             m_scanop.setHandler (mainhandler);
         }
@@ -892,80 +816,39 @@ public class main extends Activity {
                             }
                         }
 
-                        class APKFileter implements FileFilter {
-                                public boolean accept (File arg0) {
-                                    if (arg0.isDirectory() == true) {
-                                        return true;
-                                    }
-                                    String filename = arg0.getName();
-                                    String filenamelowercase = filename.toLowerCase();
-                                    return filenamelowercase.endsWith (".apk");
-                                }
-                        }
                         protected void scandir (String directory) {
-                            int dirs = 0, apks = 0;
-                            //clear the apklist
                             mApkList.clear();
                             //to scan dirs
-                            ArrayList<String> pdirlist = new ArrayList<String>();
-                            pdirlist.add (directory);
-                            while (pdirlist.isEmpty() == false) {
-                                synchronized (m_syncobj) {
-                                    if (m_bstop == true) {
-                                        break;
-                                    }
-                                    dirs++;
-                                    if (m_handler != null) {
-                                        Message dirmsg = Message.obtain();
-                                        dirmsg.what = NEW_APK;
-                                        dirmsg.arg1 = dirs;
-                                        dirmsg.arg2 = apks;
-                                        m_handler.sendMessage (dirmsg);
-                                    }
-                                }
-                                String headpath = pdirlist.remove (0);
-                                File pfile = new File (headpath);
-                                if (pfile.exists() == true) {
-                                    //list files and dirs in this directory
-                                    File[] files = pfile.listFiles (new APKFileter());
-                                    if (files != null && (files.length > 0)) {
-                                        int i = 0;
-                                        for (; i < files.length; i++) {
-                                            //shield /sdcard/external_sdcard if select /sdcard to search with virtaul external_sdcard
-                                            String str = null;
-                                            str = files[i].toString();
-                                            if (str.compareTo (SHEILD_EXT_STOR) == 0) {
-                                                continue;
-                                            }
-                                            synchronized (m_syncobj) {
-                                                if (m_bstop == true) {
-                                                    break;
-                                                }
-                                            }
-                                            File pcurfile = files[i];
-                                            if (pcurfile.isDirectory()) {
-                                                pdirlist.add (pcurfile.getAbsolutePath());
-                                            }
-                                            else {
-                                                APKInfo apkinfo = new APKInfo (main.this, pcurfile.getAbsolutePath());
-                                                if (apkinfo.beValid() == true) {
-                                                    mApkList.add (apkinfo);
-                                                    apks++;
-                                                    synchronized (m_syncobj) {
-                                                        if (m_handler != null) {
-                                                            Message apkmsg = Message.obtain();
-                                                            apkmsg.what = NEW_APK;
-                                                            apkmsg.arg1 = dirs;
-                                                            apkmsg.arg2 = apks;
-                                                            m_handler.sendMessage (apkmsg);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                            Uri fileUri=Files.getContentUri ("external");
+                            String[] projection = new String[] {FileColumns.DATA, FileColumns.TITLE};
+                            String selection = "";
+                            selection = selection + FileColumns.DATA + " LIKE '%.apk'";
+                            String sortOrder = FileColumns.DATE_MODIFIED;
+                            ContentResolver resolver = main.this.getContentResolver();
+                            Cursor cursor=resolver.query(fileUri, projection, selection, null, sortOrder);
+                            if (cursor == null) {
+                                return;
+                            }
+                            while (cursor.moveToNext()) {
+                                String data = cursor.getString(0);
+                                if (data.startsWith(directory)) {
+                                    APKInfo apkinfo = new APKInfo (main.this, data);
+                                    if (apkinfo.beValid() == true)
+                                        mApkList.add(apkinfo);
                                 }
                             }
+//                            if (cursor.moveToLast()) {
+//                            	do {
+//                            		String data = cursor.getString(0);
+//                            		if (data.startsWith(directory)) {
+//                            			APKInfo apkinfo = new APKInfo (main.this, data);
+//                            			if (apkinfo.beValid() == true) {
+//                            				mApkList.add (apkinfo);
+//                            			}
+//                            		}
+//                            	} while (cursor.moveToPrevious());
+//                            }
+                            cursor.close();
                         }
                 }
         };
