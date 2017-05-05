@@ -970,6 +970,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                                         intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
                                         intent.putExtra ( "VOLUME", volume_level );
                                         sendBroadcast ( intent );
+                                        handlerUI.removeMessages(VOLUME_HIDE);
+                                        handlerUI.sendEmptyMessageDelayed(VOLUME_HIDE, DIALOG_SHOW_DELAY);
                                     }
                                 }
                             }
@@ -1077,7 +1079,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         String uri = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
                         mNextURI= intent.getStringExtra(MediaRendererDevice.EXTRA_NEXT_URI);
                         mCurrentMeta = intent.getStringExtra(MediaRendererDevice.EXTRA_META_DATA);
-                        android.util.Log.d(TAG,"cur_uri:"+cur_uri+"uri"+uri+"=?"+cur_uri.equals ( uri )+"mNextURI:"+mNextURI);
+                        Debug.d(TAG,"cur_uri:"+cur_uri+"uri"+uri+"=?"+cur_uri.equals ( uri )+"mNextURI:"+mNextURI);
                         if ( !cur_uri.equals ( uri ) ) {
                             if ( play_state != STATE_STOP ) {
                                 stopPlayback();
@@ -1422,6 +1424,8 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         intent.setAction ( MediaRendererDevice.PLAY_STATE_SETVOLUME );
                         intent.putExtra ( "VOLUME", volume_level );
                         sendBroadcast ( intent );
+                        handlerUI.removeMessages(VOLUME_HIDE);
+                        handlerUI.sendEmptyMessageDelayed(VOLUME_HIDE, DIALOG_SHOW_DELAY);
                         return true;
                     }
                     return super.onKeyDown ( keyCode, event );
