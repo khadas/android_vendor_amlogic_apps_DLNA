@@ -20,6 +20,7 @@ import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -101,6 +102,9 @@ public class main extends Activity {
         private StorageManager mStorageManager;
         private List<VolumeInfo> mVolumes;
         private boolean recvFlag = false;
+
+        private boolean mIsAppInsatlledFlg = false;
+        private boolean mIsClickPathFlg = true;
         /** Called when the activity is first created. */
         @Override
         public void onCreate (Bundle savedInstanceState) {
@@ -153,7 +157,29 @@ public class main extends Activity {
                                      );
             hexit.requestFocus();
             showChooseDev();
+
+            IntentFilter f = new IntentFilter();
+            f.addAction(Intent.ACTION_MEDIA_SCANNER_STARTED);
+            f.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
+           // f.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+            f.addDataScheme("file");
+            registerReceiver(mScanListener, f);
         }
+        private BroadcastReceiver mScanListener = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                mReScanHandler.sendEmptyMessage(0);
+                if (intent.getAction().equals(Intent.ACTION_MEDIA_UNMOUNTED)) {
+                    Log.d (TAG, "[mScanListener]UNMOUNTED");
+                }
+            }
+        };
+        private Handler mReScanHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                startScanOp();
+            }
+        };
 
         private BroadcastReceiver mMountReceiver = new BroadcastReceiver() {
             @Override
@@ -208,7 +234,7 @@ public class main extends Activity {
                 recvFlag = true;
             }
             super.onResume();
-            if ( mScanRoot != null && mScanRoot.length() > 0 ) {
+            if ( mScanRoot != null && mScanRoot.length() > 0 && mIsClickPathFlg) {
                 startScanOp();
             } else {
                 pkgadapter.notifyDataSetChanged();
@@ -217,6 +243,7 @@ public class main extends Activity {
 
         public void onPause() {
             //disable the operation message
+            mReScanHandler.removeCallbacksAndMessages(null);
             m_scanop.setHandler (null);
             m_installop.setHandler (null);
             mainhandler.removeMessages (END_OPERATION);
@@ -240,6 +267,7 @@ public class main extends Activity {
             super.onStop();
         }
         protected void onDestroy() {
+            unregisterReceiver(mScanListener);
             if (m_configchanged == false) {
                 m_scanop.stop();
                 m_installop.stop();
@@ -295,7 +323,7 @@ public class main extends Activity {
                         KeepSystemAwake (false);
                         break;
                     case NEW_APK:
-                        showScanDiag (msg.arg1, msg.arg2);
+                        showScanDiag (msg.arg2);
                         break;
                     case HANDLE_PKG_NEXT:
                         Log.d (TAG, "HANDLE_PKG_NEXT");
@@ -430,6 +458,7 @@ public class main extends Activity {
                 public void onClick (DialogInterface dialog, int which) {
                     dialog.dismiss();
                     //updatePathName(mDevs[which]);
+                    mIsClickPathFlg = true;
                     m_DirEdit.setText (mDevStrs[which]);
                     String devpath = mDevs[which] == null ? null : mDevs[which].toString();
                     if (devpath == null) {
@@ -498,6 +527,7 @@ public class main extends Activity {
             installintent.setAction (Intent.ACTION_VIEW);
             installintent.setDataAndType(Uri.fromFile (new File (apk_filepath)), "application/vnd.android.package-archive");
             startActivity (installintent);
+            mIsClickPathFlg = false;
         }
 
         public void uninstall_apk (String apk_pkgname) {
@@ -505,6 +535,7 @@ public class main extends Activity {
             uninstallintent.setAction (Intent.ACTION_UNINSTALL_PACKAGE);
             uninstallintent.setData (Uri.fromParts ("package", apk_pkgname, null));
             startActivity (uninstallintent);
+            mIsClickPathFlg = false;
         }
 
         //===================================================================
@@ -791,6 +822,8 @@ public class main extends Activity {
         protected void startScanOp() {
             KeepSystemAwake (true);
             mStatus = SCAN_APKS;
+            showScanDiag (0);
+            mScanDiag.start();
             m_scanop.start();
             m_scanop.setHandler (mainhandler);
         }
@@ -798,7 +831,7 @@ public class main extends Activity {
         class ScanOperation extends OperationThread {
                 protected scanthread       m_thread;
                 ScanOperation() {
-                    super();
+                    //super();
                     m_iOp = SCAN_APKS;
                 }
                 public void start() { //overide it to new and start a thread
@@ -809,7 +842,10 @@ public class main extends Activity {
 
                 class scanthread extends Thread {
                         public void run() {
-                            scandir (mScanRoot);
+                            if (mScanRoot != null) {
+                                scandir (mScanRoot);
+                            }
+
                             synchronized (m_syncobj) {
                                 sendEndMsg();
                                 m_bOpEnd = true;
@@ -818,6 +854,7 @@ public class main extends Activity {
 
                         protected void scandir (String directory) {
                             mApkList.clear();
+                            int apks = 0;
                             //to scan dirs
                             Uri fileUri=Files.getContentUri ("external");
                             String[] projection = new String[] {FileColumns.DATA, FileColumns.TITLE};
@@ -833,29 +870,28 @@ public class main extends Activity {
                                 String data = cursor.getString(0);
                                 if (data.startsWith(directory)) {
                                     APKInfo apkinfo = new APKInfo (main.this, data);
-                                    if (apkinfo.beValid() == true)
+                                    if (apkinfo.beValid() == true) {
                                         mApkList.add(apkinfo);
+                                        apks++;
+                                        synchronized (m_syncobj) {
+                                            if (m_handler != null) {
+                                                Message apkmsg = Message.obtain();
+                                                apkmsg.what = NEW_APK;
+//                                                apkmsg.arg1 = dirs;
+                                                apkmsg.arg2 = apks;
+                                                m_handler.sendMessage (apkmsg);
+                                            }
+                                        }
+                                    }
                                 }
                             }
-//                            if (cursor.moveToLast()) {
-//                            	do {
-//                            		String data = cursor.getString(0);
-//                            		if (data.startsWith(directory)) {
-//                            			APKInfo apkinfo = new APKInfo (main.this, data);
-//                            			if (apkinfo.beValid() == true) {
-//                            				mApkList.add (apkinfo);
-//                            			}
-//                            		}
-//                            	} while (cursor.moveToPrevious());
-//                            }
                             cursor.close();
                         }
                 }
         };
 
-        protected void showScanDiag (int dirs, int apks) {
+        protected void showScanDiag (int apks) {
             String msg = getResources().getString (R.string.scanning);
-            msg += "dir : " + String.valueOf (dirs) + "\n";
             msg += "apk : " + String.valueOf (apks) + "\n";
             mScanDiag.setMessage (msg);
             //  mScanDiag.show();
