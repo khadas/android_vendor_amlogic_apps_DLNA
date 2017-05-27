@@ -341,6 +341,20 @@ public class main extends Activity {
             }
         };
 
+        public boolean isAppInstalled(Context context, String packageName) {
+            PackageManager packageManager = context.getPackageManager();
+            List<PackageInfo> pinfo = packageManager.getInstalledPackages(0);
+            List<String> pName = new ArrayList<>();
+            if (pinfo != null) {
+                for (int i = 0; i < pinfo.size(); i++) {
+                    String pn = pinfo.get(i).packageName;
+                    pName.add(pn);
+                }
+            }
+            return pName.contains(packageName);
+        }
+
+
         //option menu
         protected final int MENU_INSTALL = 0;
         protected final int MENU_UNINSTALL = 1;
@@ -725,7 +739,13 @@ public class main extends Activity {
                             PackageDeleteObserver observer = new PackageDeleteObserver();
                             observer.pkgpath = apk_pkgname;
                             PackageManager pm = getPackageManager();
-                            pm.deletePackage (apk_pkgname, observer, 0);
+
+                            if (isAppInstalled(main.this, apk_pkgname)) {
+                                pm.deletePackage (apk_pkgname, observer, 0);
+                            } else {
+                                Toast.makeText (main.this, R.string.apk_have_not_been_installed , Toast.LENGTH_SHORT).show();
+                            }
+
                         }
                         public void run() {
                             synchronized (m_syncobj) {
@@ -753,16 +773,22 @@ public class main extends Activity {
                                     hanlemsg = "Uninstalling  \"";
                                 }
                                 hanlemsg += pinfo.pAppName + "\"\n";
-                                synchronized (m_syncobj) {
-                                    if (m_handler != null) {
-                                        Message endmsg = Message.obtain();
-                                        endmsg.what = HANDLE_PKG_NEXT;
-                                        endmsg.arg1 = (int) m_handleitem;
-                                        endmsg.arg2 = m_checkeditems.length;
-                                        Bundle data = new Bundle();
-                                        data.putString ("showstr", hanlemsg);
-                                        endmsg.setData (data);
-                                        m_handler.sendMessageDelayed (endmsg, 2000); //add a delay, for systeme need time to release cache.
+                                if (actionid == 1) {
+                                    if (!isAppInstalled(main.this, actionpara)) {
+                                        Log.d (TAG, "You haven't install the apk!");
+                                    }
+                                } else {
+                                    synchronized (m_syncobj) {
+                                        if (m_handler != null) {
+                                            Message endmsg = Message.obtain();
+                                            endmsg.what = HANDLE_PKG_NEXT;
+                                            endmsg.arg1 = (int) m_handleitem;
+                                            endmsg.arg2 = m_checkeditems.length;
+                                            Bundle data = new Bundle();
+                                            data.putString ("showstr", hanlemsg);
+                                            endmsg.setData (data);
+                                            m_handler.sendMessageDelayed (endmsg, 2000); //add a delay, for systeme need time to release cache.
+                                        }
                                     }
                                 }
                                 if (actionid == 0) {
@@ -796,6 +822,8 @@ public class main extends Activity {
 
         public void startHandleOp() {
             long [] checkeditems = m_list.getCheckedItemIds();
+            String pChkItems;
+            boolean isChkItemInstallFlg = true;
             if (checkeditems.length == 0) {
                 Toast.makeText (main.this, R.string.no_select_apks , Toast.LENGTH_SHORT).show();
             }
@@ -803,7 +831,16 @@ public class main extends Activity {
                 KeepSystemAwake (true);
                 mStatus = INSTALL_APKS;
                 m_installop.m_checkeditems = checkeditems.clone();
-                mHandleDiag.start();
+                for (int i = 0; i < checkeditems.length; i++) {
+                    APKInfo pinfo = mApkList.get ( (int) checkeditems[i]);
+                    pChkItems = pinfo.pCurPkgName;
+                    if (isAppInstalled(main.this, pChkItems))
+                        continue;
+                    else
+                        isChkItemInstallFlg = false;
+                }
+                if (isChkItemInstallFlg)
+                    mHandleDiag.start();
                 m_installop.setHandler (mainhandler);
                 m_installop.start();
             }

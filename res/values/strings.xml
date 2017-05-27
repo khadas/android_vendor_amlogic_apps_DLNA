@@ -10,6 +10,7 @@
 	<string name="alertdialog_title">Choose device to scan apks</string>
 	<string name="no_apk_found">No APK Found!</string>
 	<string name="scanning_init">&quot;Scanning ...\n\n&quot;</string>
+	<string name="apk_have_not_been_installed">&quot; You can't uninstall the uninstalled apk/apks.  \n&quot;</string>
 	<string name="handling_selected_package_init">&quot;Handling selected package:  \n&quot;</string>
 	<string name="install">Install</string>
 	<string name="uninstall">Uninstall</string>
