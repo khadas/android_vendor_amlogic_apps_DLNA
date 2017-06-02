@@ -398,6 +398,7 @@ public class main extends Activity {
                     if (!isInstallingUnknownAppsAllowed()) {
                         //ask user to enable setting first
                         showDialogInner (DLG_UNKNOWN_APPS);
+                        mIsClickPathFlg = false;
                         return true;
                     }
                     menuSelect = opInstall;
