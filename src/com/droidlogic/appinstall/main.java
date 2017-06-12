@@ -773,22 +773,16 @@ public class main extends Activity {
                                     hanlemsg = "Uninstalling  \"";
                                 }
                                 hanlemsg += pinfo.pAppName + "\"\n";
-                                if (actionid == 1) {
-                                    if (!isAppInstalled(main.this, actionpara)) {
-                                        Log.d (TAG, "You haven't install the apk!");
-                                    }
-                                } else {
-                                    synchronized (m_syncobj) {
-                                        if (m_handler != null) {
-                                            Message endmsg = Message.obtain();
-                                            endmsg.what = HANDLE_PKG_NEXT;
-                                            endmsg.arg1 = (int) m_handleitem;
-                                            endmsg.arg2 = m_checkeditems.length;
-                                            Bundle data = new Bundle();
-                                            data.putString ("showstr", hanlemsg);
-                                            endmsg.setData (data);
-                                            m_handler.sendMessageDelayed (endmsg, 2000); //add a delay, for systeme need time to release cache.
-                                        }
+                                synchronized (m_syncobj) {
+                                    if (m_handler != null) {
+                                        Message endmsg = Message.obtain();
+                                        endmsg.what = HANDLE_PKG_NEXT;
+                                        endmsg.arg1 = (int) m_handleitem;
+                                        endmsg.arg2 = m_checkeditems.length;
+                                        Bundle data = new Bundle();
+                                        data.putString ("showstr", hanlemsg);
+                                        endmsg.setData (data);
+                                        m_handler.sendMessageDelayed (endmsg, 2000); //add a delay, for systeme need time to release cache.
                                     }
                                 }
                                 if (actionid == 0) {
@@ -831,16 +825,20 @@ public class main extends Activity {
                 KeepSystemAwake (true);
                 mStatus = INSTALL_APKS;
                 m_installop.m_checkeditems = checkeditems.clone();
-                for (int i = 0; i < checkeditems.length; i++) {
-                    APKInfo pinfo = mApkList.get ( (int) checkeditems[i]);
-                    pChkItems = pinfo.pCurPkgName;
-                    if (isAppInstalled(main.this, pChkItems))
-                        continue;
-                    else
-                        isChkItemInstallFlg = false;
-                }
-                if (isChkItemInstallFlg)
+                if (menuSelect == opUninstall) {
+                    for (int i = 0; i < checkeditems.length; i++) {
+                        APKInfo pinfo = mApkList.get ( (int) checkeditems[i]);
+                        pChkItems = pinfo.pCurPkgName;
+                        if (isAppInstalled(main.this, pChkItems))
+                            continue;
+                        else
+                            isChkItemInstallFlg = false;
+                    }
+                    if (isChkItemInstallFlg)
+                        mHandleDiag.start();
+                } else {
                     mHandleDiag.start();
+                }
                 m_installop.setHandler (mainhandler);
                 m_installop.start();
             }
