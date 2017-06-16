@@ -106,6 +106,7 @@ public class VideoController extends FrameLayout {
         private ImageButton                mVolumeButton;
         private Context                    con                      = null;
         private ControllerShowListener mContextShow;
+        private static final int SEEK_STEP = 10000;//10 s
         public VideoController ( Context context, AttributeSet attrs ) {
             super ( context, attrs );
             mRoot = this;
@@ -759,7 +760,7 @@ public class VideoController extends FrameLayout {
             public void onClick ( View v ) {
                 int pos = mPlayer
                           .getCurrentPosition();
-                pos -= 5000; // milliseconds
+                pos -= SEEK_STEP; // milliseconds
                 mPlayer.seekTo ( pos );
                 setProgress();
                 show ( sDefaultTimeout );
@@ -769,7 +770,7 @@ public class VideoController extends FrameLayout {
             public void onClick ( View v ) {
                 int pos = mPlayer
                           .getCurrentPosition();
-                pos += 15000; // milliseconds
+                pos += SEEK_STEP; // milliseconds
                 mPlayer.seekTo ( pos );
                 setProgress();
                 show ( sDefaultTimeout );

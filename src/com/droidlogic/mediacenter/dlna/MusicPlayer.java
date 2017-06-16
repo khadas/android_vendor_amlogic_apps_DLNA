@@ -168,6 +168,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
         private String mNextURI = null;
         private String mNextFileName = null;
         private String mCurrentMeta = null;
+        private static final int SEEK_STEP = 10000;//10 s
         public void onCreate ( Bundle savedInstanceState ) {
             super.onCreate ( savedInstanceState );
             setContentView ( R.layout.music_activity );
@@ -311,7 +312,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     if ( mPlayer == null )
                     { return; }
                     int curPos = mPlayer.getCurrentPosition();
-                    curPos -= 5000;
+                    curPos -= SEEK_STEP;
                     if ( curPos < 0 ) {
                         curPos = 0;
                     }
@@ -327,7 +328,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                     { return; }
                     int curPos = mPlayer.getCurrentPosition();
                     int duration = mPlayer.getDuration();
-                    curPos += 5000;
+                    curPos += SEEK_STEP;
                     if ( curPos > duration ) {
                         curPos = duration;
                     }
