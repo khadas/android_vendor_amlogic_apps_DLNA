@@ -9,10 +9,11 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src)
 LOCAL_PACKAGE_NAME := DLNA 
 LOCAL_CERTIFICATE := platform
 LOCAL_PROGUARD_ENABLED := disabled
-LOCAL_PRIVILEGED_MODULE := true
 
 ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 26 && echo OK),OK)
 LOCAL_PROPRIETARY_MODULE := true
+else
+LOCAL_PRIVILEGED_MODULE := true
 endif
 
 LOCAL_PREBUILT_JNI_LIBS := \
