@@ -233,8 +233,8 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                 public void onSeekComplete ( MediaPlayer mp ) {
                     Debug.d ( TAG, "#############onSeekComplete#####################"+mp.getCurrentPosition());
                     handlerUI.sendEmptyMessage ( HIDE_LOADING );
-                    handlerUI.removeMessages ( GETINFO_FRESH );
-                    handlerUI.sendEmptyMessage ( GETINFO_FRESH );
+                    //handlerUI.removeMessages ( GETINFO_FRESH );
+                    //handlerUI.sendEmptyMessage ( GETINFO_FRESH );
                     seekComplete = true;
                 }
             } );
