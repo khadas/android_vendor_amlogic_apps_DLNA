@@ -4,7 +4,7 @@
     android:versionCode="1"
     android:versionName="1.0" package="com.droidlogic.appinstall">
 
-		<uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23"/>
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="23"/>
     <supports-screens android:largeScreens="true" android:smallScreens="true" android:resizeable="true" android:normalScreens="true"></supports-screens>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INSTALL_PACKAGES"></uses-permission>
