@@ -17,7 +17,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_vertical"
-    android:background="?android:attr/activatedBackgroundIndicator"
+    android:background="@drawable/item_focus"
     android:minHeight="?android:attr/listPreferredItemHeight"  
     android:orientation="horizontal"
     android:paddingRight="?android:attr/scrollbarSize" >

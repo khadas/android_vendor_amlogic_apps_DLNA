@@ -74,6 +74,8 @@ public class SettingsFragment extends SettingsPreferenceFragment implements
             addPreferencesFromResource ( R.xml.about_preferences );
             mVersionPref = ( Preference ) findPreference ( KEY_VERSION );
             mDeviceNamePref = ( Preference ) findPreference ( KEY_NAME );
+            mVersionPref.setLayoutResource(R.layout.preference);
+            mDeviceNamePref.setLayoutResource(R.layout.preference);
             //mAirplayProxy = AirplayProxy.getInstance(getActivity());
         }
         @Override

@@ -42,8 +42,10 @@ public class SettingsPreferences extends SettingsPreferenceFragment implements
             super.onCreate ( icicle );
             addPreferencesFromResource ( R.xml.settings_airplay );
             mStartServicePref = ( SwitchPreference ) findPreference ( KEY_START_SERVICE );
+            mStartServicePref.setLayoutResource(R.layout.preference);
             mBootCfgPref = ( SwitchPreference ) findPreference ( KEY_BOOT_CFG );
             //mAirplayProxy = AirplayProxy.getInstance(getActivity());
+            mBootCfgPref.setLayoutResource(R.layout.preference);
         }
 
         @Override

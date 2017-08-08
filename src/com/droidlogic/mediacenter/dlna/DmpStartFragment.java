@@ -92,7 +92,9 @@ public class DmpStartFragment extends SettingsPreferenceFragment implements
             super.onCreate ( icicle );
             addPreferencesFromResource ( R.xml.settings_dlna );
             mStartServicePref = ( SwitchPreference ) findPreference ( KEY_START_SERVICE );
+            mStartServicePref.setLayoutResource(R.layout.preference);
             mBootCfgPref = ( SwitchPreference ) findPreference ( KEY_BOOT_CFG );
+            mBootCfgPref.setLayoutResource(R.layout.preference);
         }
         @Override
         public void onStart() {
