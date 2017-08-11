@@ -23,12 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
-import android.provider.MediaStore.Files;
-import android.provider.MediaStore.Files.FileColumns;
-import android.content.ContentResolver;
-import android.database.Cursor;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -78,7 +72,7 @@ import android.content.IntentFilter;
 public class main extends Activity {
         private String TAG = "Appinstall";
         private String mVersion = "V1.1.3";
-        private String mReleaseDate = "2012.04.01";
+        private String mReleaseDate = "2017.08.11";
 
         private static final String ROOT_PATH = "/storage";
         private static final String SHEILD_EXT_STOR = Environment.getExternalStorageDirectory().getPath() + "/external_storage"; //"/storage/sdcard0/external_storage";
@@ -339,7 +333,7 @@ public class main extends Activity {
                         KeepSystemAwake (false);
                         break;
                     case NEW_APK:
-                        showScanDiag (msg.arg2);
+                        showScanDiag (msg.arg1, msg.arg2);
                         break;
                     case HANDLE_PKG_NEXT:
                         Log.d (TAG, "HANDLE_PKG_NEXT");
@@ -874,7 +868,7 @@ public class main extends Activity {
         protected void startScanOp() {
             KeepSystemAwake (true);
             mStatus = SCAN_APKS;
-            showScanDiag (0);
+            showScanDiag (0, 0);
             mScanDiag.start();
             m_scanop.start();
             m_scanop.setHandler (mainhandler);
@@ -904,46 +898,98 @@ public class main extends Activity {
                             }
                         }
 
+                        /*class APKFileter implements FileFilter {
+                                public boolean accept (File dir) {
+                                    if (dir.isDirectory() == true) {
+                                        return true;
+                                    }
+                                    String filename = dir.getName();
+                                    String filenamelowercase = filename.toLowerCase();
+                                    return filenamelowercase.endsWith (".apk");
+                                }
+                        }*/
+
+                        class APKFileter implements FileFilter {
+                                public boolean accept (File arg0) {
+                                    if (arg0.isDirectory() == true) {
+                                        return true;
+                                    }
+                                    String filename = arg0.getName();
+                                    String filenamelowercase = filename.toLowerCase();
+                                    return filenamelowercase.endsWith (".apk");
+                                }
+                        }
+
                         protected void scandir (String directory) {
                             mApkList.clear();
-                            int apks = 0;
+                            int dirs = 0, apks = 0;
                             //to scan dirs
-                            Uri fileUri=Files.getContentUri ("external");
-                            String[] projection = new String[] {FileColumns.DATA, FileColumns.TITLE};
-                            String selection = "";
-                            selection = selection + FileColumns.DATA + " LIKE '%.apk'";
-                            String sortOrder = FileColumns.DATE_MODIFIED;
-                            ContentResolver resolver = main.this.getContentResolver();
-                            Cursor cursor=resolver.query(fileUri, projection, selection, null, sortOrder);
-                            if (cursor == null) {
-                                return;
-                            }
-                            while (cursor.moveToNext()) {
-                                String data = cursor.getString(0);
-                                if (data.startsWith(directory)) {
-                                    APKInfo apkinfo = new APKInfo (main.this, data);
-                                    if (apkinfo.beValid() == true) {
-                                        mApkList.add(apkinfo);
-                                        apks++;
-                                        synchronized (m_syncobj) {
-                                            if (m_handler != null) {
-                                                Message apkmsg = Message.obtain();
-                                                apkmsg.what = NEW_APK;
-//                                                apkmsg.arg1 = dirs;
-                                                apkmsg.arg2 = apks;
-                                                m_handler.sendMessage (apkmsg);
+                            ArrayList<String> pdirlist = new ArrayList<String>();
+                            pdirlist.add (directory);
+                            while (pdirlist.isEmpty() == false) {
+                                synchronized (m_syncobj) {
+                                    if (m_bstop == true) {
+                                        break;
+                                    }
+                                    dirs++;
+                                    if (m_handler != null) {
+                                        Message dirmsg = Message.obtain();
+                                        dirmsg.what = NEW_APK;
+                                        dirmsg.arg1 = dirs;
+                                        dirmsg.arg2 = apks;
+                                        m_handler.sendMessage (dirmsg);
+                                    }
+                                }
+                                String headpath = pdirlist.remove (0);
+                                File pfile = new File (headpath);
+                                if (pfile.exists() == true) {
+                                    //list files and dirs in this directory
+                                    File[] files = pfile.listFiles (new APKFileter());
+                                    if (files != null && (files.length > 0)) {
+                                        int i = 0;
+                                        for (; i < files.length; i++) {
+                                            //shield /sdcard/external_sdcard if select /sdcard to search with virtaul external_sdcard
+                                            String str = null;
+                                            str = files[i].toString();
+                                            if (str.compareTo (SHEILD_EXT_STOR) == 0) {
+                                                continue;
+                                            }
+                                            synchronized (m_syncobj) {
+                                                if (m_bstop == true) {
+                                                    break;
+                                                }
+                                            }
+                                            File pcurfile = files[i];
+                                            if (pcurfile.isDirectory()) {
+                                                pdirlist.add (pcurfile.getAbsolutePath());
+                                            }
+                                            else {
+                                                APKInfo apkinfo = new APKInfo (main.this, pcurfile.getAbsolutePath());
+                                                if (apkinfo.beValid() == true) {
+                                                    mApkList.add (apkinfo);
+                                                    apks++;
+                                                    synchronized (m_syncobj) {
+                                                        if (m_handler != null) {
+                                                            Message apkmsg = Message.obtain();
+                                                            apkmsg.what = NEW_APK;
+                                                            apkmsg.arg1 = dirs;
+                                                            apkmsg.arg2 = apks;
+                                                            m_handler.sendMessage (apkmsg);
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                            cursor.close();
                         }
                 }
         };
 
-        protected void showScanDiag (int apks) {
+        protected void showScanDiag (int dirs, int apks) {
             String msg = getResources().getString (R.string.scanning);
+            msg += "dir : " + String.valueOf (dirs) + "\n";
             msg += "apk : " + String.valueOf (apks) + "\n";
             mScanDiag.setMessage (msg);
             //  mScanDiag.show();
