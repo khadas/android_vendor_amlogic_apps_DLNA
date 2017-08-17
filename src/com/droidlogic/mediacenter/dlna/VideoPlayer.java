@@ -158,7 +158,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             mVideoView.setVideoController ( mVideoController );
             mVideoController.setExitListener ( new View.OnClickListener() {
                 public void onClick ( View v ) {
-                    finish();
+                    ret2list();
                 }
             } );
             mVideoController.setVolumeListener ( new View.OnClickListener() {
@@ -333,6 +333,13 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             }
         };
 
+        private void ret2list() {
+            if (mDisplayDMP) {
+                Intent intent = new Intent(this,DeviceFileBrowser.class);
+                this.setResult ( mCurIndex, intent );
+            }
+            this.finish();
+        }
 
         @Override
         protected void onResume() {
@@ -779,12 +786,12 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     new DialogInterface.OnClickListener() {
                         public void onClick ( DialogInterface dialog,
                         int which ) {
-                            VideoPlayer.this.finish();
+                            ret2list();
                         }
                     } ).create();
                     errDlg.setOnDismissListener ( new DialogInterface.OnDismissListener() {
                         public void onDismiss ( DialogInterface dialog ) {
-                            VideoPlayer.this.finish();
+                            ret2list();
                         }
                     } );
                     return errDlg;
@@ -795,7 +802,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     nextDlg.setOnCancelListener ( new DialogInterface.OnCancelListener() {
                         @Override
                         public void onCancel ( DialogInterface arg0 ) {
-                            VideoPlayer.this.finish();
+                            ret2list();
                         }
                     } );
                     return nextDlg;
@@ -879,7 +886,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                 if ( nextDlg != null ) {
                     nextDlg.dismiss();
                 }
-                finish();
+                ret2list();
                 return true;
             } else if ( keyCode == KeyEvent.KEYCODE_VOLUME_MUTE ) {
                 if ( MediaRendererDevice.mMuteState.equals ( "1" ) ) {
@@ -984,7 +991,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     public void onDismiss ( DialogInterface arg0 ) {
                         if ( exitDlg != null && ( VideoPlayer.this.getClass().getName().equals ( exitDlg.getTopActivity ( VideoPlayer.this ) ) ||
                         exitDlg.getCountNum() == 0 ) ) {
-                            VideoPlayer.this.finish();
+                            ret2list();
                         }
                     }
                 } );

@@ -127,7 +127,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
                 Debug.d ( TAG, "URI: " + uri );
                 Debug.d ( TAG, "preview URI: " + pre_uri );
                 play_index = pos - 1;
-                openNetFile ( uri, type, name );
+                openNetFile ( uri, type, name ,play_index);
             }
         }
 
@@ -174,6 +174,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
             mDeviceBrowserTask = new NetDeviceBrowserThread ( "searchFile" );
             curTree = mediaServerTree;
             addPathList ( mediaServerName, mediaServerTree.getHead() );
+            displayView();
         }
 
         private UPNPAdapter getFileAdapter ( int type ) {
@@ -437,7 +438,7 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
         }
     }
 
-    protected void openNetFile(String uri, String type, String upnp_name) {
+    protected void openNetFile(String uri, String type, String upnp_name, int playid) {
         if (type == null) {
             type = DesUtils.CheckMediaType(uri);
         }
@@ -449,7 +450,8 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
             intent.setClass(getActivity(), ImageFromUrl.class);
             intent.putExtra(DEV_TYPE, TYPE_DMP);
             intent.putExtra(CURENT_POS, play_index);
-            startActivity(intent);
+            //startActivity(intent);
+            startActivityForResult(intent,play_index);
         }
         else if (type.equals(TYPE_VIDEO)) {
             getPlayList(TYPE_VIDEO);
@@ -459,8 +461,8 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
             intent.putExtra(DEV_TYPE, TYPE_DMP);
             intent.putExtra(CURENT_POS, play_index);
             intent.setClass(getActivity(), VideoPlayer.class);
-            startActivity(intent);
-            //startActivityForResult(intent, REQUEST_CODE);
+            //startActivity(intent);
+            startActivityForResult(intent, play_index);
         } else if (type.equals(TYPE_AUDIO)) {
             getPlayList(TYPE_AUDIO);
             Intent intent = new Intent();
@@ -470,7 +472,8 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
             intent.putExtra(AmlogicCP.EXTRA_FILE_NAME, upnp_name);
             intent.putExtra(DEV_TYPE, TYPE_DMP);
             intent.putExtra(CURENT_POS, play_index);
-            startActivity(intent);
+            //startActivity(intent);
+            startActivityForResult(intent,play_index);
         } else {
             Intent intent = new Intent();
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -481,18 +484,26 @@ public class DeviceFileBrowser extends ListFragment implements Callbacks {
         }
     }
 
-        @Override
-        public void onResume() {
-            super.onResume();
-            displayView();
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode > 0) {
+            android.util.Log.d(TAG,"onActivityResult:"+resultCode);
+            setSelection(resultCode+1);
         }
+    }
 
-        /* (non-Javadoc)
-         * @see com.droidlogic.mediacenter.MediaCenterActivity.Callbacks#onBackPressedCallback()
-         */
-        @Override
-        public void onBackPressedCallback() {
-            up2top();
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
+        android.util.Log.d(TAG,"onResume:");
+    }
+
+    /* (non-Javadoc)
+     * @see com.droidlogic.mediacenter.MediaCenterActivity.Callbacks#onBackPressedCallback()
+     */
+    @Override
+    public void onBackPressedCallback() {
+        up2top();
+    }
 
 }

@@ -372,7 +372,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 public void onClick ( View v ) {
                     Debug.d ( TAG, "btn_back.OnClick" );
                     sendPlayStateChangeBroadcast ( MediaRendererDevice.PLAY_STATE_STOPPED );
-                    finish();
+                    ret2list();
                 }
             } );
             btn_volume.setOnClickListener ( new OnClickListener() {
@@ -452,6 +452,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             }
             unregisterReceiver ( mUPNPReceiver );
             mWakeLock.release();
+
             // sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_PAUSED);
         }
 
@@ -479,7 +480,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
             if ( keyCode == KeyEvent.KEYCODE_BACK ) {
                 //stopPlayback();
                 hideLoading();
-                MusicPlayer.this.finish();
+                ret2list();
                 return true;
             }
             if ( keyCode == 90 ) { // fast_forward
@@ -1211,7 +1212,7 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                         break;
                     case STOP_BY_SEVER:
                         if ( !isShowingForehand ) {
-                            MusicPlayer.this.finish();
+                           ret2list();
                         } else {
                             handlerUI.sendEmptyMessageDelayed ( STOP_BY_SEVER, DIALOG_SHOW_DELAY );
                         }
@@ -1225,7 +1226,13 @@ public class MusicPlayer extends Activity implements OnPreparedListener,
                 }
             }
         };
-
+        private void ret2list() {
+            if (isBrowserMode) {
+                Intent intent = new Intent(MusicPlayer.this,DeviceFileBrowser.class);
+                this.setResult ( mCurIndex, intent );
+            }
+            MusicPlayer.this.finish();
+        }
         /*private class MyAdapter extends BaseAdapter {
             private Context                  context;
             private String[]                 music_mode;

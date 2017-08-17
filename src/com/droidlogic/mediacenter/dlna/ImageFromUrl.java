@@ -146,7 +146,7 @@ public class ImageFromUrl extends Activity {
             btnBack.setOnClickListener ( new View.OnClickListener() {
                 @Override
                 public void onClick ( View v ) {
-                    ImageFromUrl.this.finish();
+                    ret2list();
                 }
             } );
             btnLeft = ( ImageButton ) findViewById ( R.id.bt_left );
@@ -278,7 +278,13 @@ public class ImageFromUrl extends Activity {
                                  R.string.pic_largest, Toast.LENGTH_SHORT ).show();
             }
         }
-
+        private void ret2list() {
+            if (isBrowserMode) {
+                Intent intent = new Intent(this,DeviceFileBrowser.class);
+                this.setResult ( mCurIndex, intent );
+            }
+            this.finish();
+        }
         private void zoomOut() {
             Display display = getWindowManager().getDefaultDisplay();
             Rect rect = new Rect();
@@ -341,7 +347,7 @@ public class ImageFromUrl extends Activity {
                     unregistRec();
                     stopExit();
                     mSlideShow = SLIDE_UNSTATE;
-                    ImageFromUrl.this.finish();
+                    ret2list();
                 }
                 return true;
             } else if ( !mSlideView.isShown()
