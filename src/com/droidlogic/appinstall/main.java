@@ -168,19 +168,28 @@ public class main extends Activity {
             hexit.requestFocus();
             showChooseDev();
 
-            IntentFilter f = new IntentFilter();
+/*            IntentFilter f = new IntentFilter();
             f.addAction(Intent.ACTION_MEDIA_SCANNER_STARTED);
             f.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
            // f.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
             f.addDataScheme("file");
-            registerReceiver(mScanListener, f);
+            registerReceiver(mScanListener, f);*/
         }
-        private BroadcastReceiver mScanListener = new BroadcastReceiver() {
+/*        private BroadcastReceiver mScanListener = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 mReScanHandler.sendEmptyMessage(0);
                 if (intent.getAction().equals(Intent.ACTION_MEDIA_UNMOUNTED)) {
-                    Log.d (TAG, "[mScanListener]UNMOUNTED");
+                    Log.d (TAG, "[mScanListener]Intent.ACTION_MEDIA_UNMOUNTED");
+                    Toast.makeText (context, "[mScanListener]Intent.ACTION_MEDIA_UNMOUNTED", Toast.LENGTH_SHORT).show();
+                }
+                if (intent.getAction().equals(Intent.ACTION_MEDIA_SCANNER_STARTED)) {
+                    Log.d (TAG, "[mScanListener]Intent.ACTION_MEDIA_SCANNER_STARTED");
+                    Toast.makeText (context, "[mScanListener]Intent.ACTION_MEDIA_SCANNER_STARTED", Toast.LENGTH_SHORT).show();
+                }
+                if (intent.getAction().equals(Intent.ACTION_MEDIA_SCANNER_FINISHED)) {
+                    Log.d (TAG, "[mScanListener]Intent.ACTION_MEDIA_SCANNER_FINISHED");
+                    Toast.makeText (context, "[mScanListener]Intent.ACTION_MEDIA_SCANNER_FINISHED", Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -189,7 +198,7 @@ public class main extends Activity {
             public void handleMessage(Message msg) {
                 startScanOp();
             }
-        };
+        };*/
 
         private BroadcastReceiver mMountReceiver = new BroadcastReceiver() {
             @Override
@@ -208,6 +217,7 @@ public class main extends Activity {
                         String path = data.substring (index);
                         if (path.equals (mScanRoot)) {
                             //m_list.setAdapter (null);
+                            m_DirEdit.setText (" ", TextView.BufferType.NORMAL);
                             mApkList.clear();
                             pkgadapter.notifyDataSetChanged();
                         }
@@ -245,7 +255,8 @@ public class main extends Activity {
             }
             super.onResume();
             if ( mScanRoot != null && mScanRoot.length() > 0 && mIsClickPathFlg) {
-                startScanOp();
+                showChooseDev();
+//                startScanOp();
             } else {
                 pkgadapter.notifyDataSetChanged();
             }
@@ -253,7 +264,7 @@ public class main extends Activity {
 
         public void onPause() {
             //disable the operation message
-            mReScanHandler.removeCallbacksAndMessages(null);
+//            mReScanHandler.removeCallbacksAndMessages(null);
             m_scanop.setHandler (null);
             m_installop.setHandler (null);
             mainhandler.removeMessages (END_OPERATION);
@@ -277,7 +288,7 @@ public class main extends Activity {
             super.onStop();
         }
         protected void onDestroy() {
-            unregisterReceiver(mScanListener);
+//            unregisterReceiver(mScanListener);
             if (m_configchanged == false) {
                 m_scanop.stop();
                 m_installop.stop();
