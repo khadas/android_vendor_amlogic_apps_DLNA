@@ -424,8 +424,6 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
             } catch ( Exception e ) {
             }
             mLastState = play_state;
-            pause();
-            //sendPlayStateChangeBroadcast(MediaRendererDevice.PLAY_STATE_PAUSED);
             PrefUtils.setProperties ( "media.amplayer.buffertime", mVideoBuffer );
             if ( handlerUI != null ) {
                 handlerUI.removeMessages ( GETINFO_FRESH );

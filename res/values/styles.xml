@@ -18,39 +18,26 @@
     <style name="AppBaseTheme" parent="@android:style/Theme.Holo">
 
     </style>
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowFullscreen">true</item>
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-    </style>
 
    <style name="AnimationActivity" parent="@android:style/Animation.Activity" mce_bogus="1">
-        <item name="android:windowFrame">@null</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:activityOpenEnterAnimation">@anim/anim_enter</item>
-        <item name="android:activityOpenExitAnimation">@anim/anim_exit</item>
-        <item name="android:activityCloseEnterAnimation">@null</item>
-        <item name="android:activityCloseExitAnimation">@null</item>
-    </style>
-    <style name="RootActivity" parent="AnimationActivity">
-        <item name="android:windowBackground">@color/black</item>
         <item name="android:activityOpenEnterAnimation">@null</item>
         <item name="android:activityOpenExitAnimation">@null</item>
-    </style>
-    <style name="VideoActivity" parent="@android:style/Animation.Activity" mce_bogus="1">
-        <item name="android:windowContentOverlay">@null</item> 
-        <item name="android:activityOpenEnterAnimation">@anim/anim_fadein</item>
         <item name="android:activityCloseEnterAnimation">@null</item>
         <item name="android:activityCloseExitAnimation">@null</item>
-        <item name="android:background">@android:color/transparent</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowFullscreen">true</item>
+    </style>
+        <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowAnimationStyle">@style/AnimationActivity</item>
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+    <style name="RootActivity" parent="AppTheme">
+        <item name="android:windowBackground">@color/black</item>
+    </style>
+    <style name="VideoActivity" parent="android:Theme.NoTitleBar.Fullscreen" mce_bogus="1">
+        <item name="android:windowAnimationStyle">@style/AnimationActivity</item>
     </style>
     <style name="TopDivider">
         <item name="android:layout_width">match_parent</item>
@@ -72,19 +59,14 @@
         <item name="android:layout_marginTop">@dimen/divider_margin_top</item>
         <item name="android:layout_marginBottom">@dimen/divider_margin_bottom</item>
     </style>
-    <style name="music_bar" parent="AppBaseTheme">
-        <item name="android:windowFrame">@null</item>
+    <style name="music_bar" parent="android:Theme.NoTitleBar.Fullscreen">
         <item name="android:windowIsFloating">true</item>
-        <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:activityOpenEnterAnimation">@anim/pushin_y_b2t</item>
         <item name="android:activityOpenExitAnimation">@anim/pushout_y_b2t</item>
         <item name="android:activityCloseEnterAnimation">@anim/pushin_y_b2t</item>
         <item name="android:activityCloseExitAnimation">@anim/pushout_y_b2t</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:background">@android:color/transparent</item>
-        <item name="android:windowBackground">@android:color/transparent</item> 
+        <item name="android:backgroundDimEnabled">true</item>
         <item name="android:windowNoTitle">true</item>
     </style>
     <style name="dmr_dialog" parent="@android:style/Theme.Dialog">

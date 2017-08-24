@@ -84,7 +84,7 @@
         <activity
             android:name="com.droidlogic.mediacenter.dlna.ImageFromUrl"
             android:windowSoftInputMode="stateAlwaysHidden"
-            android:theme="@style/AnimationActivity"
+            android:theme="@style/VideoActivity"
             android:screenOrientation="landscape"
             android:launchMode="singleInstance"/>
         <activity
