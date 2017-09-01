@@ -117,11 +117,11 @@
         </service>
         <service android:name="com.hpplay.happyplay.SdkServiceForRestart" >
         </service>
+        <service android:name="com.droidlogic.mediacenter.WeakRefService" />
         <receiver android:name="com.droidlogic.mediacenter.DMRBroadcastReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-                <action android:name="android.net.wifi.WIFI_AP_STATE_CHANGED" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
         <activity
