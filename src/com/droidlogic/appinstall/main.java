@@ -344,7 +344,7 @@ public class main extends Activity {
                         KeepSystemAwake (false);
                         break;
                     case NEW_APK:
-                        showScanDiag (msg.arg1, msg.arg2);
+                        showScanDiag (msg.arg1, msg.arg2, msg.obj);
                         break;
                     case HANDLE_PKG_NEXT:
                         Log.d (TAG, "HANDLE_PKG_NEXT");
@@ -879,7 +879,7 @@ public class main extends Activity {
         protected void startScanOp() {
             KeepSystemAwake (true);
             mStatus = SCAN_APKS;
-            showScanDiag (0, 0);
+            showScanDiag (0, 0, null);
             mScanDiag.start();
             m_scanop.start();
             m_scanop.setHandler (mainhandler);
@@ -938,6 +938,7 @@ public class main extends Activity {
                             ArrayList<String> pdirlist = new ArrayList<String>();
                             pdirlist.add (directory);
                             while (pdirlist.isEmpty() == false) {
+                                String dirstr = pdirlist.get(0);
                                 synchronized (m_syncobj) {
                                     if (m_bstop == true) {
                                         break;
@@ -948,6 +949,7 @@ public class main extends Activity {
                                         dirmsg.what = NEW_APK;
                                         dirmsg.arg1 = dirs;
                                         dirmsg.arg2 = apks;
+                                        dirmsg.obj = dirstr;
                                         m_handler.sendMessage (dirmsg);
                                     }
                                 }
@@ -985,6 +987,7 @@ public class main extends Activity {
                                                             apkmsg.what = NEW_APK;
                                                             apkmsg.arg1 = dirs;
                                                             apkmsg.arg2 = apks;
+                                                            apkmsg.obj = dirstr;
                                                             m_handler.sendMessage (apkmsg);
                                                         }
                                                     }
@@ -998,9 +1001,11 @@ public class main extends Activity {
                 }
         };
 
-        protected void showScanDiag (int dirs, int apks) {
+        protected void showScanDiag (int dirs, int apks, Object obj) {
             String msg = getResources().getString (R.string.scanning);
-            msg += "dir : " + String.valueOf (dirs) + "\n";
+            String path = (String)obj;
+            //msg += "dir : " + String.valueOf (dirs) + ", path:" + path + "\n";
+            msg += "dir:" + path + "\n";
             msg += "apk : " + String.valueOf (apks) + "\n";
             mScanDiag.setMessage (msg);
             //  mScanDiag.show();
