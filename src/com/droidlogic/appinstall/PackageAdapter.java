@@ -19,6 +19,7 @@ package com.droidlogic.appinstall;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import android.content.res.AssetManager;
 import android.content.Context;
@@ -32,7 +33,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.storage.StorageManager;
 import android.os.storage.VolumeInfo;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,9 +43,11 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.os.UserHandle;
+import com.droidlogic.app.FileListManager;
 
 class APKInfo extends Object {
         static protected PackageManager pkgmgr = null;
+        static protected FileListManager mFileListManager = null;
 
         APKInfo (Context pcontext, String apkpath) {
             pkgmgr = pcontext.getPackageManager();
@@ -160,12 +162,15 @@ public class PackageAdapter extends BaseAdapter {
         protected int m_CheckBox_InstallState;
         protected int m_CheckBox_SelState;
         private   LayoutInflater mInflater;
-        protected ArrayList<APKInfo>  m_apklist = null;
+        ///protected ArrayList<APKInfo>  m_apklist = null;
+        protected List<APKInfo>  m_apklist = null;
         protected ListView m_list = null;
-        private StorageManager mStorageManager;
+        ///private StorageManager mStorageManager;
+        private FileListManager mFileListManager;
 
         PackageAdapter (Context context, int Layout_Id, int text_app_id, int text_filename_id, int checkbox_id, int img_appicon_id, int checkbox_sel_id, ArrayList<APKInfo> apklist, ListView list) {
-            mStorageManager = (StorageManager)context.getSystemService(Context.STORAGE_SERVICE);
+            ///mStorageManager = (StorageManager)context.getSystemService(Context.STORAGE_SERVICE);
+            mFileListManager = new FileListManager(context);
             mInflater = LayoutInflater.from (context);
             m_Layout_APKListItem = Layout_Id;
             m_TextView_FileName = text_filename_id;
@@ -219,21 +224,6 @@ public class PackageAdapter extends BaseAdapter {
             String pathVol;
             int idx = -1;
             int len;
-
-            List<VolumeInfo> volumes = mStorageManager.getVolumes();
-            Collections.sort(volumes, VolumeInfo.getDescriptionComparator());
-            for (VolumeInfo vol : volumes) {
-                if (vol != null && vol.isMountedReadable() && vol.getType() == VolumeInfo.TYPE_PUBLIC) {
-                    pathVol = vol.getPath().getAbsolutePath();
-                    idx = inPath.indexOf(pathVol);
-                    if (idx != -1) {
-                        len = pathVol.length();
-                        pathLast = inPath.substring(idx + len);
-                        outPath = mStorageManager.getBestVolumeDescription(vol) + pathLast;
-                    }
-                }
-            }
-
             return outPath;
         }
 

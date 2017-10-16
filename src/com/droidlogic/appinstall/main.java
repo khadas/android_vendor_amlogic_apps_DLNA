@@ -22,6 +22,8 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Iterator;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -66,19 +68,15 @@ import android.os.StatFs;
 import android.os.Environment;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
-
-
+import com.droidlogic.app.FileListManager;
 
 public class main extends Activity {
         private String TAG = "Appinstall";
         private String mVersion = "V1.1.3";
-        private String mReleaseDate = "2017.08.11";
+        private String mReleaseDate = "2017.09.26";
 
-        private static final String ROOT_PATH = "/storage";
-        private static final String SHEILD_EXT_STOR = Environment.getExternalStorageDirectory().getPath() + "/external_storage"; //"/storage/sdcard0/external_storage";
-        private static final String NAND_PATH = Environment.getExternalStorageDirectory().getPath();//"/storage/sdcard0";
-        private static final String SD_PATH = "/storage/external_storage/sdcard1";
-        private static final String USB_PATH = "/storage/external_storage";
+        public static final String KEY_NAME = "key_name";
+        public static final String KEY_PATH = "key_path";
 
         //UI INFO
         protected String mScanRoot = null;
@@ -101,6 +99,7 @@ public class main extends Activity {
         protected ScanOperation m_scanop = new ScanOperation();
         protected InstallOperation m_installop = new InstallOperation();
         protected String mDevs[] = null;
+        protected String mDevStrs[] = null;
 
         //the status of app
         private static int SCAN_APKS = 0;
@@ -109,8 +108,8 @@ public class main extends Activity {
         protected int mStatus = -1;
         private int item_position_selected, item_position_first, fromtop_piexl;
 
-        private StorageManager mStorageManager;
-        private List<VolumeInfo> mVolumes;
+        private static FileListManager mFileListManager;
+        private List<Map<String, Object>> mVolumes;
         private boolean recvFlag = false;
 
         private boolean mIsAppInsatlledFlg = false;
@@ -121,7 +120,7 @@ public class main extends Activity {
             super.onCreate (savedInstanceState);
             setContentView (R.layout.main);
 
-            mStorageManager = (StorageManager)getSystemService(Context.STORAGE_SERVICE);
+            mFileListManager = new FileListManager(this);
 
             //keep system awake
             mScreenLock = ( (PowerManager) this.getSystemService (Context.POWER_SERVICE)).newWakeLock (PowerManager.SCREEN_BRIGHT_WAKE_LOCK, TAG);
@@ -163,48 +162,18 @@ public class main extends Activity {
                 public void onClick (View v) {
                     main.this.finish();
                 }
-            }
-                                     );
+            });
             hexit.requestFocus();
             showChooseDev();
-
-/*            IntentFilter f = new IntentFilter();
-            f.addAction(Intent.ACTION_MEDIA_SCANNER_STARTED);
-            f.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
-           // f.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
-            f.addDataScheme("file");
-            registerReceiver(mScanListener, f);*/
         }
-/*        private BroadcastReceiver mScanListener = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                mReScanHandler.sendEmptyMessage(0);
-                if (intent.getAction().equals(Intent.ACTION_MEDIA_UNMOUNTED)) {
-                    Log.d (TAG, "[mScanListener]Intent.ACTION_MEDIA_UNMOUNTED");
-                    Toast.makeText (context, "[mScanListener]Intent.ACTION_MEDIA_UNMOUNTED", Toast.LENGTH_SHORT).show();
-                }
-                if (intent.getAction().equals(Intent.ACTION_MEDIA_SCANNER_STARTED)) {
-                    Log.d (TAG, "[mScanListener]Intent.ACTION_MEDIA_SCANNER_STARTED");
-                    Toast.makeText (context, "[mScanListener]Intent.ACTION_MEDIA_SCANNER_STARTED", Toast.LENGTH_SHORT).show();
-                }
-                if (intent.getAction().equals(Intent.ACTION_MEDIA_SCANNER_FINISHED)) {
-                    Log.d (TAG, "[mScanListener]Intent.ACTION_MEDIA_SCANNER_FINISHED");
-                    Toast.makeText (context, "[mScanListener]Intent.ACTION_MEDIA_SCANNER_FINISHED", Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
-        private Handler mReScanHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                startScanOp();
-            }
-        };*/
 
         private BroadcastReceiver mMountReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive (Context context, Intent intent) {
                 String action = intent.getAction();
                 String data = intent.getDataString();
+                Uri uri = intent.getData();
+                String spath = uri.getPath();
                 if (action == null) {
                     return;
                 }
@@ -212,7 +181,7 @@ public class main extends Activity {
                     return;
                 }
                 if (action.equals (Intent.ACTION_MEDIA_UNMOUNTED)) {
-                    int index = data.indexOf (ROOT_PATH);
+                    int index = data.indexOf (FileListManager.STORAGE);
                     if (index >= 0) {
                         String path = data.substring (index);
                         if (path.equals (mScanRoot)) {
@@ -226,15 +195,55 @@ public class main extends Activity {
                         startScanOp();
                     }
                 }
-                else if (action.equals (Intent.ACTION_MEDIA_MOUNTED)) {
-                    int index = data.indexOf (ROOT_PATH);
+                else if (action.equals ("com.droidvold.action.MEDIA_EJECT") && !spath.equals("/dev/null")) {
+                    int index = data.indexOf (FileListManager.STORAGE);
+                    int index1 = data.indexOf (FileListManager.MEDIA_RW);
                     if (index >= 0) {
                         String path = data.substring (index);
                         if (path.equals (mScanRoot)) {
+                            //m_list.setAdapter (null);
+                            m_DirEdit.setText (" ", TextView.BufferType.NORMAL);
+                            mApkList.clear();
+                            pkgadapter.notifyDataSetChanged();
+                        }
+                    } else if (index1 >= 0) {
+                        String path = data.substring (index1);
+                        if (path.equals (mScanRoot)) {
+                            //m_list.setAdapter (null);
+                            m_DirEdit.setText (" ", TextView.BufferType.NORMAL);
+                            mApkList.clear();
+                            pkgadapter.notifyDataSetChanged();
+                        }
+                    } else { //exception handle
+                        startScanOp();
+                    }
+                }
+                else if ((action.equals (Intent.ACTION_MEDIA_MOUNTED) || action.equals ("com.droidvold.action.MEDIA_MOUNTED")) && !spath.equals("/dev/null")) {
+                    int index = data.indexOf (FileListManager.STORAGE);
+                    int index1 = data.indexOf (FileListManager.MEDIA_RW);
+                    if (index >= 0) {
+                        String path = data.substring (index);
+                        if (path.equals (mScanRoot)) {
+                            for (int i = 0; i < mVolumes.size(); i++) {
+                                Map<String, Object> map = mVolumes.get(i);
+                                if ((String)map.get(KEY_PATH) == mScanRoot) {
+                                    m_DirEdit.setText ((String)map.get(KEY_NAME));
+                                }
+                            }
                             startScanOp();
                         }
-                    }
-                    else { //exception handle
+                    } else if (index1 >= 0) {
+                        String path = data.substring (index1);
+                        if (path.equals (mScanRoot)) {
+                            for (int i = 0; i < mVolumes.size(); i++) {
+                                Map<String, Object> map = mVolumes.get(i);
+                                if ((String)map.get(KEY_PATH) == mScanRoot) {
+                                    m_DirEdit.setText ((String)map.get(KEY_NAME));
+                                }
+                            }
+                            startScanOp();
+                        }
+                    } else {
                         startScanOp();
                     }
                 }
@@ -242,12 +251,14 @@ public class main extends Activity {
         };
 
         public void onResume() {
-            Log.d (TAG, "onResume");
             m_scanop.setHandler (mainhandler);
             m_installop.setHandler (mainhandler);
             IntentFilter intentFilter = new IntentFilter (Intent.ACTION_MEDIA_MOUNTED);
             intentFilter.addAction (Intent.ACTION_MEDIA_EJECT);
             intentFilter.addAction (Intent.ACTION_MEDIA_UNMOUNTED);
+            intentFilter.addAction ("com.droidvold.action.MEDIA_UNMOUNTED");
+            intentFilter.addAction ("com.droidvold.action.MEDIA_MOUNTED");
+            intentFilter.addAction ("com.droidvold.action.MEDIA_EJECT");
             intentFilter.addDataScheme ("file");
             if (!recvFlag) {
                 registerReceiver (mMountReceiver, intentFilter);
@@ -256,7 +267,6 @@ public class main extends Activity {
             super.onResume();
             if ( mScanRoot != null && mScanRoot.length() > 0 && mIsClickPathFlg) {
                 showChooseDev();
-//                startScanOp();
             } else {
                 pkgadapter.notifyDataSetChanged();
             }
@@ -264,7 +274,6 @@ public class main extends Activity {
 
         public void onPause() {
             //disable the operation message
-//            mReScanHandler.removeCallbacksAndMessages(null);
             m_scanop.setHandler (null);
             m_installop.setHandler (null);
             mainhandler.removeMessages (END_OPERATION);
@@ -315,9 +324,6 @@ public class main extends Activity {
                 // TODO Auto-generated method stub
                 switch (msg.what) {
                     case END_OPERATION:
-                        if (msg.arg1 != mStatus) {
-                            Log.e (TAG, "mStatus " + String.valueOf (mStatus) + "!= endoperation " + String.valueOf (msg.arg1));
-                        }
                         if (mStatus == SCAN_APKS) {
                             if (mScanDiag != null) {
                                 mScanDiag.dismiss();
@@ -347,12 +353,10 @@ public class main extends Activity {
                         showScanDiag (msg.arg1, msg.arg2, msg.obj);
                         break;
                     case HANDLE_PKG_NEXT:
-                        Log.d (TAG, "HANDLE_PKG_NEXT");
                         String hanlemsg = msg.getData().getString ("showstr");
                         showHandleDiag (hanlemsg, (int) msg.arg1 + 1, msg.arg2);
                         break;
                     case HANDLE_PKG_FAIL:
-                        Log.d (TAG, "HANDLE_PKG_FAIL");
                         String failemsg = msg.getData().getString ("showstr");
                         Toast.makeText (main.this, failemsg, Toast.LENGTH_SHORT).show();
                         break;
@@ -374,7 +378,6 @@ public class main extends Activity {
             }
             return pName.contains(packageName);
         }
-
 
         //option menu
         protected final int MENU_INSTALL = 0;
@@ -442,43 +445,18 @@ public class main extends Activity {
 
         //user functions
         public void showChooseDev() {
-            int dev_usb_count = 0;
-            int dev_cd_count = 0;
+            int num = 0;
             int devCnt = 0;
             int selid = 0;
-            String internal = getString (R.string.memory_device_str);
-            String sdcard = getString (R.string.sdcard_device_str);
-            String usb = getString (R.string.usb_device_str);
-            String cdrom = getString (R.string.cdrom_device_str);
-            String sdcardExt = getString (R.string.ext_sdcard_device_str);
-            String DeviceArray[] = {internal, sdcard, usb, cdrom, sdcardExt};
+            mVolumes = mFileListManager.getDevices();
+            devCnt = mVolumes.size();
+            mDevs = new String[devCnt];
+            mDevStrs = new String[devCnt];
 
-            int num = 0;
-            mVolumes = mStorageManager.getVolumes();
-            Collections.sort(mVolumes, VolumeInfo.getDescriptionComparator());
-            for (VolumeInfo vol : mVolumes) {
-                if (vol != null && vol.isMountedReadable() && vol.getType() == VolumeInfo.TYPE_PUBLIC) {
-                    num++;
-                }
-            }
-            num = num + 1; // for /sdcard(internal storage)
-            mDevs = new String[num];
-            mDevStrs = new String[num];
-
-            //internal storage
-            File dir = new File (NAND_PATH);
-            mDevs[devCnt] = dir.toString();
-            mDevStrs[devCnt] = DeviceArray[1];
-            devCnt++;
-
-            //external storage
-            for (VolumeInfo vol : mVolumes) {
-                if (vol != null && vol.isMountedReadable() && vol.getType() == VolumeInfo.TYPE_PUBLIC) {
-                    File path = vol.getPath();
-                    mDevs[devCnt] = path.toString();
-                    mDevStrs[devCnt] = mStorageManager.getBestVolumeDescription(vol);
-                    devCnt++;
-                }
+            for (int i = 0; i < devCnt; i++) {
+                Map<String, Object> map = mVolumes.get(i);
+                mDevs[i] = (String)map.get(KEY_PATH);
+                mDevStrs[i] = (String)map.get(KEY_NAME);
             }
 
             for (int idx = 0; idx < devCnt; idx++) {
@@ -493,7 +471,6 @@ public class main extends Activity {
             .setSingleChoiceItems (mDevStrs, selid, new DialogInterface.OnClickListener() {
                 public void onClick (DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    //updatePathName(mDevs[which]);
                     mIsClickPathFlg = true;
                     m_DirEdit.setText (mDevStrs[which]);
                     String devpath = mDevs[which] == null ? null : mDevs[which].toString();
@@ -503,13 +480,8 @@ public class main extends Activity {
                     }
                     File pfile = new File (devpath);
                     if (pfile != null && pfile.isDirectory() == true) {
-                        //if((mScanRoot == null) || (mScanRoot.compareTo(devpath) != 0))
-                        {
-                            mScanRoot = devpath;
-                            startScanOp();
-                        }
-                        //else
-                        //Toast.makeText(main.this, "same dir path", Toast.LENGTH_SHORT).show();
+                        mScanRoot = devpath;
+                        startScanOp();
                     }
                     else {
                         Toast.makeText (main.this, "invalid dir path", Toast.LENGTH_SHORT).show();
@@ -524,36 +496,6 @@ public class main extends Activity {
                 }
             })
             .show();
-        }
-
-        private String mDevStrs[] = null;
-        private void updatePathName (String dev) {
-            String internal = getString (R.string.memory_device_str);
-            String sdcard = getString (R.string.sdcard_device_str);
-            String usb = getString (R.string.usb_device_str);
-            String cdrom = getString (R.string.cdrom_device_str);
-            String sdcardExt = getString (R.string.ext_sdcard_device_str);
-            String str = "";
-            if (dev == null) {
-                Log.e (TAG, "updatePathName error, dev=null");
-                return;
-            }
-            if (dev.equals (NAND_PATH)) {
-                str = sdcard;
-            }
-            else if ( (dev.startsWith (USB_PATH + "/sd") || dev.startsWith (ROOT_PATH + "/udisk")) && !dev.equals (SD_PATH)) {
-                str = usb;
-            }
-            else if (dev.startsWith (USB_PATH + "/sr") && !dev.equals (SD_PATH)) {
-                str = cdrom;
-            }
-            else if (dev.equals (SD_PATH)) {
-                str = sdcardExt;
-            }
-            else {
-                str = dev;
-            }
-            m_DirEdit.setText (str);
         }
 
         //===================================================================
@@ -649,15 +591,6 @@ public class main extends Activity {
                     super.dismiss();
                 }
 
-                /*
-                        public boolean onTouchEvent (MotionEvent event)
-                        {
-                            m_pOp.stop();
-                            setMessage("stopping...\n");
-                            m_bOpStop = true;
-                            return true;
-                        }
-                */
                 public boolean onKeyDown (int keyCode, KeyEvent event) {
                     if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_POWER) {
                         m_pOp.stop();
@@ -684,156 +617,154 @@ public class main extends Activity {
         //===================================================================
         //functions for installing and uninstalling in slient mode
         class InstallOperation extends OperationThread {
-                public long []                  m_checkeditems = null;
-                protected installthread         m_thread;
-                private long                    m_handleitem;
-                private Handler                 m_selfhandler;
-                protected ApkHandleTask         m_apkhandltsk = new ApkHandleTask();
-                InstallOperation() {
-                    super();
-                    m_iOp = INSTALL_APKS;
+            public long []                  m_checkeditems = null;
+            protected installthread         m_thread;
+            private long                    m_handleitem;
+            private Handler                 m_selfhandler;
+            protected ApkHandleTask         m_apkhandltsk = new ApkHandleTask();
+            InstallOperation() {
+                super();
+                m_iOp = INSTALL_APKS;
+            }
+            public void start() { //overide it to new and start a thread
+                super.start();
+                m_handleitem = 0;
+                m_thread = new installthread ("multi-apk-handler");
+                m_thread.start();
+            }
+
+            class installthread extends HandlerThread {
+                installthread (String name) {
+                    super (name);
                 }
-                public void start() { //overide it to new and start a thread
-                    super.start();
-                    m_handleitem = 0;
-                    m_thread = new installthread ("multi-apk-handler");
-                    m_thread.start();
+                protected void onLooperPrepared() {
+                    synchronized (m_syncobj) {
+                        m_selfhandler = new Handler();
+                        m_selfhandler.post (m_apkhandltsk);
+                        m_handleitem = 0;
+                    }
+                }
+            }
+
+            class ApkHandleTask implements Runnable {
+                class PackageInstallObserver extends IPackageInstallObserver.Stub {
+                    String apkpath = null;
+                    public void packageInstalled (String packageName, int returnCode) {
+                        Log.d (TAG, "packageInstalled " + String.valueOf (returnCode));
+                        synchronized (m_syncobj) {
+                            if (returnCode != 1) { //fail
+                                Message endmsg = Message.obtain();
+                                endmsg.what = HANDLE_PKG_FAIL;
+                                Bundle data = new Bundle();
+                                data.putString ("showstr", "Install " + apkpath + " fail!");
+                                endmsg.setData (data);
+                                m_handler.sendMessage (endmsg);
+                            }
+                            m_handleitem++;
+                            m_selfhandler.post (m_apkhandltsk);
+                        }
+                    }
                 }
 
-                class installthread extends HandlerThread {
-                        installthread (String name) {
-                            super (name);
-                        }
-                        protected void onLooperPrepared() {
-                            synchronized (m_syncobj) {
-                                m_selfhandler = new Handler();
-                                m_selfhandler.post (m_apkhandltsk);
-                                m_handleitem = 0;
+                class PackageDeleteObserver extends IPackageDeleteObserver.Stub {
+                    String pkgpath = null;
+                    public void packageDeleted (String packageName, int returnCode) {
+                        Log.d (TAG, "packageDeleted " + String.valueOf (returnCode));
+                        synchronized (m_syncobj) {
+                            if (returnCode != PackageManager.DELETE_SUCCEEDED) {
+                                Message endmsg = Message.obtain();
+                                endmsg.what = HANDLE_PKG_FAIL;
+                                Bundle data = new Bundle();
+                                data.putString ("showstr", "Uninstall " + pkgpath + " fail!");
+                                endmsg.setData (data);
+                                m_handler.sendMessage (endmsg);
                             }
+                            m_handleitem++;
+                            m_selfhandler.post (m_apkhandltsk);
                         }
+                    }
                 }
-
-                class ApkHandleTask implements Runnable {
-                        class PackageInstallObserver extends IPackageInstallObserver.Stub {
-                                String apkpath = null;
-                                public void packageInstalled (String packageName, int returnCode) {
-                                    Log.d (TAG, "packageInstalled " + String.valueOf (returnCode));
-                                    synchronized (m_syncobj) {
-                                        if (returnCode != 1) { //fail
-                                            Message endmsg = Message.obtain();
-                                            endmsg.what = HANDLE_PKG_FAIL;
-                                            Bundle data = new Bundle();
-                                            data.putString ("showstr", "Install " + apkpath + " fail!");
-                                            endmsg.setData (data);
-                                            m_handler.sendMessage (endmsg);
-                                        }
-                                        m_handleitem++;
-                                        m_selfhandler.post (m_apkhandltsk);
-                                    }
-                                }
-                        }
-
-                        class PackageDeleteObserver extends IPackageDeleteObserver.Stub {
-                                String pkgpath = null;
-                                public void packageDeleted (String packageName, int returnCode) {
-                                    Log.d (TAG, "packageDeleted " + String.valueOf (returnCode));
-                                    synchronized (m_syncobj) {
-                                        if (returnCode != PackageManager.DELETE_SUCCEEDED) {
-                                            Message endmsg = Message.obtain();
-                                            endmsg.what = HANDLE_PKG_FAIL;
-                                            Bundle data = new Bundle();
-                                            data.putString ("showstr", "Uninstall " + pkgpath + " fail!");
-                                            endmsg.setData (data);
-                                            m_handler.sendMessage (endmsg);
-                                        }
-                                        m_handleitem++;
-                                        m_selfhandler.post (m_apkhandltsk);
-                                    }
-                                }
-                        }
-                        public void install_apk_slient (String apk_filepath) {
-                            PackageManager pm = getPackageManager();
-                            PackageInstallObserver observer = new PackageInstallObserver();
-                            observer.apkpath = apk_filepath;
-                            pm.installPackage (Uri.fromFile (new File (apk_filepath)), observer, pm.INSTALL_REPLACE_EXISTING, null);
-                        }
-                        public void uninstall_apk_slient (String apk_pkgname) {
-                            PackageDeleteObserver observer = new PackageDeleteObserver();
-                            observer.pkgpath = apk_pkgname;
-                            PackageManager pm = getPackageManager();
-
-                            if (isAppInstalled(main.this, apk_pkgname)) {
-                                pm.deletePackage (apk_pkgname, observer, 0);
-                            } else {
-                                Toast.makeText (main.this, R.string.apk_have_not_been_installed , Toast.LENGTH_SHORT).show();
-                            }
-
-                        }
-                        public void run() {
-                            synchronized (m_syncobj) {
-                                if ( (m_bstop == true) || m_handleitem == m_checkeditems.length) {
-                                    sendEndMsg();
-                                    m_bOpEnd = true;
-                                    m_thread.quit();
-                                    return ;
-                                }
-                            }
-                            String hanlemsg = null;
-                            int actionid;
-                            String actionpara = null;
-                            APKInfo pinfo = mApkList.get ( (int) m_checkeditems[ (int) m_handleitem]);
-                            if (pinfo != null) {
-                                //if(pinfo.isInstalled()==false)
-                                if (menuSelect == opInstall) {
-                                    actionid = 0;
-                                    actionpara = pinfo.filepath;
-                                    hanlemsg = "Installing  \"";
-                                }
-                                else {
-                                    actionid = 1;
-                                    actionpara = pinfo.pCurPkgName;
-                                    hanlemsg = "Uninstalling  \"";
-                                }
-                                hanlemsg += pinfo.pAppName + "\"\n";
-                                synchronized (m_syncobj) {
-                                    if (m_handler != null) {
-                                        Message endmsg = Message.obtain();
-                                        endmsg.what = HANDLE_PKG_NEXT;
-                                        endmsg.arg1 = (int) m_handleitem;
-                                        endmsg.arg2 = m_checkeditems.length;
-                                        Bundle data = new Bundle();
-                                        data.putString ("showstr", hanlemsg);
-                                        endmsg.setData (data);
-                                        m_handler.sendMessageDelayed (endmsg, 2000); //add a delay, for systeme need time to release cache.
-                                    }
-                                }
-                                if (actionid == 0) {
-                                    boolean hasSpace = checkFreeSpace ("/data/app") > 50;
-                                    if (!hasSpace) {
-                                        Log.w (TAG, "no enough space for installation, force stop!");
-                                        Message endmsg = Message.obtain();
-                                        endmsg.what = HANDLE_PKG_FAIL;
-                                        Bundle data = new Bundle();
-                                        data.putString ("showstr", getResources().getString (R.string.no_space));
-                                        endmsg.setData (data);
-                                        m_handler.sendMessage (endmsg);
-                                        sendEndMsg();
-                                        m_bOpEnd = true;
-                                        m_thread.quit();
-                                        return ;
-                                    }
-                                    install_apk_slient (actionpara);
-                                }
-                                else {
-                                    uninstall_apk_slient (actionpara);
-                                }
-                                Log.d (TAG, "install a singel apk end");
-                            }
-                            else {
-                                Log.e (TAG, "got a null apkinfo, this is strange!");
-                            }
-                        }
+                public void install_apk_slient (String apk_filepath) {
+                    PackageManager pm = getPackageManager();
+                    PackageInstallObserver observer = new PackageInstallObserver();
+                    observer.apkpath = apk_filepath;
+                    pm.installPackage (Uri.fromFile (new File (apk_filepath)), observer, pm.INSTALL_REPLACE_EXISTING, null);
                 }
+                public void uninstall_apk_slient (String apk_pkgname) {
+                    PackageDeleteObserver observer = new PackageDeleteObserver();
+                    observer.pkgpath = apk_pkgname;
+                    PackageManager pm = getPackageManager();
+                    if (isAppInstalled(main.this, apk_pkgname)) {
+                        pm.deletePackage (apk_pkgname, observer, 0);
+                    } else {
+                        Toast.makeText (main.this, R.string.apk_have_not_been_installed , Toast.LENGTH_SHORT).show();
+                    }
+                }
+                public void run() {
+                    synchronized (m_syncobj) {
+                        if ( (m_bstop == true) || m_handleitem == m_checkeditems.length) {
+                            sendEndMsg();
+                            m_bOpEnd = true;
+                            m_thread.quit();
+                            return ;
+                        }
+                    }
+                    String hanlemsg = null;
+                    int actionid;
+                    String actionpara = null;
+                    APKInfo pinfo = mApkList.get ( (int) m_checkeditems[ (int) m_handleitem]);
+                    if (pinfo != null) {
+                        //if(pinfo.isInstalled()==false)
+                        if (menuSelect == opInstall) {
+                            actionid = 0;
+                            actionpara = pinfo.filepath;
+                            hanlemsg = "Installing  \"";
+                        }
+                        else {
+                            actionid = 1;
+                            actionpara = pinfo.pCurPkgName;
+                            hanlemsg = "Uninstalling  \"";
+                        }
+                        hanlemsg += pinfo.pAppName + "\"\n";
+                        synchronized (m_syncobj) {
+                            if (m_handler != null) {
+                                Message endmsg = Message.obtain();
+                                endmsg.what = HANDLE_PKG_NEXT;
+                                endmsg.arg1 = (int) m_handleitem;
+                                endmsg.arg2 = m_checkeditems.length;
+                                Bundle data = new Bundle();
+                                data.putString ("showstr", hanlemsg);
+                                endmsg.setData (data);
+                                m_handler.sendMessageDelayed (endmsg, 2000); //add a delay, for systeme need time to release cache.
+                            }
+                        }
+                        if (actionid == 0) {
+                            boolean hasSpace = checkFreeSpace ("/data/app") > 50;
+                            if (!hasSpace) {
+                                Log.w (TAG, "no enough space for installation, force stop!");
+                                Message endmsg = Message.obtain();
+                                endmsg.what = HANDLE_PKG_FAIL;
+                                Bundle data = new Bundle();
+                                data.putString ("showstr", getResources().getString (R.string.no_space));
+                                endmsg.setData (data);
+                                m_handler.sendMessage (endmsg);
+                                sendEndMsg();
+                                m_bOpEnd = true;
+                                m_thread.quit();
+                                return ;
+                            }
+                            install_apk_slient (actionpara);
+                        }
+                        else {
+                            uninstall_apk_slient (actionpara);
+                        }
+                        Log.d (TAG, "install a singel apk end");
+                    }
+                    else {
+                        Log.e (TAG, "got a null apkinfo, this is strange!");
+                    }
+                }
+            }
         }
 
         public void startHandleOp() {
@@ -886,172 +817,127 @@ public class main extends Activity {
         }
 
         class ScanOperation extends OperationThread {
-                protected scanthread       m_thread;
-                ScanOperation() {
-                    //super();
-                    m_iOp = SCAN_APKS;
-                }
-                public void start() { //overide it to new and start a thread
-                    super.start();
-                    m_thread = new scanthread();
-                    m_thread.start();
+            protected scanthread       m_thread;
+            ScanOperation() {
+                //super();
+                m_iOp = SCAN_APKS;
+            }
+            public void start() { //overide it to new and start a thread
+                super.start();
+                m_thread = new scanthread();
+                m_thread.start();
+            }
+
+            class scanthread extends Thread {
+                public void run() {
+                    if (mScanRoot != null) {
+                        scandir (mScanRoot);
+                    }
+
+                    synchronized (m_syncobj) {
+                        sendEndMsg();
+                        m_bOpEnd = true;
+                    }
                 }
 
-                class scanthread extends Thread {
-                        public void run() {
-                            if (mScanRoot != null) {
-                                scandir (mScanRoot);
+                protected void scandir (String directory) {
+                    mApkList.clear();
+                    int dirs = 0, apks = 0;
+                    //to scan dirs
+                    ArrayList<String> pdirlist = new ArrayList<String>();
+                    List<Map<String, Object>> files;
+                    pdirlist.add (directory);
+                    while (pdirlist.isEmpty() == false) {
+                        String dirstr = pdirlist.get(0);
+                        synchronized (m_syncobj) {
+                            if (m_bstop == true) {
+                                break;
                             }
-
-                            synchronized (m_syncobj) {
-                                sendEndMsg();
-                                m_bOpEnd = true;
+                            dirs++;
+                            if (m_handler != null) {
+                                Message dirmsg = Message.obtain();
+                                dirmsg.what = NEW_APK;
+                                dirmsg.arg1 = dirs;
+                                dirmsg.arg2 = apks;
+                                dirmsg.obj = dirstr;
+                                m_handler.sendMessage (dirmsg);
                             }
                         }
-
-                        /*class APKFileter implements FileFilter {
-                                public boolean accept (File dir) {
-                                    if (dir.isDirectory() == true) {
-                                        return true;
-                                    }
-                                    String filename = dir.getName();
-                                    String filenamelowercase = filename.toLowerCase();
-                                    return filenamelowercase.endsWith (".apk");
-                                }
-                        }*/
-
-                        class APKFileter implements FileFilter {
-                                public boolean accept (File arg0) {
-                                    if (arg0.isDirectory() == true) {
-                                        return true;
-                                    }
-                                    String filename = arg0.getName();
-                                    String filenamelowercase = filename.toLowerCase();
-                                    return filenamelowercase.endsWith (".apk");
-                                }
-                        }
-
-                        protected void scandir (String directory) {
-                            mApkList.clear();
-                            int dirs = 0, apks = 0;
-                            //to scan dirs
-                            ArrayList<String> pdirlist = new ArrayList<String>();
-                            pdirlist.add (directory);
-                            while (pdirlist.isEmpty() == false) {
-                                String dirstr = pdirlist.get(0);
-                                synchronized (m_syncobj) {
-                                    if (m_bstop == true) {
-                                        break;
-                                    }
-                                    dirs++;
-                                    if (m_handler != null) {
-                                        Message dirmsg = Message.obtain();
-                                        dirmsg.what = NEW_APK;
-                                        dirmsg.arg1 = dirs;
-                                        dirmsg.arg2 = apks;
-                                        dirmsg.obj = dirstr;
-                                        m_handler.sendMessage (dirmsg);
-                                    }
-                                }
-                                String headpath = pdirlist.remove (0);
-                                File pfile = new File (headpath);
-                                if (pfile.exists() == true) {
-                                    //list files and dirs in this directory
-                                    File[] files = pfile.listFiles (new APKFileter());
-                                    if (files != null && (files.length > 0)) {
-                                        int i = 0;
-                                        for (; i < files.length; i++) {
-                                            //shield /sdcard/external_sdcard if select /sdcard to search with virtaul external_sdcard
-                                            String str = null;
-                                            str = files[i].toString();
-                                            if (str.compareTo (SHEILD_EXT_STOR) == 0) {
-                                                continue;
-                                            }
-                                            synchronized (m_syncobj) {
-                                                if (m_bstop == true) {
-                                                    break;
-                                                }
-                                            }
-                                            File pcurfile = files[i];
-                                            if (pcurfile.isDirectory()) {
-                                                pdirlist.add (pcurfile.getAbsolutePath());
-                                            }
-                                            else {
-                                                APKInfo apkinfo = new APKInfo (main.this, pcurfile.getAbsolutePath());
-                                                if (apkinfo.beValid() == true) {
-                                                    mApkList.add (apkinfo);
-                                                    apks++;
-                                                    synchronized (m_syncobj) {
-                                                        if (m_handler != null) {
-                                                            Message apkmsg = Message.obtain();
-                                                            apkmsg.what = NEW_APK;
-                                                            apkmsg.arg1 = dirs;
-                                                            apkmsg.arg2 = apks;
-                                                            apkmsg.obj = dirstr;
-                                                            m_handler.sendMessage (apkmsg);
-                                                        }
-                                                    }
-                                                }
-                                            }
+                        String headpath = pdirlist.remove (0);
+                        File pfile = new File (headpath);
+                        if (pfile.exists() == true) {
+                            files = mFileListManager.getDirs(headpath, ".apk");
+                            for (int i = 0; i < files.size(); i++) {
+                                Map<String, Object> map = files.get(i);
+                                String value = map.get(KEY_PATH).toString();
+                                if (!value.endsWith(".apk")) {
+                                    pdirlist.add(value);
+                                } else {
+                                    APKInfo apkinfo = new APKInfo (main.this, value);
+                                    mApkList.add(apkinfo);
+                                    apks++;
+                                    synchronized (m_syncobj) {
+                                        if (m_handler != null) {
+                                            Message apkmsg = Message.obtain();
+                                            apkmsg.what = NEW_APK;
+                                            apkmsg.arg1 = dirs;
+                                            apkmsg.arg2 = apks;
+                                            apkmsg.obj = dirstr;
+                                            m_handler.sendMessage (apkmsg);
                                         }
                                     }
                                 }
                             }
                         }
+                    }
                 }
+            }
         };
 
-        protected void showScanDiag (int dirs, int apks, Object obj) {
-            String msg = getResources().getString (R.string.scanning);
-            String path = (String)obj;
-            //msg += "dir : " + String.valueOf (dirs) + ", path:" + path + "\n";
-            msg += "dir:" + path + "\n";
-            msg += "apk : " + String.valueOf (apks) + "\n";
-            mScanDiag.setMessage (msg);
-            //  mScanDiag.show();
+    protected void showScanDiag (int dirs, int apks, Object obj) {
+        String msg = getResources().getString (R.string.scanning);
+        String path = (String)obj;
+        //msg += "dir : " + String.valueOf (dirs) + ", path:" + path + "\n";
+        msg += "dir:" + path + "\n";
+        msg += "apk : " + String.valueOf (apks) + "\n";
+        mScanDiag.setMessage (msg);
+        //  mScanDiag.show();
+    }
+
+    private void showDialogInner (int id) {
+        // TODO better fix for this? Remove dialog so that it gets created again
+        removeDialog (id);
+        showDialog (id);
+    }
+
+    @Override
+    public Dialog onCreateDialog (int id, Bundle bundle) {
+        switch (id) {
+            case DLG_UNKNOWN_APPS:
+                return new AlertDialog.Builder (this)
+               .setTitle (R.string.unknown_apps_dlg_title)
+               .setMessage (R.string.unknown_apps_dlg_text)
+                .setNegativeButton (R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick (DialogInterface dialog, int which) {
+                    }
+                })
+                .setPositiveButton (R.string.settings, new DialogInterface.OnClickListener() {
+                    public void onClick (DialogInterface dialog, int which) {
+                        launchSettingsAppAndFinish();
+                    }
+                }) .create();
         }
+        return null;
+    }
 
+    private void launchSettingsAppAndFinish() {
+        //Create an intent to launch SettingsTwo activity
+        Intent launchSettingsIntent = new Intent (Settings.ACTION_SECURITY_SETTINGS);
+        startActivity (launchSettingsIntent);
+    }
 
-
-        private void showDialogInner (int id) {
-            // TODO better fix for this? Remove dialog so that it gets created again
-            removeDialog (id);
-            showDialog (id);
-        }
-
-        @Override
-        public Dialog onCreateDialog (int id, Bundle bundle) {
-            switch (id) {
-                case DLG_UNKNOWN_APPS:
-                    return new AlertDialog.Builder (this)
-                           .setTitle (R.string.unknown_apps_dlg_title)
-                           .setMessage (R.string.unknown_apps_dlg_text)
-                    .setNegativeButton (R.string.cancel, new DialogInterface.OnClickListener() {
-                        public void onClick (DialogInterface dialog, int which) {
-                        }
-                    })
-                    .setPositiveButton (R.string.settings, new DialogInterface.OnClickListener() {
-                        public void onClick (DialogInterface dialog, int which) {
-                            launchSettingsAppAndFinish();
-                        }
-                    }) .create();
-            }
-            return null;
-        }
-
-        private void launchSettingsAppAndFinish() {
-            //Create an intent to launch SettingsTwo activity
-            Intent launchSettingsIntent = new Intent (Settings.ACTION_SECURITY_SETTINGS);
-            startActivity (launchSettingsIntent);
-        }
-
-        private boolean isInstallingUnknownAppsAllowed() {
-            return Settings.Secure.getInt (getContentResolver(),
-                                           Settings.Secure.INSTALL_NON_MARKET_APPS, 0) > 0;
-        }
-
+    private boolean isInstallingUnknownAppsAllowed() {
+        return Settings.Secure.getInt (getContentResolver(),
+            Settings.Secure.INSTALL_NON_MARKET_APPS, 0) > 0;
+    }
 }
-
-
-
-

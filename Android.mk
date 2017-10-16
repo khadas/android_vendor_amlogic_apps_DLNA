@@ -12,6 +12,7 @@ endif
 
 LOCAL_PACKAGE_NAME := AppInstaller
 LOCAL_CERTIFICATE := platform
+LOCAL_JAVA_LIBRARIES := droidlogic
 
 include $(BUILD_PACKAGE)
 endif
