@@ -124,55 +124,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-        <activity
-            android:name="com.droidlogic.mediacenter.airplay.VideoPlayer"
-            android:label="@string/app_name"
-            android:launchMode="singleInstance"
-            android:screenOrientation="landscape"
-            android:theme="@style/VideoActivity"
-            android:windowSoftInputMode="stateAlwaysHidden" >
-        </activity>
-        <activity
-            android:name="com.hpplay.player.Mirror"
-            android:hardwareAccelerated="true"
-                android:launchMode="singleTask"
-            android:screenOrientation="landscape" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name="com.droidlogic.mediacenter.airplay.Photo"
-            android:launchMode="singleTask" >
-        </activity>
-        <service android:name="com.hpplay.happyplay.mainServer" >
-        </service>
-        <service android:name="com.droidlogic.mediacenter.airplay.AirPlayService" >
-        </service>
-        <service android:name="com.hpplay.happyplay.daemonService" >
-        </service>
     <!-- for multi-offer activity -->
-         <activity
-            android:name="com.hpplay.premium.AdActivity"
-            android:label="@string/app_name"
-            android:launchMode="singleTask"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
-            >
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="crystalexpress"
-                    android:scheme="crystalexpress" />
-                <data
-                    android:host="activate"
-                    android:pathPattern=".*"
-                    android:scheme="crystalexpress" />
-            </intent-filter>
-        </activity>
         <activity
             android:name="com.intowow.sdk.SplashAdActivity"
             android:configChanges="orientation|screenSize"

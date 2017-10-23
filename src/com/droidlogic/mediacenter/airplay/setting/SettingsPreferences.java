@@ -25,7 +25,6 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.SwitchPreference;
 import android.util.Log;
 
-import com.droidlogic.mediacenter.airplay.AirPlayService;
 import com.droidlogic.mediacenter.R;
 
 public class SettingsPreferences extends SettingsPreferenceFragment implements
@@ -83,24 +82,6 @@ public class SettingsPreferences extends SettingsPreferenceFragment implements
         @Override
         public void onSharedPreferenceChanged ( SharedPreferences sharedPreferences,
                                                 String key ) {
-            Intent intent = new Intent ( getActivity(), AirPlayService.class );
-            if ( key.equals ( KEY_START_SERVICE ) ) {
-                if ( mStartServicePref.isChecked() ) {
-                    Log.d ( TAG, "start airplay service" );
-                    getActivity().startService ( intent );
-                } else if ( !mBootCfgPref.isChecked() ) {
-                    Log.d ( TAG, "stop airplay service" );
-                    getActivity().stopService ( intent );
-                }
-            } else if ( key.equals ( KEY_BOOT_CFG ) ) {
-                if ( mBootCfgPref.isChecked() ) {
-                    Log.d ( TAG, "start airplay service=======" );
-                    getActivity().startService ( intent );
-                } else if ( !mStartServicePref.isChecked() ) {
-                    Log.d ( TAG, "stop airplay service=======" );
-                    getActivity().stopService ( intent );
-                }
-            }
         }
 
         private void setPreferenceListeners ( OnPreferenceChangeListener listener ) {

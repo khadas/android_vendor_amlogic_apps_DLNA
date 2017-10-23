@@ -23,7 +23,6 @@ import com.droidlogic.mediacenter.dlna.DmpService;
 import com.droidlogic.mediacenter.dlna.DmpStartFragment;
 import com.droidlogic.mediacenter.dlna.MediaCenterService;
 import com.droidlogic.mediacenter.dlna.PrefUtils;
-import com.droidlogic.mediacenter.airplay.AirPlayService;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -123,16 +122,10 @@ public class WeakRefService extends Service {
                 case STOPSERVICE:
                     Intent mNetIntent = new Intent(DmpService.NETWORK_ERROR);
                     mContext.sendBroadcast ( mNetIntent );
-                    if ( AirPlayService.STATEDFLAG && mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
-                        mContext.stopService(new Intent(mContext,AirPlayService.class));
-                    }
                     break;
                 case STARTSERVICE:
                     if (mPrefUtils.getBooleanVal(DmpStartFragment.KEY_BOOT_CFG,false)) {
                         mContext.startService (new Intent(mContext, MediaCenterService.class));
-                    }
-                    if (mPrefUtils.getBooleanVal(SettingsPreferences.KEY_BOOT_CFG,false)) {
-                        mContext.startService(new Intent(mContext,AirPlayService.class));
                     }
                     break;
             }

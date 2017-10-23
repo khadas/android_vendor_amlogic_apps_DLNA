@@ -109,8 +109,6 @@ public class FucFragment extends ListFragment {
                     showDmpScan ( dmpFragment );
                 } else if ( mCurCheckPosition == ITEM_DMPSERVICE ) {
                     showDmpShow ( dmpFragment );
-                } else if ( mCurCheckPosition == ITEM_AIRPLAY ) {
-                    showAirplay ( dmpFragment );
                 } else if ( mCurCheckPosition == ITEM_ABOUT ) {
                     showAboutFragment ( dmpFragment );
                 }
@@ -167,11 +165,11 @@ public class FucFragment extends ListFragment {
             map.put ( LIST_IMG, R.drawable.dmr );
             map.put ( LIST_SUMMARY, getString ( R.string.dmr_summary ) );
             list.add ( map );
-            map = new HashMap<String, Object>();
-            map.put ( LIST_TITLE, getString ( R.string.airplay_title ) );
-            map.put ( LIST_IMG, R.drawable.airplay );
-            map.put ( LIST_SUMMARY, getString ( R.string.airplay_summary ) );
-            list.add ( map );
+            //map = new HashMap<String, Object>();
+            //map.put ( LIST_TITLE, getString ( R.string.airplay_title ) );
+            //map.put ( LIST_IMG, R.drawable.airplay );
+            //map.put ( LIST_SUMMARY, getString ( R.string.airplay_summary ) );
+            //list.add ( map );
             map = new HashMap<String, Object>();
             map.put ( LIST_TITLE, getString ( R.string.about ) );
             map.put ( LIST_IMG, R.drawable.settings );

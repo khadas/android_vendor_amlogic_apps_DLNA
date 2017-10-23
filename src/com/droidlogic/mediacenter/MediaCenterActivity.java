@@ -29,7 +29,6 @@ import com.droidlogic.mediacenter.dlna.MediaCenterService;
 import com.droidlogic.mediacenter.dlna.PrefUtils;
 import com.droidlogic.mediacenter.dlna.DmpFragment.FreshListener;
 import com.droidlogic.mediacenter.dlna.DmpService.DmpBinder;
-import com.droidlogic.mediacenter.airplay.AirPlayService;
 import com.droidlogic.mediacenter.airplay.setting.SettingsPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -95,23 +94,7 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
             mStartDmp = true;
         }
 
-        private void startAirplay() {
-            if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
-                Log.d ( TAG, "onStartAirProxy" );
-                Intent intent = new Intent();
-                intent.setClass ( mContent, AirPlayService.class );
-                startService ( intent );
-            }
-        }
 
-        private void stopAirplay() {
-            if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) && !mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
-                Log.d ( TAG, "onStopAirProxy" );
-                Intent intent = new Intent();
-                intent.setClass ( mContent, AirPlayService.class );
-                stopService ( intent );
-            }
-        }
 
         /**
          * @Description TODO
@@ -126,7 +109,6 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
         protected void onDestroy() {
             stopMediaCenterService();
             stopDmpService();
-            stopAirplay();
             super.onDestroy();
         }
 
@@ -240,7 +222,6 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
                 } else {
                     stopMediaCenterService();
                     stopDmpService();
-                    stopAirplay();
                     MediaCenterActivity.this.finish();
                 }
                 return true;
@@ -278,9 +259,6 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
                 if ( mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( DmpStartFragment.KEY_BOOT_CFG, false ) ) {
                     startMediaCenterService();
                 }
-                if ( mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_START_SERVICE, false ) || mPrefUtils.getBooleanVal ( SettingsPreferences.KEY_BOOT_CFG, false ) ) {
-                    startAirplay();
-                }
                 startDmpService();
             } else {
                 Intent mIntent = new Intent();
@@ -314,7 +292,6 @@ public class MediaCenterActivity extends Activity  implements FreshListener {
                         Log.i(TAG, "homekey stop service");
                         stopMediaCenterService();
                         stopDmpService();
-                        stopAirplay();
                         MediaCenterActivity.this.finish();
                     }
                 }
