@@ -203,6 +203,7 @@ public class MediaCenterService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mDmrDevice != null) {
             mPref.setBoolean(PrefUtils.FISAT_START, false);
+            mDmrDevice.stopDMR();
             mDmrDevice.startDMR();
         }
         return super.onStartCommand(intent, flags, startId);
