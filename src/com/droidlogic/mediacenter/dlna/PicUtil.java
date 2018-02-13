@@ -48,12 +48,7 @@ import android.util.Log;
 
 public class PicUtil {
     private static final String TAG = "PicUtil";
-    /**
-     * 根据一个网络连接(URL)获取bitmapDrawable图像
-     *
-     * @param imageUri
-     * @return
-     */
+
     public static BitmapDrawable getfriendicon(URL imageUri){
         BitmapDrawable icon = null;
         try {
@@ -66,12 +61,7 @@ public class PicUtil {
         }
         return icon;
     }
-    /**
-     * 根据一个网络连接(String)获取bitmapDrawable图像
-     *
-     * @param imageUri
-     * @return
-     */
+
     public static BitmapDrawable getfriendicon(String imageUrl){
         URL imgUrl = null;
         try{
@@ -92,7 +82,7 @@ public class PicUtil {
     }
 
     public static Bitmap getusericon(URL imageUri){
-     // 显示网络上的图片
+
         URL myFielUrl = imageUri;
         Bitmap bitmap = null;
         try {
@@ -109,7 +99,7 @@ public class PicUtil {
         return bitmap;
     }
     public static Bitmap getbitmap(String imageUri) {
-        // 显示网络上的图片
+
         Bitmap bitmap = null;
         try {
             URL myFileUrl = new URL(imageUri);
@@ -143,7 +133,7 @@ public class PicUtil {
 
             byte[] buf = new byte[1024];
             int len = 0;
-         // 将网络上的图片存储到本地
+
             while ( (len=is.read(buf)) > 0 ) {
                 bos.write(buf,0,len);
             }
@@ -159,7 +149,7 @@ public class PicUtil {
             }
             opts.inJustDecodeBounds = false;
 
-            // 从本地加载图片
+
             bitmap = BitmapFactory.decodeFile(cacheFile.getCanonicalPath(),opts);
             //String name =MD5Util.createMd5(imageUri);
         } catch (MalformedURLException e) {
@@ -184,13 +174,7 @@ public class PicUtil {
             e.printStackTrace();
         }
     }
-    /**
-     * 将文件写入缓存系统中
-     *
-     * @param filename
-     * @param is
-     * @return
-     */
+
     public static String writefile(Context context, String filename,
             InputStream is) {
         BufferedInputStream inputStream = null;
@@ -224,7 +208,7 @@ public class PicUtil {
         }
         return context.getFilesDir() + "/" + filename + ".jpg";
     }
-    // 放大缩小图片
+
     public static Bitmap zoomBitmap(Bitmap bitmap, int w, int h) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -237,7 +221,6 @@ public class PicUtil {
         return newbmp;
     }
 
-    // 将Drawable转化为Bitmap
     public static Bitmap drawableToBitmap(Drawable drawable) {
         int width = drawable.getIntrinsicWidth();
         int height = drawable.getIntrinsicHeight();
@@ -251,7 +234,6 @@ public class PicUtil {
 
     }
 
-    // 获得圆角图片的方法
     public static Bitmap getRoundedCornerBitmap(Bitmap bitmap, float roundPx) {
         if (bitmap == null) {
             return null;
@@ -276,7 +258,6 @@ public class PicUtil {
         return output;
     }
 
-    // 获得带倒影的图片方法
     public static Bitmap createReflectionImageWithOrigin(Bitmap bitmap) {
         final int reflectionGap = 4;
         int width = bitmap.getWidth();

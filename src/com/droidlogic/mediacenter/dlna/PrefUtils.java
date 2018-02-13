@@ -59,7 +59,7 @@ public class PrefUtils {
                 return 0;
             }
             if (field != null) {
-                Log.d(TAG,"getResource:"+cname+" Val："+ret);
+                Log.d(TAG,"getResource:"+cname+" Val:"+ret);
                 return ret;
             } else {
                 return 0;
