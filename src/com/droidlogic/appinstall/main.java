@@ -874,16 +874,18 @@ public class main extends Activity {
                                     pdirlist.add(value);
                                 } else {
                                     APKInfo apkinfo = new APKInfo (main.this, value);
-                                    mApkList.add(apkinfo);
-                                    apks++;
-                                    synchronized (m_syncobj) {
-                                        if (m_handler != null) {
-                                            Message apkmsg = Message.obtain();
-                                            apkmsg.what = NEW_APK;
-                                            apkmsg.arg1 = dirs;
-                                            apkmsg.arg2 = apks;
-                                            apkmsg.obj = dirstr;
-                                            m_handler.sendMessage (apkmsg);
+                                    if (apkinfo.pCurPkgName != null) {
+                                        mApkList.add(apkinfo);
+                                        apks++;
+                                        synchronized (m_syncobj) {
+                                            if (m_handler != null) {
+                                                Message apkmsg = Message.obtain();
+                                                apkmsg.what = NEW_APK;
+                                                apkmsg.arg1 = dirs;
+                                                apkmsg.arg2 = apks;
+                                                apkmsg.obj = dirstr;
+                                                m_handler.sendMessage (apkmsg);
+                                            }
                                         }
                                     }
                                 }
