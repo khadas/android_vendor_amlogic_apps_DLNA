@@ -53,7 +53,7 @@ import android.widget.ListView;
 import android.widget.TextView.BufferType;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.content.pm.IPackageInstallObserver;
+import android.content.pm.IPackageInstallObserver2;
 import android.content.pm.IPackageDeleteObserver;
 import android.os.PowerManager;
 import android.os.HandlerThread;
@@ -117,6 +117,7 @@ public class main extends Activity {
         /** Called when the activity is first created. */
         @Override
         public void onCreate (Bundle savedInstanceState) {
+            Log.d (TAG, "[onCreate]");
             super.onCreate (savedInstanceState);
             setContentView (R.layout.main);
 
@@ -147,10 +148,9 @@ public class main extends Activity {
 
                 }
             });
-
             //change dir button
             m_DirEdit = (TextView) findViewById (R.id.Dir);
-            m_DirEdit.setText (" ", TextView.BufferType.NORMAL);
+            m_DirEdit.setText (R.string.choose_device_warning, TextView.BufferType.NORMAL);
             m_DirEdit.setOnClickListener (new View.OnClickListener() {
                 public void onClick (View v) {
                     showChooseDev();
@@ -163,8 +163,8 @@ public class main extends Activity {
                     main.this.finish();
                 }
             });
-            hexit.requestFocus();
-            showChooseDev();
+            m_DirEdit.requestFocus();
+            //showChooseDev();
         }
 
         private BroadcastReceiver mMountReceiver = new BroadcastReceiver() {
@@ -251,6 +251,7 @@ public class main extends Activity {
         };
 
         public void onResume() {
+            Log.d (TAG, "[onResume]");
             m_scanop.setHandler (mainhandler);
             m_installop.setHandler (mainhandler);
             IntentFilter intentFilter = new IntentFilter (Intent.ACTION_MEDIA_MOUNTED);
@@ -273,6 +274,7 @@ public class main extends Activity {
         }
 
         public void onPause() {
+            Log.d (TAG, "[onPause]");
             //disable the operation message
             m_scanop.setHandler (null);
             m_installop.setHandler (null);
@@ -294,9 +296,11 @@ public class main extends Activity {
             }
         }
         public void onStop() {
+            Log.d (TAG, "[onStop]");
             super.onStop();
         }
         protected void onDestroy() {
+            Log.d (TAG, "[onDestroy]");
 //            unregisterReceiver(mScanListener);
             if (m_configchanged == false) {
                 m_scanop.stop();
@@ -445,6 +449,7 @@ public class main extends Activity {
 
         //user functions
         public void showChooseDev() {
+            Log.d (TAG, "[showChooseDev]");
             int num = 0;
             int devCnt = 0;
             int selid = 0;
@@ -464,7 +469,6 @@ public class main extends Activity {
                     selid = idx;
                 }
             }
-
             //show dialog to choose dialog
             new AlertDialog.Builder (main.this)
             .setTitle (R.string.alertdialog_title)
@@ -497,6 +501,7 @@ public class main extends Activity {
             })
             .show();
         }
+
 
         //===================================================================
         //functions for installing and uninstalling
@@ -647,9 +652,9 @@ public class main extends Activity {
             }
 
             class ApkHandleTask implements Runnable {
-                class PackageInstallObserver extends IPackageInstallObserver.Stub {
+                class PackageInstallObserver extends IPackageInstallObserver2.Stub {
                     String apkpath = null;
-                    public void packageInstalled (String packageName, int returnCode) {
+                    public void onPackageInstalled (String basePackageName, int returnCode, String msg, Bundle extras) {
                         Log.d (TAG, "packageInstalled " + String.valueOf (returnCode));
                         synchronized (m_syncobj) {
                             if (returnCode != 1) { //fail
@@ -663,6 +668,10 @@ public class main extends Activity {
                             m_handleitem++;
                             m_selfhandler.post (m_apkhandltsk);
                         }
+                    }
+
+                    public void onUserActionRequired (Intent intent) {
+
                     }
                 }
 
@@ -688,7 +697,7 @@ public class main extends Activity {
                     PackageManager pm = getPackageManager();
                     PackageInstallObserver observer = new PackageInstallObserver();
                     observer.apkpath = apk_filepath;
-                    pm.installPackage (Uri.fromFile (new File (apk_filepath)), observer, pm.INSTALL_REPLACE_EXISTING, null);
+                    //pm.installPackage (Uri.fromFile (new File (apk_filepath)), observer, pm.INSTALL_REPLACE_EXISTING, null);
                 }
                 public void uninstall_apk_slient (String apk_pkgname) {
                     PackageDeleteObserver observer = new PackageDeleteObserver();
@@ -753,7 +762,7 @@ public class main extends Activity {
                                 m_thread.quit();
                                 return ;
                             }
-                            install_apk_slient (actionpara);
+                            //install_apk_slient (actionpara);
                         }
                         else {
                             uninstall_apk_slient (actionpara);
@@ -871,7 +880,7 @@ public class main extends Activity {
                                 Map<String, Object> map = files.get(i);
                                 String value = map.get(KEY_PATH).toString();
                                 if (!value.endsWith(".apk")) {
-                                    pdirlist.add(value);
+                                    //pdirlist.add(value);
                                 } else {
                                     APKInfo apkinfo = new APKInfo (main.this, value);
                                     if (apkinfo.pCurPkgName != null) {
@@ -898,9 +907,9 @@ public class main extends Activity {
 
     protected void showScanDiag (int dirs, int apks, Object obj) {
         String msg = getResources().getString (R.string.scanning);
-        String path = (String)obj;
+        //String path = (String)obj;
         //msg += "dir : " + String.valueOf (dirs) + ", path:" + path + "\n";
-        msg += "dir:" + path + "\n";
+        //msg += "dir:" + path + "\n";
         msg += "apk : " + String.valueOf (apks) + "\n";
         mScanDiag.setMessage (msg);
         //  mScanDiag.show();

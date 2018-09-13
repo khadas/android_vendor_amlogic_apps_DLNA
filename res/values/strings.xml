@@ -22,6 +22,7 @@
 	<string name="unknown_apps_dlg_title">Install blocked</string>
 	<string name="unknown_apps_dlg_text">For security, your device is set to block installation of applications not obtained from Android Market.</string>
 	<string name="alertdialog_title">Choose device to scan apks</string>
+       <string name="choose_device_warning">Please click here to choose device to scan apks</string>
 	<string name="no_apk_found">No APK Found!</string>
 	<string name="scanning_init">&quot;Scanning ...\n\n&quot;</string>
 	<string name="apk_have_not_been_installed">&quot; You can't uninstall the uninstalled apk/apks.  \n&quot;</string>
