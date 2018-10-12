@@ -37,7 +37,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.storage.VolumeInfo;
+//import android.os.storage.VolumeInfo;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,8 +53,8 @@ import android.widget.ListView;
 import android.widget.TextView.BufferType;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.content.pm.IPackageInstallObserver2;
-import android.content.pm.IPackageDeleteObserver;
+//import android.content.pm.IPackageInstallObserver2;
+//import android.content.pm.IPackageDeleteObserver;
 import android.os.PowerManager;
 import android.os.HandlerThread;
 import android.os.storage.StorageManager;
@@ -652,7 +652,7 @@ public class main extends Activity {
             }
 
             class ApkHandleTask implements Runnable {
-                class PackageInstallObserver extends IPackageInstallObserver2.Stub {
+                /*class PackageInstallObserver extends IPackageInstallObserver2.Stub {
                     String apkpath = null;
                     public void onPackageInstalled (String basePackageName, int returnCode, String msg, Bundle extras) {
                         Log.d (TAG, "packageInstalled " + String.valueOf (returnCode));
@@ -673,9 +673,9 @@ public class main extends Activity {
                     public void onUserActionRequired (Intent intent) {
 
                     }
-                }
+                }*/
 
-                class PackageDeleteObserver extends IPackageDeleteObserver.Stub {
+                /*class PackageDeleteObserver extends IPackageDeleteObserver.Stub {
                     String pkgpath = null;
                     public void packageDeleted (String packageName, int returnCode) {
                         Log.d (TAG, "packageDeleted " + String.valueOf (returnCode));
@@ -692,22 +692,22 @@ public class main extends Activity {
                             m_selfhandler.post (m_apkhandltsk);
                         }
                     }
-                }
+                }*/
                 public void install_apk_slient (String apk_filepath) {
-                    PackageManager pm = getPackageManager();
-                    PackageInstallObserver observer = new PackageInstallObserver();
-                    observer.apkpath = apk_filepath;
+                    //PackageManager pm = getPackageManager();
+                    //PackageInstallObserver observer = new PackageInstallObserver();
+                    //observer.apkpath = apk_filepath;
                     //pm.installPackage (Uri.fromFile (new File (apk_filepath)), observer, pm.INSTALL_REPLACE_EXISTING, null);
                 }
                 public void uninstall_apk_slient (String apk_pkgname) {
-                    PackageDeleteObserver observer = new PackageDeleteObserver();
+                    /*PackageDeleteObserver observer = new PackageDeleteObserver();
                     observer.pkgpath = apk_pkgname;
                     PackageManager pm = getPackageManager();
                     if (isAppInstalled(main.this, apk_pkgname)) {
                         pm.deletePackage (apk_pkgname, observer, 0);
                     } else {
                         Toast.makeText (main.this, R.string.apk_have_not_been_installed , Toast.LENGTH_SHORT).show();
-                    }
+                    }*/
                 }
                 public void run() {
                     synchronized (m_syncobj) {

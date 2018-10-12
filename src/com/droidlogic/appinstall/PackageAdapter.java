@@ -16,6 +16,7 @@
 ******************************************************************/
 package com.droidlogic.appinstall;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +33,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 import android.os.storage.StorageManager;
-import android.os.storage.VolumeInfo;
+//import android.os.storage.VolumeInfo;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,8 @@ import com.droidlogic.app.FileListManager;
 class APKInfo extends Object {
         static protected PackageManager pkgmgr = null;
         static protected FileListManager mFileListManager = null;
+        Class<?> cls;
+        Object mAssetMgr;
 
         APKInfo (Context pcontext, String apkpath) {
             pkgmgr = pcontext.getPackageManager();
@@ -62,19 +65,49 @@ class APKInfo extends Object {
                     pCurPkgName = pPkgInfo.packageName;
                 }
                 Resources pPkgRes = null;
-                AssetManager assmgr = new AssetManager();
-                if (0 != assmgr.addAssetPath (apkpath)) {
-                    pPkgRes = new Resources (assmgr, pcontext.getResources().getDisplayMetrics(), pcontext.getResources().getConfiguration());
+                getAssetManagerInstance();
+                if (0 != addAssetPath (apkpath)) {
+                    pPkgRes = new Resources ((AssetManager) mAssetMgr, pcontext.getResources().getDisplayMetrics(), pcontext.getResources().getConfiguration());
                 }
                 if (pPkgRes != null) {
                     getApplicationName_Internal (pPkgRes, pPkgInfo);
                     getApkIcon_Internal (pPkgRes, pPkgInfo);
                     filepath = apkpath;
                 }
-                assmgr.close();
+                assetManagerClose();
             }
         }
 
+        private int addAssetPath(String apkpath) {
+            try {
+                Method mAddAssetPath = cls.getMethod("addAssetPath", String.class);
+                int count = (int) mAddAssetPath.invoke(mAssetMgr, apkpath);
+                return count;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return 0;
+        }
+
+        private void assetManagerClose() {
+            try {
+                Method mAddAssetPath = cls.getMethod("close");
+                mAddAssetPath.invoke(mAssetMgr);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private Object getAssetManagerInstance() {
+            try {
+                cls= Class.forName("android.content.res.AssetManager");
+                mAssetMgr = cls.newInstance();
+                return mAssetMgr;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
         public boolean beValid() {
             if (filepath == null) {
                 return false;
