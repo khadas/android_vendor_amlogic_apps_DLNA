@@ -719,11 +719,11 @@ public class main extends Activity {
                         }
                     }
                     String hanlemsg = null;
-                    int actionid;
+                    int actionid = 0;
                     String actionpara = null;
                     APKInfo pinfo = mApkList.get ( (int) m_checkeditems[ (int) m_handleitem]);
                     if (pinfo != null) {
-                        //if(pinfo.isInstalled()==false)
+                        //if (pinfo.isInstalled()==false)
                         if (menuSelect == opInstall) {
                             actionid = 0;
                             actionpara = pinfo.filepath;
@@ -880,7 +880,7 @@ public class main extends Activity {
                                 Map<String, Object> map = files.get(i);
                                 String value = map.get(KEY_PATH).toString();
                                 if (!value.endsWith(".apk")) {
-                                    //pdirlist.add(value);
+                                    pdirlist.add(value);
                                 } else {
                                     APKInfo apkinfo = new APKInfo (main.this, value);
                                     if (apkinfo.pCurPkgName != null) {
