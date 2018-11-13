@@ -126,7 +126,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
         private boolean mHideStatusBar = false;
         private Timer mTimer;
         private TimerTask mTimerTask;
-        private boolean seekComplete;
+        private boolean seekComplete = true;
         private static final int SHOW_DIALOG_DELAY = 5000;
         private static final int HIDE_LOADING_DIALOG = 500;
         private static final int FRESH_POSITION = 2000;
@@ -610,6 +610,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                     mHideStatusBar = intent.getBooleanExtra ( "hideStatusBar", false );
                     if ( action.equals ( AmlogicCP.UPNP_PLAY_ACTION ) ) {
                         String uri = intent.getStringExtra ( AmlogicCP.EXTRA_MEDIA_URI );
+                        seekComplete = true;
                         stopExit();
                         if ( DeviceFileBrowser.TYPE_DMP.equals ( intent
                                 .getStringExtra ( DeviceFileBrowser.DEV_TYPE ) ) ) {
@@ -651,6 +652,7 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                         pause();
                     } else if ( action.equals ( AmlogicCP.UPNP_STOP_ACTION ) ) {
                         stopPlayback();
+                        seekComplete = true;
                         stopExit();
                         handlerUI.sendEmptyMessageDelayed ( SHOW_STOP, 6000 );
                     } else if ( action.equals ( MediaRendererDevice.PLAY_STATE_SEEK ) ) {
@@ -669,6 +671,8 @@ public class VideoPlayer extends Activity implements OnInfoListener// implements
                                     handlerUI.removeMessages ( GETINFO_FRESH );
                                 }
                             }
+                        }else{
+                            seekComplete = true;
                         }
                         //handlerUI.sendEmptyMessageDelayed(3, 500);
                     } else if ( action.equals ( AmlogicCP.UPNP_SETVOLUME_ACTION ) ) {
