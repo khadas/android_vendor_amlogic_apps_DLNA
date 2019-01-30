@@ -150,7 +150,7 @@ public class main extends Activity {
             });
             //change dir button
             m_DirEdit = (TextView) findViewById (R.id.Dir);
-            m_DirEdit.setText (R.string.choose_device_warning, TextView.BufferType.NORMAL);
+            m_DirEdit.setText (" ", TextView.BufferType.NORMAL);
             m_DirEdit.setOnClickListener (new View.OnClickListener() {
                 public void onClick (View v) {
                     showChooseDev();
@@ -163,8 +163,8 @@ public class main extends Activity {
                     main.this.finish();
                 }
             });
-            m_DirEdit.requestFocus();
-            //showChooseDev();
+            hexit.requestFocus();
+            showChooseDev();
         }
 
         private BroadcastReceiver mMountReceiver = new BroadcastReceiver() {
