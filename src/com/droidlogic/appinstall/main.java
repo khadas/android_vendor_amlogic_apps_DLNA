@@ -391,10 +391,10 @@ public class main extends Activity {
         protected final int MENU_FRESH = 4;
         protected final int MENU_ABOUT = 5;
         public boolean onCreateOptionsMenu (Menu menu) {
-            menu.add (0, MENU_INSTALL, 0, R.string.install);
-            menu.add (0, MENU_UNINSTALL, 0, R.string.uninstall);
-            menu.add (0, MENU_SELECT_ALL, 0, R.string.selectall);
-            menu.add (0, MENU_UNSELECT_ALL, 0, R.string.unselect_all);
+            //menu.add (0, MENU_INSTALL, 0, R.string.install);
+            //menu.add (0, MENU_UNINSTALL, 0, R.string.uninstall);
+            //menu.add (0, MENU_SELECT_ALL, 0, R.string.selectall);
+            //menu.add (0, MENU_UNSELECT_ALL, 0, R.string.unselect_all);
             menu.add (0, MENU_FRESH, 0, R.string.refresh);
             menu.add (0, MENU_ABOUT, 0, R.string.about);
             return true;
