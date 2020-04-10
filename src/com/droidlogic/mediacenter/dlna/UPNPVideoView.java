@@ -281,7 +281,8 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
                 mMediaPlayer.setDisplay( mSurfaceHolder );
                 mMediaPlayer.setScreenOnWhilePlaying ( true );
                 mMediaPlayer.setAudioStreamType ( AudioManager.STREAM_MUSIC );
-                mMediaPlayer.prepare();
+               // mMediaPlayer.prepare();
+                mMediaPlayer.prepareAsync();
                 // we don't set the target state here either, but preserve the
                 // target state that was there before.
                 mCurrentState = STATE_PREPARING;
