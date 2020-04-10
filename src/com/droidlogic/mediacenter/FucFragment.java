@@ -35,7 +35,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-
 /**
  * @Package
  * @Description
@@ -62,8 +61,8 @@ import android.widget.SimpleAdapter;
 public class FucFragment extends ListFragment {
         private static final int ITEM_DMPSCAN = 0;
         private static final int ITEM_DMPSERVICE = 1;
-        private static final int ITEM_AIRPLAY = 2;
-        private static final int ITEM_ABOUT = 3;
+        private static final int ITEM_AIRPLAY = 3;
+        private static final int ITEM_ABOUT = 2;
         private static final String LIST_TITLE = "title";
         private static final String LIST_IMG = "img";
         private static final String LIST_SUMMARY = "summary";
