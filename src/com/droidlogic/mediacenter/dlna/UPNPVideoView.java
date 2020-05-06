@@ -219,7 +219,11 @@ public class UPNPVideoView extends SurfaceView implements VideoController.MediaP
         }
 
         public void setVideoPath ( String path ) {
-            setVideoURI ( Uri.parse ( path ) );
+            String realpath = path;
+            if (realpath.contains("?formatID=")) {
+               realpath = path.substring(0,path.indexOf("?formatID"));
+            }
+            setVideoURI ( Uri.parse ( realpath ) );
         }
 
         public void setVideoURI ( Uri uri ) {
